@@ -1,0 +1,92 @@
+import React from 'react';
+
+import './App.css';
+import { Redirect, BrowserRouter as Router, Route, Link , Switch} from "react-router-dom";
+//custom pages with no layout
+import Home from './views/LandingPage/LandingPage';
+import About from './views/about/About';
+import  Login from './views/login/Login';
+import  Reset from './views/reset/Reset';
+import  ResetPassword from './views/reset/ResetPassword';
+import Nav from './components/navbar/Navbar';
+
+
+import '@fortawesome/fontawesome-free/css/all.min.css';
+import 'bootstrap-css-only/css/bootstrap.min.css';
+import 'mdbreact/dist/css/mdb.css';
+import { withGlobalContext } from './context/Provider';
+import Admin from "./layouts/Admin";
+import Princi from "./layouts/Princi";
+import Original from "./layouts/Original";
+
+class App extends React.Component {
+	 render() {
+		 const gstate = this.props.global;
+		 if(gstate.isAuthenticated){
+			if(gstate.user.role=='admin'){
+					  return (
+						<Router>
+						  <div>
+							{/*<Nav/>*/}
+
+						<Switch>
+							  <Route path="/original" component={Original} />
+
+							   <Route path="/admin" component={Admin} />
+							    <Route path="/**/" component={Admin} />
+						</Switch>
+
+						  </div>
+						</Router>
+				  );
+			 
+			}
+			 //Other users
+			 if(gstate.user.role!=='admin'){
+					  return (
+						<Router>
+						  <div>
+							{/*<Nav/>*/}
+
+							<Switch>
+							{/* duplicate and modify admin layout */}
+ 							<Route path="/**/" component={Original} />
+							 </Switch>
+						  </div>
+						</Router>
+				  );
+			 
+			}	
+		 }else{
+			
+		
+			 
+			   return (
+				<Router>
+				  <div>
+					{/*<Nav/>*/}
+					  		<Switch>
+					  <Route path="/login/" component={Login} />
+					  <Route path="/(|home|)/" component={Home} />
+			
+					  <Route path="/original" component={Original} />
+					  <Route exact path="/reset" component={Reset} />
+				<Route  path="/reset/:id" render={(props) => <ResetPassword {...props} />}/> 
+					   <Route path="/**/" component={Login} />
+			
+				
+					
+					{/*<Route path="" component={About} /> */}
+					  </Switch>
+
+				  </div>
+				</Router>
+		  );
+		 }
+		  
+		 
+    
+	 }
+}
+
+export default withGlobalContext(App);
