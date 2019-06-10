@@ -11,7 +11,20 @@ import HeaderLinks from "../../components/webcomponents/Header/HeaderLinks.jsx";
 
 const dashboardRoutes = [];
 
-
+const parseUser = (user) =>{
+	if (typeof user.phone_number =="object") {
+			user = { ...user,
+					
+				   phone_number: user.phone_number.main,
+				   alt_phone_number:user.phone_number.alt,
+				   
+				   }
+			
+		}
+	console.log('[id number ]', user);
+	user = { ...user, idno: user.idNumber};
+	return user;
+}
 class App extends React.Component {
   
 	state={
@@ -66,13 +79,21 @@ class App extends React.Component {
             .then(data => {
               //this.setState({currentPlace:data.results})
               if (data.success) {
-                const user = jwt_decode(data.token);
-                console.log(user);
+                let user = jwt_decode(data.token);
+                	console.log('[Current User]',user);
+				
 				  //add role based redirection
 				  if(user.role=='admin'){
 					  this.props.history.push({pathname:'/admin/AddUsers', snack:{type:'success', msg:'Login was successful'}});  
 				  }else{
-					  this.props.history.push({pathname:'/users/AddUsers', snack:{type:'success', msg:'Login was successful'}});
+					  if(!user.isSetUp){
+						    this.props.history.push({pathname:'/completeprofile', snack:{type:'success', msg:'Login was successful'}});
+					  }else{
+						  if(user.role=="manager"){
+							     this.props.history.push({pathname:'/manager/AddUsers', snack:{type:'success', msg:'Login was successful'}});
+						  }
+					  }
+					
 				  }
 				
                 this.props.global.onLogin(data.token, user);
@@ -115,7 +136,7 @@ render() {
 		   <Header
           color="white"
           routes={dashboardRoutes}
-          brand="Material Kit React"
+          brand="TotoSci Academy"
           rightLinks={<HeaderLinks />}
           fixed
           changeColorOnScroll={{
@@ -131,7 +152,7 @@ render() {
 			  <form>
 				  
 				<p className="h5 text-center mb-4">Sign in  {console.log(this.props.global.check)}</p>
-				  {state.serverRes?<MDBAlert color="danger" >
+				  {state.serverRes?<MDBAlert color="danger"  className="text-center" >
        {state.serverRes}
       </MDBAlert>:<div style={{height:'43px'}}></div>}
 				  {	 /*<MDBBtn outline={this.state.isStudent} color="primary"

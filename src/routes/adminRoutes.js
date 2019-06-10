@@ -7,9 +7,9 @@ import Person from "@material-ui/icons/Person";
 // core components/views for Admin layout
 import DashboardPage from "../views/Dashboard/Dashboard.jsx";
 
-import AddUser from "../views/addUser/AddUser.js";
-import Users from "../views/users/Users.jsx";
-import Single from "../views/users/Single";
+import AddUser from "../views/Admin/addUser/AddUser.js";
+import Users from "../views/Admin/users/Users.jsx";
+import Single from "../views/Admin/users/Single";
 import Profile from  "../views/profile/Profile.jsx";
 
 
@@ -18,7 +18,7 @@ const dashboardRoutes = [
   {
     path: "/dashboard",
     name: "Dashboard",
-    rtlName: "لوحة القيادة",
+    
     icon: Dashboard,
     component: DashboardPage,
     layout: "/admin"
@@ -26,7 +26,7 @@ const dashboardRoutes = [
   {
     path: "/addUsers",
     name: "Add Users",
-    rtlName: "ملف تعريفي للمستخدم",
+ 
     icon: Add,
     component: AddUser,
     layout: "/admin"
@@ -34,7 +34,7 @@ const dashboardRoutes = [
   {
     path: "/users",
     name: "Users",
-    rtlName: "قائمة الجدول",
+    
     icon: SupervisedUserCircle,
     component: Users,
     layout: "/admin"
@@ -42,7 +42,7 @@ const dashboardRoutes = [
 	{
     path: "/users/single",
     name: "Users : Single",
-    rtlName: "قائمة الجدول",
+    
     icon: SupervisedUserCircle,
 	type:'nested',
     component: Single,
@@ -52,7 +52,7 @@ const dashboardRoutes = [
 	{
     path: "/profile",
     name: "My Profile",
-    rtlName: "قائمة الجدول",
+   
 	type:'hidden',
     icon: Person,
     component: Profile,

@@ -22,10 +22,13 @@ import Icon from "@material-ui/core/Icon";
 import headerLinksStyle from "../../../assets/jss/material-dashboard-react/components/headerLinksStyle.jsx";
 import { withGlobalContext } from '../../../context/Provider';
 import { Route , withRouter} from 'react-router-dom';
+//Modal logout 
+
 
 class HeaderLinks extends React.Component {
   state = {
-    open: false
+    open: false,
+	
   };
   handleToggle = () => {
     this.setState(state => ({ open: !state.open }));
@@ -44,28 +47,14 @@ class HeaderLinks extends React.Component {
     const { open } = this.state;
     return (
       <div>
-        <div className={classes.searchWrapper}>
-          <CustomInput
-            formControlProps={{
-              className: classes.margin + " " + classes.search
-            }}
-            inputProps={{
-              placeholder: "Search",
-              inputProps: {
-                "aria-label": "Search"
-              }
-            }}
-          />
-          <Button color="white" aria-label="edit" justIcon round>
-            <Search />
-          </Button>
-        </div>
+	  
         <Button
           color={window.innerWidth > 959 ? "transparent" : "white"}
           justIcon={window.innerWidth > 959}
           simple={!(window.innerWidth > 959)}
           aria-label="Dashboard"
           className={classes.buttonLink}
+		  onClick={()=>{this.props.history.push('/admin/dashboard')}}
         >
           <Dashboard className={classes.icons} />
           <Hidden mdUp implementation="css">
@@ -174,7 +163,7 @@ class HeaderLinks extends React.Component {
           aria-label="Person"
           className={classes.buttonLink}
         >
-		<ExitToApp className={classes.icons} onClick={this.props.global.onLogout} />
+		<ExitToApp className={classes.icons} onClick={this.props.handleLogoutModal} />
         </Button>
 			
       </div>

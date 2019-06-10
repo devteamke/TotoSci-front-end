@@ -41,18 +41,38 @@ const styles = {
     textDecoration: "none"
   }
 };
-
+const parseUser = (user) =>{
+	if (typeof user.phone_number =="object") {
+			user = { ...user,
+					
+				   phone_number: user.phone_number.main,
+				   alt_phone_number:user.phone_number.alt,
+				   
+				   }
+			
+		}
+	user = { ...user, idno: user.idNumber?user.idNumber.toString():''}
+	return user
+}
 class Single extends React.Component{
 	 constructor(props) {
   	     super(props);
+		let user =this.props.location.data;
+		if(!user){
+			this.props.history.push('/admin/users')
+			return;
+		}
+		 user= parseUser(user);
+		 console.log('{user}', user)
    		 this.state ={
 			 old_password:'',
 			 old_passwordError:null,
 			 new_password:'',
 			 new_passwordError:null,
 			//User info
-			 user:this.props.location.data,
-			 oldUser:this.props.location.data,
+			 user:user,
+			 oldUser:user,
+			 addedBy:user.addedBy.length>0?(user.addedBy[0].fname+' '+(user.addedBy[0].lname?user.addedBy[0].lname:'')):'NA',
 			 //snack
 			open: false,
 			place: 'bc',
@@ -65,12 +85,24 @@ class Single extends React.Component{
 			 //delete Modal
 			 deleteModal:false,
 			 deleting:false,
+			 
+			 //user erros
+			 
+	 
+	 	emailError:null,
+		fnameError:null,
+	 	lnameError:null,
+		idnoError:null,
+		residenceError:null,
+     	phone_numberError:null,
+		alt_phone_numberError:null,
+	 	countyError:null,
+		sub_countyError:null,
+		
 			
 		 }
-
-		if(!this.props.location.data){
-			this.props.history.push('/admin/users')
-		}
+      
+		
 	 }
 handleSubmit = () => {
 	const state = this.state;
@@ -165,72 +197,122 @@ handleStatus = () => {
 	})
 }
 handleSaveInfo = () => {
+let state = this.state;
+	let user = this.state.user 
+		 const fnameError = validate('fname', user.fname===''?null:user.fname);
+		 const emailError = validate('email', user.email===''?null:user.email);
+		 const lnameError = validate('lname', user.lname===''?null:user.lname);
+		 const salutationError = validate('salutation', user.salutation===''?null:user.salutation)||this._validateSal();
+		 const residenceError = validate('residence', user.residence===''?null:user.residence);
+		 const phoneError = validate('phone', user.phone_number===''?null:user.phone_number);
+		 const idnoError = validate('idno', user.idno===''?null:user.idno);
+		 const alt_phoneError = validate('alt_phone', user.alt_phone_number===''?null:user.alt_phone_number);
+		
+ 
+		
+	     this.setState({
+					emailError: emailError,
+					fnameError:fnameError,
+					lnameError:lnameError,
+					idnoError:idnoError,
+					salutationError:salutationError,
+					residenceError:residenceError,
+					phone_numberError:phoneError,
+					alt_phone_numberError:alt_phoneError,
 
-          let data = {
-			user:this.state.user
-			 
-          };
+				  },
+      () => {
+        	console.log(emailError,fnameError,lnameError ,salutationError  ,phoneError  ,idnoError ,user.idno,residenceError ,alt_phoneError)
+        if ( !emailError && !fnameError && !lnameError && !salutationError  && !phoneError  && !idnoError  &&!residenceError &&!alt_phoneError) {
+			console.log('No error')
+		if(!this.state.savingInfo){
+			this.setState({savingInfo:true},()=>{
+				let data = {
+					user:{
+							...this.state.user,
+						 	idNumber:this.state.user.idno,
+							salutation:this.state.user.salutation.toLowerCase(),
+							addedBy:this.state.user.addedBy[0]._id,
+							phone_number:{
+								main:this.state.user.phone_number,
+								alt:this.state.user.alt_phone_number,
+							}
+						 }
+
+        		  };
+						  
+						  
+						  
+				   const SaveAsync = async () =>
+					await (await fetch(`${globals.BASE_URL}/api/admin/save_profile`, {
+					  method: 'PATCH',
+					  mode: 'cors', // no-cors, cors, *same-origin
+					  cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+					  credentials: 'same-origin', // include, *same-origin, omit
+					  headers: {
+						'Content-Type': 'application/json',
+						'Authorization': this.props.global.token,
+						'Access-Control-Allow-Origin':`${globals.BASE_URL}`,
+						// "Content-Type": "application/x-www-form-urlencoded",
+					  },
+					  redirect: 'follow', // manual, *follow, error
+					  referrer: 'no-referrer', // no-referrer, *client
+					  body: JSON.stringify(data)
+					})).json();		  
+			
+			
+					  SaveAsync()
+						.then(data => {
+						  //this.setState({currentPlace:data.results})
+						   this.setState({open: true, updating:false,resType:data.success?'success':'warning' });
+								setTimeout(function(){
+									this.setState({open: false, updating:false});
+								}.bind(this),9000);
+
+						  if (data.success) {
+							  console.log('[newUser]', data.user)
+						   this.setState({
+							   serverRes:data.message,
+							   savingInfo:false,
+							   user:parseUser(data.user),
+							   oldUser:parseUser(data.user),
+							});
+						  } else {
+						   this.setState({
+							  serverRes:data.message
+
+							});
+						  }
+						})
+						.catch(error => {
+						  console.log(error);
+						  if (error == "TypeError: Failed to fetch") {
+							//   alert('Server is offline')
+							this.setState({
+							  serverRes:"Failed to contact server!"
+							});
+						  } else if (error.message == 'Network request failed') {
+							// alert('No internet connection')
+							this.setState({
+							   serverRes:"Network request failed"
+							});
+						  }
+
+						   this.setState({open: true,savingInfo:false, resType:data.success?'success':'warning' });
+								setTimeout(function(){
+									this.setState({open: false});
+								}.bind(this),9000);
+						});
+
+
+			
+			})
+		}
+          
          
-          const SaveAsync = async () =>
-            await (await fetch(`${globals.BASE_URL}/api/admin/save_profile`, {
-              method: 'PATCH',
-              mode: 'cors', // no-cors, cors, *same-origin
-              cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
-              credentials: 'same-origin', // include, *same-origin, omit
-              headers: {
-                'Content-Type': 'application/json',
-                'Authorization': this.props.global.token,
-				'Access-Control-Allow-Origin':`${globals.BASE_URL}`,
-                // "Content-Type": "application/x-www-form-urlencoded",
-              },
-              redirect: 'follow', // manual, *follow, error
-              referrer: 'no-referrer', // no-referrer, *client
-              body: JSON.stringify(data)
-            })).json();
+       
 
-          SaveAsync()
-            .then(data => {
-              //this.setState({currentPlace:data.results})
-			   this.setState({open: true, updating:false,resType:data.success?'success':'warning' });
-					setTimeout(function(){
-						this.setState({open: false, updating:false});
-					}.bind(this),9000);
-			  
-              if (data.success) {
-				  console.log('[newUser]', data.user)
-               this.setState({
-				   serverRes:data.message,
-                   savingInfo:false,
-				   user:data.user,
-				   oldUser:data.user,
-                });
-              } else {
-               this.setState({
-                  serverRes:data.message
-           
-                });
-              }
-            })
-            .catch(error => {
-              console.log(error);
-              if (error == "TypeError: Failed to fetch") {
-                //   alert('Server is offline')
-                this.setState({
-                  serverRes:"Failed to contact server!"
-                });
-              } else if (error.message == 'Network request failed') {
-                // alert('No internet connection')
-                this.setState({
-                   serverRes:"Network request failed"
-                });
-              }
-            
-			   this.setState({open: true,savingInfo:false, resType:data.success?'success':'warning' });
-					setTimeout(function(){
-						this.setState({open: false});
-					}.bind(this),9000);
-            });
-	
+	  }})
 }
 handleDeleteModal = () => {
 	this.setState({deleteModal:!this.state.deleteModal});
@@ -297,6 +379,18 @@ handleDelete = () => {
 					}.bind(this),9000);
             });
 	
+	
+}
+
+_validateSal = (passed) =>{
+	let val = passed||this.state.user.salutation.toLowerCase();
+	const sal =['mr', 'mrs', 'miss', 'dr', 'prof', 'other','NA']
+	if(sal.includes(val)){
+		return null;
+	}else{
+		return 'Salutation must be either Mr, Mrs, Miss, Dr, Prof';
+	}
+	
 }
 componentWillMount = ()=> {
  
@@ -325,13 +419,13 @@ render = () => {
                 />
       <GridContainer>
   			 <GridItem xs={12} sm={12} md={12}>
-				   <MDBBtn color="primary" onClick={()=>{	this.props.history.goBack()}}>Back</MDBBtn>
+				   <MDBBtn  onClick={()=>{	this.props.history.goBack()}}>Back</MDBBtn>
 		  </GridItem>
         <GridItem xs={12} sm={12} md={4}>
           <Card profile>
             <CardAvatar profile>
               <a href="#pablo" onClick={e => e.preventDefault()}>
-				  {user.fname?(<img src={`https://ui-avatars.com/api/?name=${user.fname}+${user.sname}&background=0D8ABC&color=fff&size=256`} alt="..." />):<MDBIcon icon="user-circle" className="blue-grey-text"  size="9x" />}
+				  {user.fname?(<img src={`https://ui-avatars.com/api/?name=${user.fname}+${user.lname}&background=01afc4&color=fff&size=256`} alt="..." />):<MDBIcon icon="user-circle" className="blue-grey-text"  size="9x" />}
               </a>
             </CardAvatar>
 			 
@@ -351,16 +445,17 @@ render = () => {
 								  <td style={{textAlign:'left', width:'50%'}}>{oldUser.role.charAt(0).toUpperCase()+oldUser.role.slice(1)}</td>
 								</tr>
 								  <tr>
+								  <td style={{ width:'50%'}} ><b style={{ fontSize:'1.25em'}}>Salutation</b></td>
+								  <td style={{textAlign:'left', width:'50%'}}>{oldUser.salutation?(oldUser.salutation.charAt(0).toUpperCase() + oldUser.salutation.slice(1)):null}</td>
+								</tr> 
+								  <tr>
 								  <td style={{ width:'50%'}} ><b style={{ fontSize:'1.25em'}}>First Name</b></td>
 								  <td style={{textAlign:'left', width:'50%'}}>{oldUser.fname?(oldUser.fname.charAt(0).toUpperCase() + oldUser.fname.slice(1)):null}</td>
 								</tr>
+								
 								  <tr>
-								  <td style={{ width:'50%'}} ><b style={{ fontSize:'1.25em'}}>Surname</b></td>
-								  <td style={{textAlign:'left', width:'50%'}}> {oldUser.sname?(oldUser.sname.charAt(0).toUpperCase() + oldUser.sname.slice(1)):null}</td>
-								</tr> 
-								  <tr>
-								  <td style={{ width:'50%'}} ><b style={{ fontSize:'1.25em'}}>Other Name</b></td>
-								  <td style={{textAlign:'left', width:'50%'}}>{oldUser.oname?(oldUser.oname.charAt(0).toUpperCase() + oldUser.oname.slice(1)):null}</td>
+								  <td style={{ width:'50%'}} ><b style={{ fontSize:'1.25em'}}>Last Name</b></td>
+								  <td style={{textAlign:'left', width:'50%'}}>{oldUser.lname?(oldUser.lname.charAt(0).toUpperCase() + oldUser.lname.slice(1)):null}</td>
 								</tr>  
 								  <tr>
 								  <td style={{ width:'50%'}} ><b style={{ fontSize:'1.25em'}}>Email</b></td>
@@ -369,10 +464,22 @@ render = () => {
 								  <tr>
 								  <td style={{ width:'50%'}} ><b style={{ fontSize:'1.25em'}}>Residence</b></td>
 								  <td style={{textAlign:'left', width:'50%'}}>{oldUser.residence?(oldUser.residence):null}</td>
+								</tr> 
+								  <tr>
+								  <td style={{ width:'50%'}} ><b style={{ fontSize:'1.25em'}}>ID Number</b></td>
+								  <td style={{textAlign:'left', width:'50%'}}>{oldUser.idno?(oldUser.idno):null}</td>
 								</tr>
 								  <tr>
 								  <td style={{ width:'50%'}} ><b style={{ fontSize:'1.25em'}}>Phone_number</b></td>
 								  <td style={{textAlign:'left', width:'50%'}}>{oldUser.phone_number?(oldUser.phone_number):null}</td>
+								</tr>
+								  <tr>
+								  <td style={{ width:'50%'}} ><b style={{ fontSize:'1.25em'}}>Alternative_phone_number</b></td>
+								  <td style={{textAlign:'left', width:'50%'}}>{oldUser.alt_phone_number?(oldUser.alt_phone_number):null}</td> 
+								 </tr> 
+								<tr>
+								  <td style={{ width:'50%'}} ><b style={{ fontSize:'1.25em'}}>Added By</b></td>
+								  <td style={{textAlign:'left', width:'50%'}}>{capitalize(state.addedBy.split()[0])}</td>
 								</tr>
 								 <tr>
 								  <td style={{ width:'50%'}} ><b style={{ fontSize:'1.25em'}}>Joined</b></td>
@@ -397,7 +504,7 @@ render = () => {
 		  
 		<GridItem xs={12} sm={12} md={8}>
           <Card>
-            <CardHeader color="primary">
+            <CardHeader color="info" style={{backgroundColor:'#2bbbad'}}>
               <h4 className={classes.cardTitleWhite}>Change {oldUser.fname?(oldUser.fname.charAt(0).toUpperCase() + oldUser.fname.slice(1)+'\'s '):'their'} account info </h4>
               <p className={classes.cardCategoryWhite}>Update status , profile info... </p>
             </CardHeader>
@@ -407,7 +514,7 @@ render = () => {
                <GridItem xs={12} sm={12} md={10}>
 				
 						<h5 style={{display:'inline'}}>Status :{'\u00A0'} <span style={{color:user.status=='active'?'green':'red'}}>{user.status.charAt(0).toUpperCase()+user.status.slice(1)}</span></h5> {'\u00A0'} {'\u00A0'} {'\u00A0'} 
-				   <MDBBtn  style={{marginTop:-1}}size="sm" color="primary" onClick={this.handleStatus}>{user.status=="active"?'Suspend':'Activate'}</MDBBtn>
+				   <MDBBtn  style={{marginTop:-1}}size="sm"  onClick={this.handleStatus}>{user.status=="active"?'Suspend':'Activate'}</MDBBtn>
 				  </GridItem>
 				
                 
@@ -418,7 +525,7 @@ render = () => {
 				  	<div style={{display:'inline-flex'}} >
 						<h5>Role :{'\u00A0'}</h5>
 							<MDBDropdown   size="sm">
-							<MDBDropdownToggle caret color="primary" style={{marginTop:-1, fontSize:'0.8em',display:'inline',}} >
+							<MDBDropdownToggle caret color="default" style={{marginTop:-1, fontSize:'0.8em',display:'inline',}} >
 								  {user.role}
 								  </MDBDropdownToggle>
 								  <MDBDropdownMenu left basic>
@@ -427,7 +534,27 @@ render = () => {
 										this.setState((prevState)=>({user:{ ...prevState.user, role:'admin' }})
 										  )} }
 									>admin</MDBDropdownItem>
+									  <MDBDropdownItem 
+									  onClick={()=>{ 
+										this.setState((prevState)=>({user:{ ...prevState.user, role:'manager' }})
+										  )} }
+									>Manager</MDBDropdownItem>
 									<MDBDropdownItem 
+									  onClick={()=>{ 
+										this.setState((prevState)=>({user:{ ...prevState.user, role:'chief-trainer' }})
+										  )} }
+									>Chief Trainer</MDBDropdownItem>
+									  <MDBDropdownItem 
+									  onClick={()=>{ 
+										this.setState((prevState)=>({user:{ ...prevState.user, role:'trainer' }})
+										  )} }
+									>Trainer</MDBDropdownItem>
+									  <MDBDropdownItem 
+									  onClick={()=>{ 
+										this.setState((prevState)=>({user:{ ...prevState.user, role:'instructor' }})
+										  )} }
+									>Instructor</MDBDropdownItem> 
+									  <MDBDropdownItem 
 									  onClick={()=>{ 
 										this.setState((prevState)=>({user:{ ...prevState.user, role:'other' }})
 										  )} }
@@ -448,27 +575,30 @@ render = () => {
               <GridContainer>
              
             
-				  
-                <GridItem xs={12} sm={12} md={8}>
-                 	  <MDBInput
+			           
+                <GridItem xs={12} sm={12} md={4}>
+                  <MDBInput
 				
-					label={"Email Address"}
+					label={"Salutation"}
 					
 					group
-					value={user.email}
+					value={user.salutation}
 					onChange={(event)=>{ 
 							let value =event.target.value;
-							this.setState((prevState)=>({user:{ ...prevState.user, email:value }})
+							this.setState((prevState)=>({
+								user:{ ...prevState.user, salutation:value }, 
+								salutationError:validate('salutation', value===''?null:value)||this._validateSal(value) 
+							})
 							  )}
 							 }
-				    onBlur={()=>this.setState({emailError:validate('email', state.email==''?null:state.email)})}
+					onBlur={()=>this.setState({salutationError:validate('salutation', user.salutation===''?null:user.salutation)||this._validateSal()})}
 					error="Whoops!"
 					success="right"
 				  />
-					<p style={{color:'red', fontSize:'0.8rem', textAlign:'center'}}>{state.emailError}</p>
+					<p style={{color:'red', fontSize:'0.8rem', textAlign:'center'}}>{state.salutationError}</p>
                 </GridItem>
-             
-                <GridItem xs={12} sm={12} md={6}>
+				
+				<GridItem xs={12} sm={12} md={8}>
                   <MDBInput
 				
 					label={"First Name"}
@@ -480,49 +610,52 @@ render = () => {
 							this.setState((prevState)=>({user:{ ...prevState.user, fname:value }})
 							  )}
 							 }
-					onBlur={()=>this.setState({fnameError:validate('fname', state.fname==''?null:state.fname)})}
+					onBlur={()=>this.setState({fnameError:validate('fname', user.fname==''?null:user.fname)})}
 					error="Whoops!"
 					success="right"
 				  />
 					<p style={{color:'red', fontSize:'0.8rem', textAlign:'center'}}>{state.fnameError}</p>
                 </GridItem>
-                <GridItem xs={12} sm={12} md={6}>
-                    <MDBInput
-				
-					label={"Surname"}
-					
-					group
-					value={user.sname}
-					onChange={(event)=>{ 
-							let value =event.target.value;
-							this.setState((prevState)=>({user:{ ...prevState.user, sname:value }})
-							  )}
-							 }
-					type="email"
-					onBlur={()=>this.setState({snameError:validate('sname', state.sname==''?null:state.sname)})}
-					error="Whoops!"
-					success="right"
-				  />
-					<p style={{color:'red', fontSize:'0.8rem', textAlign:'center'}}>{state.snameError}</p>
-                </GridItem>
+              
 				 <GridItem xs={12} sm={12} md={6}>
                   <MDBInput
 				
-					label={"Other Name"}
+					label={"Last Name"}
 					
 					group
-					value={user.oname}
+					value={user.lname}
 				    onChange={(event)=>{ 
 							let value =event.target.value;
-							this.setState((prevState)=>({user:{ ...prevState.user, oname:value }})
+							this.setState((prevState)=>({user:{ ...prevState.user, lname:value }})
 							  )}
 							 }
-				    onBlur={()=>this.setState({onameError:validate('oname', state.oname==''?null:state.oname)})}
+				    onBlur={()=>this.setState({lnameError:validate('lname', user.lname==''?null:user.lname)})}
 					error="Whoops!"
 					success="right"
 				  />
-					<p style={{color:'red', fontSize:'0.8rem', textAlign:'center'}}>{state.onameError}</p>
+					<p style={{color:'red', fontSize:'0.8rem', textAlign:'center'}}>{state.lnameError}</p>
                 </GridItem>
+				
+				
+				    <GridItem xs={12} sm={12} md={10}>
+                 	  <MDBInput
+				
+					label={"Email Address"}
+					
+					group
+					value={user.email}
+					onChange={(event)=>{ 
+							let value =event.target.value;
+							this.setState((prevState)=>({user:{ ...prevState.user, email:value }})
+							  )}
+							 }
+				    onBlur={()=>this.setState({emailError:validate('email', user.email==''?null:user.email)})}
+					error="Whoops!"
+					success="right"
+				  />
+					<p style={{color:'red', fontSize:'0.8rem', textAlign:'center'}}>{state.emailError}</p>
+                </GridItem>
+				
 				  <GridItem xs={12} sm={12} md={6}>
                  <MDBInput
 				
@@ -535,11 +668,29 @@ render = () => {
 							this.setState((prevState)=>({user:{ ...prevState.user, residence:value }})
 							  )}
 							 }
-					onBlur={()=>this.setState({residenceError:validate('residence', state.residence==''?null:state.residence)})}
+					onBlur={()=>this.setState({residenceError:validate('residence', user.residence==''?null:user.residence)})}
 					error="Whoops!"
 					success="right"
 				  />
 					<p style={{color:'red', fontSize:'0.8rem', textAlign:'center'}}>{state.residenceError}</p>
+                </GridItem> 
+				 <GridItem xs={12} sm={12} md={6}>
+				<MDBInput
+				
+					label={"ID Number"}
+					
+					group
+					value={user.idno}
+					onChange={(event)=>{ 
+							let value =event.target.value;
+							this.setState((prevState)=>({user:{ ...prevState.user, idno:value }})
+							  )}
+							 }
+					onBlur={()=>this.setState({idnoError:validate('idno', user.idno==''?null:user.idno)})}
+					error="Whoops!"
+					success="right"
+				  />
+					<p style={{color:'red', fontSize:'0.8rem', textAlign:'center'}}>{state.idnoError}</p>
                 </GridItem>
              
                 <GridItem xs={12} sm={12} md={4}>
@@ -554,11 +705,29 @@ render = () => {
 							this.setState((prevState)=>({user:{ ...prevState.user, phone_number:value }})
 							  )}
 							 }
-					onBlur={()=>this.setState({phone_numberError:validate('phone', state.phone_number==''?null:state.phone_number)})}
+					onBlur={()=>this.setState({phone_numberError:validate('phone', user.phone_number==''?null:user.phone_number)})}
 					error="Whoops!"
 					success="right"
 				  />
 					<p style={{color:'red', fontSize:'0.8rem', textAlign:'center'}}>{state.phone_numberError}</p>
+                </GridItem>
+				<GridItem xs={12} sm={12} md={4}>
+                   <MDBInput
+				
+					label={"Alternative Phone Number"}
+					
+					group
+					value={user.alt_phone_number}
+					 onChange={(event)=>{ 
+							let value =event.target.value;
+							this.setState((prevState)=>({user:{ ...prevState.user, alt_phone_number:value }})
+							  )}
+							 }
+					onBlur={()=>this.setState({alt_phone_numberError:validate('alt_phone', user.alt_phone_number==''?null:user.alt_phone_number)})}
+					error="Whoops!"
+					success="right"
+				  />
+					<p style={{color:'red', fontSize:'0.8rem', textAlign:'center'}}>{state.alt_phone_numberError}</p>
                 </GridItem>
         
               </GridContainer>
@@ -577,7 +746,7 @@ render = () => {
 			  <>
 			  {JSON.stringify(user)!==JSON.stringify(state.oldUser)?
 			   (<div className="text-center">
-				  <MDBBtn onClick={()=>{	this.setState({savingInfo:true},()=>this.handleSaveInfo())}}>Save</MDBBtn>
+				  <MDBBtn style={btnBg} onClick={this.handleSaveInfo}>Save</MDBBtn>
 				</div>)
 			   :null}
 			   </>
@@ -591,7 +760,7 @@ render = () => {
 		  {/* update password*/}
 		  <GridItem xs={12} sm={12} md={6}>
           <Card>
-            <CardHeader color="primary">
+            <CardHeader color="info">
               <h4 className={classes.cardTitleWhite}>Change {oldUser.fname?(oldUser.fname.charAt(0).toUpperCase() + oldUser.fname.slice(1)+'\'s '):'their'} Password</h4>
               <p className={classes.cardCategoryWhite}>Set a new password for them</p>
             </CardHeader>
@@ -623,7 +792,7 @@ render = () => {
 				  </div> 
 			  </div>:	
 			  <div className="text-center">
-				  <MDBBtn onClick={this.handleSubmit}>Update Password</MDBBtn>
+				  <MDBBtn style={btnBg} onClick={this.handleSubmit}>Update Password</MDBBtn>
 				</div>}
             <CardFooter>
             
@@ -647,7 +816,8 @@ render = () => {
            Are you sure you want to delete this account?
           </MDBModalBody>
           <MDBModalFooter>
-            <MDBBtn color="primary" onClick={this.handleDeleteModal}>Cancel</MDBBtn>
+            <MDBBtn
+				onClick={this.handleDeleteModal}>Cancel</MDBBtn>
             <MDBBtn color="danger" onClick={this.handleDelete}>Yes</MDBBtn>
           </MDBModalFooter>
         </MDBModal>
@@ -660,7 +830,7 @@ render = () => {
 				  </div> 
 			  </div>:	
 			  <div className="text-center">
-				  <MDBBtn color="danger" onClick={this.handleDeleteModal}>Delete Account</MDBBtn>
+				  <MDBBtn style={{backgroundColor:'#01afc4 !important'}} color="danger" onClick={this.handleDeleteModal}>Delete Account</MDBBtn>
 				</div>}
             <CardFooter>
             
@@ -675,4 +845,12 @@ render = () => {
  } 
 }
 
+
 export default withGlobalContext( withStyles(styles)(Single) );
+
+const capitalize = (str) =>{
+	return  str.charAt(0).toUpperCase() +str.slice(1)
+}
+const btnBg = {
+	backgroundColor:'#01afc4 !important'
+}

@@ -115,7 +115,7 @@ if(prop.type !=="hidden"){
 			
             </ListItem>
           </NavLink>
-				 <Button onClick={props.global.onLogout} style={{marginLeft:10, width:'90%'}} color="danger" > <ExitToApp />  {'\u00A0'}{'\u00A0'}{'\u00A0'}Logout</Button>
+				 <Button onClick={()=>{props.handleDrawerToggle();props.handleLogoutModal();}} style={{marginLeft:10, width:'90%'}} color="danger" > <ExitToApp />  {'\u00A0'}{'\u00A0'}{'\u00A0'}Logout</Button>
 		</Hidden> 
         );
       })}

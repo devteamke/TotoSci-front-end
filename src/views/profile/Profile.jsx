@@ -157,7 +157,7 @@ render = () => {
           <Card profile>
             <CardAvatar profile>
               <a href="#pablo" onClick={e => e.preventDefault()}>
-                <img src={`https://ui-avatars.com/api/?name=${gstate.user.fname}+${gstate.user.sname}&background=0D8ABC&color=fff&size=256`} alt="..." />
+                <img src={`https://ui-avatars.com/api/?name=${gstate.user.fname}+${gstate.user.lname}&background=01afc4&color=fff&size=256`} alt="..." />
               </a>
             </CardAvatar>
             <CardBody profile>
@@ -171,17 +171,18 @@ render = () => {
 								  <td style={{textAlign:'left', width:'50%'}}>{gstate.user.role.charAt(0).toUpperCase()+gstate.user.role.slice(1)}</td>
 								</tr>
 								  <tr>
+								  <td style={{ width:'50%'}} ><b style={{ fontSize:'1.25em'}}>Salutation</b></td>
+								  <td style={{textAlign:'left', width:'50%'}}>{gstate.user.salutation?(gstate.user.salutation.charAt(0).toUpperCase() + gstate.user.salutation.slice(1)):null}</td>
+								</tr> 
+								  <tr>
 								  <td style={{ width:'50%'}} ><b style={{ fontSize:'1.25em'}}>First Name</b></td>
 								  <td style={{textAlign:'left', width:'50%'}}>{gstate.user.fname?(gstate.user.fname.charAt(0).toUpperCase() + gstate.user.fname.slice(1)):null}</td>
 								</tr>
 								  <tr>
-								  <td style={{ width:'50%'}} ><b style={{ fontSize:'1.25em'}}>Surname</b></td>
-								  <td style={{textAlign:'left', width:'50%'}}> {gstate.user.sname?(gstate.user.sname.charAt(0).toUpperCase() + gstate.user.sname.slice(1)):null}</td>
+								  <td style={{ width:'50%'}} ><b style={{ fontSize:'1.25em'}}>Last Name</b></td>
+								  <td style={{textAlign:'left', width:'50%'}}> {gstate.user.lname?(gstate.user.lname.charAt(0).toUpperCase() + gstate.user.lname.slice(1)):null}</td>
 								</tr> 
-								  <tr>
-								  <td style={{ width:'50%'}} ><b style={{ fontSize:'1.25em'}}>Other Name</b></td>
-								  <td style={{textAlign:'left', width:'50%'}}>{gstate.user.oname?(gstate.user.oname.charAt(0).toUpperCase() + gstate.user.oname.slice(1)):null}</td>
-								</tr>  
+								
 								  <tr>
 								  <td style={{ width:'50%'}} ><b style={{ fontSize:'1.25em'}}>Email</b></td>
 								  <td style={{textAlign:'left', width:'50%'}}>{gstate.user.email?(gstate.user.email):null}</td>
@@ -191,8 +192,16 @@ render = () => {
 								  <td style={{textAlign:'left', width:'50%'}}>{gstate.user.residence?(gstate.user.residence):null}</td>
 								</tr>
 								  <tr>
+								  <td style={{ width:'50%'}} ><b style={{ fontSize:'1.25em'}}>ID Number</b></td>
+								  <td style={{textAlign:'left', width:'50%'}}>{gstate.user.idno?(gstate.user.idno):null}</td>
+								</tr>
+								  <tr>
 								  <td style={{ width:'50%'}} ><b style={{ fontSize:'1.25em'}}>Phone_number</b></td>
 								  <td style={{textAlign:'left', width:'50%'}}>{gstate.user.phone_number?(gstate.user.phone_number):null}</td>
+								</tr> 
+								  <tr>
+								  <td style={{ width:'50%'}} ><b style={{ fontSize:'1.25em'}}>Alternative phone_number</b></td>
+								  <td style={{textAlign:'left', width:'50%'}}>{gstate.user.alt_phone_number?(gstate.user.alt_phone_number):null}</td>
 								</tr>
 							  </MDBTableBody>	  
 							</MDBTable>
@@ -205,7 +214,7 @@ render = () => {
 		  
 		          <GridItem xs={12} sm={12} md={8}>
           <Card>
-            <CardHeader color="primary">
+            <CardHeader color="info">
               <h4 className={classes.cardTitleWhite}>Change Password</h4>
               <p className={classes.cardCategoryWhite}>Set a new password for accessing your account</p>
             </CardHeader>

@@ -13,19 +13,26 @@ import Footer from "../components/dcomponents//Footer/Footer.jsx";
 import Sidebar from "../components/dcomponents//Sidebar/Sidebar.jsx";
 import FixedPlugin from "../components/dcomponents//FixedPlugin/FixedPlugin.jsx";
 
-import routes from "../routes/princiRoutes";
+import routes from "../routes/managerRoutes";
 
 import dashboardStyle from "../assets/jss/material-dashboard-react/layouts/dashboardStyle.jsx";
 
 import image from "../assets/img/sidebar-2.jpg";
 import logo from "../assets/img/reactlogo.png";
 
+import { withGlobalContext } from '../context/Provider';
+
+//Modal logout 
+import { MDBBtn, MDBModal, MDBModalHeader, MDBModalBody, MDBModalFooter } from "mdbreact";
+
+
 const switchRoutes = (
   <Switch>
     {routes.map((prop, key) => {
-      if (prop.layout === "/princi") {
+      if (prop.layout === "/manager"  ) {
         return (
           <Route
+			exact 
             path={prop.layout + prop.path}
             component={prop.component}
             key={key}
@@ -44,12 +51,15 @@ class Dashboard extends React.Component {
       color: "blue",
       hasImage: true,
       fixedClasses: "dropdown show",
-      mobileOpen: false
+      mobileOpen: false,
+		//
+		logoutModal:false,
     };
   }
+ //Weed out nested routes
   _lRoutes = () => {
 	  lRoutes =[];
-	 routes.map((r)=>{if(r.path!=='/profile'){lRoutes.push(r)}else{}});
+	 routes.map((r)=>{if(r.type!=='nested'){lRoutes.push(r)}else{}});
 	  console.log(lRoutes);
 	  
   }
@@ -77,6 +87,11 @@ class Dashboard extends React.Component {
       this.setState({ mobileOpen: false });
     }
   };
+
+  handleLogoutModal = () => {
+	this.setState({logoutModal:!this.state.logoutModal});
+  }
+
   componentWillMount =  () => {
 	  this._lRoutes()
   }
@@ -102,20 +117,34 @@ class Dashboard extends React.Component {
     const { classes, ...rest } = this.props;
     return (
       <div className={classes.wrapper}>
+		 <MDBModal isOpen={this.state.logoutModal} toggle={this.handleLogoutModal} centered>
+			  <MDBModalHeader toggle={this.handleLogoutModal}>Logout Confirmation</MDBModalHeader>
+			  <MDBModalBody>
+			   Are you sure you want to logout?
+			  </MDBModalBody>
+			  <MDBModalFooter>
+				<MDBBtn
+					onClick={this.handleLogoutModal}>Cancel</MDBBtn>
+				<MDBBtn color="danger" onClick={this.props.global.onLogout}>Yes</MDBBtn>
+			  </MDBModalFooter>
+		 </MDBModal>	
         <Sidebar
           routes={lRoutes}
-          logoText={"School Management System"}
+          logoText={"TotoSci Manager"}
           logo={logo}
           image={this.state.image}
           handleDrawerToggle={this.handleDrawerToggle}
           open={this.state.mobileOpen}
           color={this.state.color}
+		  handleLogoutModal={this.handleLogoutModal}
           {...rest}
         />
         <div className={classes.mainPanel} ref="mainPanel">
           <Navbar
+			brandRoutes={routes}  
             routes={lRoutes}
             handleDrawerToggle={this.handleDrawerToggle}
+			handleLogoutModal={this.handleLogoutModal}
             {...rest}
           />
           {/* On the /maps route we want the map to be on full screen - this is not possible if the content and conatiner classes are present because they have some paddings which would make the map smaller */}
@@ -127,14 +156,7 @@ class Dashboard extends React.Component {
             <div className={classes.map}>{switchRoutes}</div>
           )}
           {this.getRoute() ? <Footer /> : null}
-          <FixedPlugin
-            handleImageClick={this.handleImageClick}
-            handleColorClick={this.handleColorClick}
-            bgColor={this.state["color"]}
-            bgImage={this.state["image"]}
-            handleFixedClick={this.handleFixedClick}
-            fixedClasses={this.state.fixedClasses}
-          />
+         
         </div>
       </div>
     );
@@ -145,4 +167,4 @@ Dashboard.propTypes = {
   classes: PropTypes.object.isRequired
 };
 
-export default withStyles(dashboardStyle)(Dashboard);
+export default withGlobalContext(withStyles(dashboardStyle)(Dashboard));

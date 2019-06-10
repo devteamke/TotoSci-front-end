@@ -20,6 +20,13 @@ import globals from '../../constants/Globals';
 // @material-ui/icons
 import AddAlert from "@material-ui/icons/AddAlert";
 import { withGlobalContext } from '../../context/Provider';
+//Form components
+import AdminForm from './forms/Admin';
+import ManagerForm from './forms/Manager';
+import ChiefForm from './forms/Chief';
+import TrainerForm from './forms/Trainer';
+import InstructorForm from './forms/Instructor';
+import ParentForm from './forms/Parent';
 
 const styles = {
   cardCategoryWhite: {
@@ -44,139 +51,27 @@ class AddUser  extends React.Component  {
 	  constructor(props) {
     super(props);
     this.state = {
-     	role:null,
-     	roleError:null,
-	 	email:'',
-	 	emailError:null,
-		fname:'',
-		fnameError:null,
-	 	sname:'',
-	 	snameError:null,
-		oname:'',
-		onameError:null,
-		residence:'',
-		residenceError:null,
-		phone_number:'',
-		phone_numberError:null,
+		//form fields
+     	
+		
+		//other
 		addingUser:false,
 		open: false,
         place: 'bc',
 		resType:'warning',
     };
   } 
-   handleSubmit= ()=> {
-	
-		let state = this.state;
-		 const fnameError = validate('fname', state.fname===''?null:state.fname);
-		 const emailError = validate('email', state.email===''?null:state.email);
-		 const snameError = validate('sname', state.email===''?null:state.sname);
-		 const onameError = validate('oname', state.oname===''?null:state.oname);
-		 const residenceError = validate('residence', state.residence===''?null:state.residence);
-		 const phoneError = validate('phone', state.phone_number===''?null:state.phone_number);
-		
- 
-		
-		    this.setState(
-      {
-        emailError: emailError,
-        fnameError:fnameError,
-        snameError:snameError,
-        onameError:onameError,
-        residenceError:residenceError,
-        phone_numberError:phoneError,
-        
-      },
-      () => {
-        
-        if ( !emailError && !fnameError && !snameError && !snameError && !onameError && !residenceError && !phoneError  ) {
-          // alert('Details are valid!'+globals.BASE_URL)
-          let data = {
-			role:state.role,
-            email: state.email,
-            fname:state.fname,
-            sname:state.sname,
-            oname:state.oname,
-            residence:state.residence,
-            phone_number:state.phone_number,
-			 
-          };
-          console.log(data);
-          this.setState({ addingUser: true, serverRes:null });
-          const AddAsync = async () =>
-            await (await fetch(`${globals.BASE_URL}/api/admin/register`, {
-              method: 'post',
-              mode: 'cors', // no-cors, cors, *same-origin
-              cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
-              credentials: 'same-origin', // include, *same-origin, omit
-              headers: {
-                'Content-Type': 'application/json',
-				   'Authorization': this.props.global.token
-                // "Content-Type": "application/x-www-form-urlencoded",
-              },
-              redirect: 'follow', // manual, *follow, error
-              referrer: 'no-referrer', // no-referrer, *client
-              body: JSON.stringify(data)
-            })).json();
-
-          AddAsync()
-            .then(data => {
-			  this.setState({open: true, resType:data.success?'success':'warning' });
-        setTimeout(function(){
-            this.setState({open: false});
-        }.bind(this),6000);
-              //this.setState({currentPlace:data.results})
-              if (data.success) {
-               this.setState({
-                  addingUser: false,
-                  serverRes:data.message, 
-				  role:null,
-				  roleError:null,
-				  email:'',
-				  emailError:null,
-				  fname:'',
-				  fnameError:null,
-				  sname:'',
-				  snameError:null,
-				  oname:'',
-				  onameError:null,
-				  residence:'',
-				  residenceError:null,
-				  phone_number:'',
-				  phone_numberError:null,
-                });
-              } else {
-                this.setState({
-                  addingUser: false,
-	
-				  
-                  serverRes:data.message 
-                });
-              }
-            })
-            .catch(error => {
-              console.log(error);
-              if (error == "TypeError: Failed to fetch") {
-                //   alert('Server is offline')
-                this.setState({
-                  serverRes:"Server is offline!"
-                });
-              } else if (error.message == 'Network request failed') {
-                // alert('No internet connection')
-                this.setState({
-                   serverRes:"Network request failed"
-                });
-              }
-              this.setState({ addingUser: false });
-              console.log(error);
-            });
-        }
-      }
-    );
-}
-_snack = () => {
+   
+_snack = (params) => {
 		if(this.props.location.snack){
 			let snack = this.props.location.snack
 			 this.setState({open: true, resType:snack.type, serverRes:snack.msg});
+					setTimeout(function(){
+						this.setState({open: false});
+					}.bind(this),9000);
+		}
+		if(params){
+			 this.setState({open: true, resType:params.type, serverRes:params.msg});
 					setTimeout(function(){
 						this.setState({open: false});
 					}.bind(this),9000);
@@ -202,9 +97,9 @@ render() {
                     close
                 />
       <GridContainer>
-        <GridItem xs={12} sm={12} md={8}>
+        <GridItem xs={12} sm={12} md={11}>
           <Card>
-            <CardHeader color="primary">
+            <CardHeader color="info">
               <h4 className={classes.cardTitleWhite}>Add a user of the system</h4>
               <p className={classes.cardCategoryWhite}>Fill in their details below</p>
             </CardHeader>
@@ -213,126 +108,69 @@ render() {
 				<MDBBtn outline={state.role!=='admin'} color="primary"
 						 	 onClick={()=>{this.setState({role:'admin'}); }}
 					> Admin</MDBBtn>
-					<MDBBtn outline={state.role!=='other'} color="primary"
-						 	 onClick={()=>{ this.setState({role:'other'});}}
-					> Other</MDBBtn>
+					<MDBBtn outline={state.role!=='manager'} color="primary"
+						 	 onClick={()=>{ this.setState({role:'manager'});}}
+					> Manager</MDBBtn>
+				  <MDBBtn outline={state.role!=='chief-trainer'} color="primary"
+						 	 onClick={()=>{ this.setState({role:'chief-trainer'});}}
+					> Chief Trainer</MDBBtn> 
+				  <MDBBtn outline={state.role!=='trainer'} color="primary"
+						 	 onClick={()=>{ this.setState({role:'trainer'});}}
+					> Trainer</MDBBtn> 
+				  <MDBBtn outline={state.role!=='instructor'} color="primary"
+						 	 onClick={()=>{ this.setState({role:'instructor'});}}
+					> Instructor</MDBBtn>
+				  <MDBBtn outline={state.role!=='parent'} color="primary"
+						 	 onClick={()=>{ this.setState({role:'parent'});}}
+					> Parent</MDBBtn>
 					
 			 </GridContainer>
-            {state.role?
-				  
+            {state.role?(
+				  <>
+				  {state.role=='admin'?
+				   (
+				     <AdminForm state={state} snack={this._snack}/>
+		
+        
+				   ):state.role=="manager" ?
+				   (
+				  			   
+
+             
+           			 <ManagerForm snack={this._snack}/>
+			
+         
+				   ):state.role=="chief-trainer"?
+				   (
+				   
+				   <ChiefForm snack={this._snack}/>
+				   ):state.role=="trainer"?
+				   (
+				   <TrainerForm snack={this._snack}/>
+				   ):state.role=="instructor"?
+				   (
+				   <InstructorForm snack={this._snack}/>
+				   ):state.role=="parent"?(
+				   <parentForm snack={this._snack}/>
+				   ):null
+				   
+				   }
 				
 					
 					<>
 				 
 				   
-              <GridContainer>
              
             
-				  
-                <GridItem xs={12} sm={12} md={4}>
-                 	  <MDBInput
-				
-					label={"Email Address"}
+           		
 					
-					group
-					value={state.email}
-					onChange={(event)=>{ this.setState({email:event.target.value})}}
-				    onBlur={()=>this.setState({emailError:validate('email', state.email==''?null:state.email)})}
-					error="Whoops!"
-					success="right"
-				  />
-					<p style={{color:'red', fontSize:'0.8rem', textAlign:'center'}}>{state.emailError}</p>
-                </GridItem>
-             
-                <GridItem xs={12} sm={12} md={6}>
-                  <MDBInput
-				
-					label={"First Name"}
-					
-					group
-					value={state.lname}
-					 onChange={(event)=>{ this.setState({fname:event.target.value})}}
-					onBlur={()=>this.setState({fnameError:validate('fname', state.fname==''?null:state.fname)})}
-					error="Whoops!"
-					success="right"
-				  />
-					<p style={{color:'red', fontSize:'0.8rem', textAlign:'center'}}>{state.fnameError}</p>
-                </GridItem>
-                <GridItem xs={12} sm={12} md={6}>
-                    <MDBInput
-				
-					label={"Surname"}
-					
-					group
-					value={state.sname}
-					  onChange={(event)=>{ this.setState({sname:event.target.value})}}
-					type="email"
-					onBlur={()=>this.setState({snameError:validate('sname', state.sname==''?null:state.sname)})}
-					error="Whoops!"
-					success="right"
-				  />
-					<p style={{color:'red', fontSize:'0.8rem', textAlign:'center'}}>{state.snameError}</p>
-                </GridItem>
-				 <GridItem xs={12} sm={12} md={6}>
-                  <MDBInput
-				
-					label={"Other Name"}
-					
-					group
-					value={state.oname}
-				    onChange={(event)=>{ this.setState({oname:event.target.value})}}
-				    onBlur={()=>this.setState({onameError:validate('oname', state.oname==''?null:state.oname)})}
-					error="Whoops!"
-					success="right"
-				  />
-					<p style={{color:'red', fontSize:'0.8rem', textAlign:'center'}}>{state.onameError}</p>
-                </GridItem>
-				  <GridItem xs={12} sm={12} md={6}>
-                 <MDBInput
-				
-					label={"Residence"}
-					
-					group
-					value={state.residence}
-					onChange={(event)=>{ this.setState({residence:event.target.value})}}
-					onBlur={()=>this.setState({residenceError:validate('residence', state.residence==''?null:state.residence)})}
-					error="Whoops!"
-					success="right"
-				  />
-					<p style={{color:'red', fontSize:'0.8rem', textAlign:'center'}}>{state.residenceError}</p>
-                </GridItem>
-             
-                <GridItem xs={12} sm={12} md={4}>
-                   <MDBInput
-				
-					label={"Phone Number"}
-					
-					group
-					value={state.phone_number}
-					 onChange={(event)=>{ this.setState({phone_number:event.target.value})}}
-					onBlur={()=>this.setState({phone_numberError:validate('phone', state.phone_number==''?null:state.phone_number)})}
-					error="Whoops!"
-					success="right"
-				  />
-					<p style={{color:'red', fontSize:'0.8rem', textAlign:'center'}}>{state.phone_numberError}</p>
-                </GridItem>
-        
-              </GridContainer>
-             
-            
-           		<GridContainer>
-				  <GridItem xs={12} sm={12} md={6}>
-					<div className="text-center">
-				 {state.addingUser?  <div className="spinner-grow text-info" role="status" style={{marginBottom:'15px'}}>
-					<span className="sr-only">Loading...</span>
-				  </div> :<MDBBtn onClick={this.handleSubmit}>Add user</MDBBtn>}
-				</div>
-				   </GridItem>
-        
-              	</GridContainer>
-					</>
+				</>
+					    </>
+					   )
 					:null}
+				   	 
 				   </CardBody>
+		
           </Card>
         </GridItem>
 		  

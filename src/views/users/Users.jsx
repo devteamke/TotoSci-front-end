@@ -42,7 +42,10 @@ const styles = {
       fontWeight: "400",
       lineHeight: "1"
     }
-  }
+  },
+   btnBg :{
+	 backgroundColor:'#01afc4!important'
+	},
 };
 class AllUsers extends React.Component  {
 	constructor(props) {
@@ -65,6 +68,7 @@ class AllUsers extends React.Component  {
 		    hasPrev:null,
 		    totalDocs:null,
 		};
+		this.myRef = React.createRef();
 	};
 	_fetchUsers = () => {
 		let state = this.state
@@ -132,6 +136,7 @@ class AllUsers extends React.Component  {
             });
 	}
 	_handlePrevious = () => {
+		
 		this.setState({
 			page:this.state.page-1,
 			loading:true,
@@ -141,6 +146,9 @@ class AllUsers extends React.Component  {
 		})
 	}	
 	_handleNext = () => {
+		// console.log('[offset]',-this.myRef.current.offsetTop)
+		//  window.scrollTo(0, -this.myRef.current.offsetTop);
+		 this.myN.scrollIntoView({block: "start"});
 		this.setState({
 			page:this.state.page+1,
 			loading:true,
@@ -180,7 +188,7 @@ class AllUsers extends React.Component  {
 		const state = this.state;
 	
 	  return (
-		  <div>
+		  <div ref={(el) => { this.myN = el }} >
 		  <Snackbar
                     place={this.state.place}
                     color={state.resType}
@@ -194,32 +202,40 @@ class AllUsers extends React.Component  {
 				  <GridItem xs={12} sm={12} md={12}>
 
 					<Card>
-					  <CardHeader color="primary">
+					  <CardHeader color="info">
 						<h4 className={classes.cardTitleWhite}>All Users</h4>
 						<p className={classes.cardCategoryWhite}>
 						 All Users of this system
 						</p>
 					  </CardHeader>
 					  <CardBody>
-						  <div  style={{width:'15rem', float:'right'}}>
-						  <MDBInput responsive
+						    <GridContainer>
+								  <GridItem xs={12} sm={12} md={12} >
+								  <div  style={{width:'15rem', float:'right'}}>
+								  <MDBInput responsive
 
-							label={'Search'}
-							icon="search"
-							group
-							value={state.email}
-							onChange={this._handleSearch}
-							type="email"
-							
-							
-						  />
-						  </div>
-						  {state.loading?
-							  <div className="text-center" style={{height:300}}>
-						  		<div className="spinner-grow text-info"  role="status" style={{marginTop:150}}>
-							<span    className="sr-only">Loading...								</span>	
-				  			</div> 
-							  </div>:  
+									label={'Search'}
+									icon="search"
+									group
+									value={state.email}
+									onChange={this._handleSearch}
+									type="email"
+
+
+								  />
+								  </div>
+								</GridItem>
+						  </GridContainer>
+						  {state.loading?(
+							  <GridContainer>
+								  <GridItem xs={12} sm={12} md={12} >
+									<div className="text-center" style={{height:300}}>
+										<div className="spinner-grow text-info"  role="status" style={{marginTop:150}}>
+											<span    className="sr-only">Loading...</span>	
+										</div> 
+									</div>
+								  </GridItem>
+							  </GridContainer>):  
 							  <>
 						    {state.users.length>0?
 							<MDBTable hover responsive>
@@ -250,10 +266,10 @@ class AllUsers extends React.Component  {
 						  {state.loaded&& state.users.length>0?<div className='text-center' >
 						  
 						  {state.hasPrev?
-						   <MDBBtn color="primary "size="sm" style={{display:'inline-block'}} onClick={this._handlePrevious}><MDBIcon size="2x" icon="angle-double-left" />
+						   <MDBBtn size="sm" style={{display:'inline-block'}} onClick={this._handlePrevious}><MDBIcon size="2x" icon="angle-double-left" />
 						   </MDBBtn>:null}  
 							  <h4 style={{display:'inline-block', margin:'25px 30px'}}>{state.page} of {state.totalPages}</h4>
-							{state.hasNext?  <MDBBtn color="primary " size="sm" style={{display:'inline-block'}} onClick={this._handleNext}><MDBIcon size="2x" icon="angle-double-right" /></MDBBtn>:null}
+							{state.hasNext?  <MDBBtn  size="sm" style={{display:'inline-block'}} onClick={this._handleNext}><MDBIcon size="2x" icon="angle-double-right" /></MDBBtn>:null}
 						   
 						   <p style={{color:'grey'}}>(Showing {state.users.length} of {state.totalDocs} records) </p>
 						  </div>:null}

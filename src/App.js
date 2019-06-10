@@ -9,14 +9,15 @@ import  Login from './views/login/Login';
 import  Reset from './views/reset/Reset';
 import  ResetPassword from './views/reset/ResetPassword';
 import Nav from './components/navbar/Navbar';
-
+import  CompleteProfile from './views/completeProfile/CompleteProfile';
 
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import 'bootstrap-css-only/css/bootstrap.min.css';
 import 'mdbreact/dist/css/mdb.css';
+import "./assets/scss/mdb.scss";
 import { withGlobalContext } from './context/Provider';
 import Admin from "./layouts/Admin";
-import Princi from "./layouts/Princi";
+import Manager from "./layouts/Manager";
 import Original from "./layouts/Original";
 
 class App extends React.Component {
@@ -42,20 +43,40 @@ class App extends React.Component {
 			 
 			}
 			 //Other users
-			 if(gstate.user.role!=='admin'){
+			 if(gstate.user.role!=='admin'&&!gstate.user.isSetUp){
+				 
 					  return (
 						<Router>
 						  <div>
-							{/*<Nav/>*/}
+						
 
 							<Switch>
 							{/* duplicate and modify admin layout */}
- 							<Route path="/**/" component={Original} />
+ 							<Route path="/completeprofile" component={CompleteProfile} />
+ 							<Route path="/**/" component={CompleteProfile} />
 							 </Switch>
 						  </div>
 						</Router>
 				  );
 			 
+			}else{
+					if(gstate.user.role=='manager'){
+							  return (
+									<Router>
+									  <div>
+
+
+											<Switch>
+
+
+												   <Route path="/manager" component={Manager} />
+													<Route path="/**/" component={Manager} />
+											</Switch>
+
+									  </div>
+									</Router>
+								  )
+					}
 			}	
 		 }else{
 			

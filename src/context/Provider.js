@@ -4,6 +4,20 @@ import React from 'react';
 import jwt_decode from 'jwt-decode';
 const GlobalContext = React.createContext({});
 
+const parseUser = (user) =>{
+	if (typeof user.phone_number =="object") {
+			user = { ...user,
+					
+				   phone_number: user.phone_number.main,
+				   alt_phone_number:user.phone_number.alt,
+				   
+				   }
+			
+		}
+	user = { ...user, idno: user.idNumber?user.idNumber.toString():''}
+	return user
+}
+
 export class GlobalContextProvider extends React.Component {
   state = {
 	check:'context is working',
@@ -74,7 +88,7 @@ export class GlobalContextProvider extends React.Component {
   // };
 
   onLogin = (token, user) => {
-    this.setState({ isAuthenticated: true, token: token, user: user });
+    this.setState({ isAuthenticated: true, token: token, user: parseUser(user) });
     this._storeData(token);
 
     //this.setState({isAuthenticated:true})
@@ -91,12 +105,16 @@ export class GlobalContextProvider extends React.Component {
       this.setState({ fullPlaceId }, () => resolve());
     });
   };
+  onUpdateUser = (user, token ) => {
+	   this.setState({  user: parseUser(user) });
+	   this._storeData(token);
+  }
   componentDidMount = () => {
 	 // const rememberMe = localStorage.getItem('rememberMe') === 'true';
 	  const token = localStorage.getItem('token');
 	  
 	  if(token){
-		  const user = jwt_decode(token)
+		  const user = parseUser(jwt_decode(token))
 		   this.onLogin(token, user);
 	  }
   }
@@ -109,7 +127,7 @@ export class GlobalContextProvider extends React.Component {
           onLogin: this.onLogin,
           
           setFullPlace: this.onSetFullPlace,
-          updateSetUp: this.onUpdateSetUp
+          updateUser: this.onUpdateUser
         }}
       >
         {this.props.children}

@@ -10,7 +10,7 @@ import ListItem from "@material-ui/core/ListItem";
 import Tooltip from "@material-ui/core/Tooltip";
 
 // @material-ui/icons
-import { Apps, Home, Lock } from "@material-ui/icons";
+import { Apps, Home, Lock, ExitToApp } from "@material-ui/icons";
 
 // core components
 import CustomDropdown from "../CustomDropdown/CustomDropdown.jsx";
@@ -18,8 +18,13 @@ import Button from "../CustomButtons/Button.jsx";
 
 import headerLinksStyle from "../../../assetsweb/jss/material-kit-react/components/headerLinksStyle.jsx";
 
+//Context
+import { withGlobalContext } from "../../../context/Provider";
+
 function HeaderLinks({ ...props }) {
   const { classes } = props;
+  const context = props.global;
+	console.log('{context}', context);
   let route = props.location.pathname
   const  active ={
 	  color:'green'
@@ -59,7 +64,20 @@ function HeaderLinks({ ...props }) {
         >
           <Home className={classes.icons} /> Home
 		  </Link>
+     </ListItem>
+		  
+		{context.isAuthenticated? (
+		  <ListItem className={classes.listItem}>
+        <div
+          
+          className={classes.navLink}
+		  onClick={context.onLogout}
+        >
+          <ExitToApp className={classes.icons} /> Logout
+        </div>
       </ListItem>
+		  
+		  ):(
 		  <ListItem className={classes.listItem}>
         <Link
           to="/login"
@@ -69,6 +87,10 @@ function HeaderLinks({ ...props }) {
           <Lock className={classes.icons} /> Login
         </Link>
       </ListItem>
+		  
+		  )}
+		  
+		  
       <ListItem className={classes.listItem}>
         <Tooltip
           id="instagram-twitter"
@@ -125,4 +147,4 @@ function HeaderLinks({ ...props }) {
 }
 
 
-export default withRouter(withStyles(headerLinksStyle)(HeaderLinks));
+export default withGlobalContext(withRouter(withStyles(headerLinksStyle)(HeaderLinks)));

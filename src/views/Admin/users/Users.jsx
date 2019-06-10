@@ -2,18 +2,18 @@ import React from "react";
 // @material-ui/core components
 import withStyles from "@material-ui/core/styles/withStyles";
 // core components
-import Snackbar from "../../components/dcomponents/Snackbar/Snackbar.jsx";
-import GridItem from "../../components/dcomponents/Grid/GridItem.jsx";
-import GridContainer from "../../components/dcomponents/Grid/GridContainer.jsx";
-import Card from "../../components/dcomponents/Card/Card.jsx";
-import CardHeader from "../../components/dcomponents/Card/CardHeader.jsx";
-import CardBody from "../../components/dcomponents/Card/CardBody.jsx";
-import globals from '../../constants/Globals';
+import Snackbar from "../../../components/dcomponents/Snackbar/Snackbar.jsx";
+import GridItem from "../../../components/dcomponents/Grid/GridItem.jsx";
+import GridContainer from "../../../components/dcomponents/Grid/GridContainer.jsx";
+import Card from "../../../components/dcomponents/Card/Card.jsx";
+import CardHeader from "../../../components/dcomponents/Card/CardHeader.jsx";
+import CardBody from "../../../components/dcomponents/Card/CardBody.jsx";
+import globals from '../../../constants/Globals';
 // @material-ui/icons
 import AddAlert from "@material-ui/icons/AddAlert";
-
+import { Switch, Route, Redirect } from "react-router-dom";
 import { MDBTable, MDBTableBody, MDBTableHead, MDBBtn, MDBIcon, MDBInput } from 'mdbreact';
-import { withGlobalContext } from '../../context/Provider';
+import { withGlobalContext } from '../../../context/Provider';
 
 const styles = {
   cardCategoryWhite: {
@@ -42,7 +42,10 @@ const styles = {
       fontWeight: "400",
       lineHeight: "1"
     }
-  }
+  },
+   btnBg :{
+	 backgroundColor:'#01afc4!important'
+	},
 };
 class AllUsers extends React.Component  {
 	constructor(props) {
@@ -58,12 +61,14 @@ class AllUsers extends React.Component  {
 			//snack
 			open: false,
        		place: 'bc',
-			resType:'',
+			resType:'warning',
 			query:'',
 			totalPages:null,
 		    hasNext:null,
 		    hasPrev:null,
+		    totalDocs:null,
 		};
+		this.myRef = React.createRef();
 	};
 	_fetchUsers = () => {
 		let state = this.state
@@ -74,7 +79,7 @@ class AllUsers extends React.Component  {
 			}
 		        const FetchAsync = async () =>
 		
-            await (await fetch(`${globals.BASE_URL}/api/users/all`, {
+            await (await fetch(`${globals.BASE_URL}/api/admin/all`, {
               method: 'post',
               mode: 'cors', // no-cors, cors, *same-origin
               cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
@@ -98,6 +103,7 @@ class AllUsers extends React.Component  {
                   users:data.result.docs,
 				  page:data.result.page,
 				  totalPages:data.result.totalPages,
+				  totalDocs:data.result.totalDocs,
 				   hasNext:data.result.hasNextPage,
 				   hasPrev:data.result.hasPrevPage,
                 });
@@ -130,6 +136,7 @@ class AllUsers extends React.Component  {
             });
 	}
 	_handlePrevious = () => {
+		
 		this.setState({
 			page:this.state.page-1,
 			loading:true,
@@ -139,6 +146,9 @@ class AllUsers extends React.Component  {
 		})
 	}	
 	_handleNext = () => {
+		// console.log('[offset]',-this.myRef.current.offsetTop)
+		//  window.scrollTo(0, -this.myRef.current.offsetTop);
+		 this.myN.scrollIntoView({block: "start"});
 		this.setState({
 			page:this.state.page+1,
 			loading:true,
@@ -159,8 +169,18 @@ class AllUsers extends React.Component  {
 		;
 		
 	}
+	_snack = () => {
+		if(this.props.location.snack){
+			let snack = this.props.location.snack
+			 this.setState({open: true, resType:snack.type, serverRes:snack.msg});
+					setTimeout(function(){
+						this.setState({open: false});
+					}.bind(this),9000);
+		}
+	}
   	componentDidMount = () => {
 		this._fetchUsers();
+		this._snack();
 	}
 		  
 	render = () =>{
@@ -168,7 +188,7 @@ class AllUsers extends React.Component  {
 		const state = this.state;
 	
 	  return (
-		  <div>
+		  <div ref={(el) => { this.myN = el }} >
 		  <Snackbar
                     place={this.state.place}
                     color={state.resType}
@@ -182,34 +202,43 @@ class AllUsers extends React.Component  {
 				  <GridItem xs={12} sm={12} md={12}>
 
 					<Card>
-					  <CardHeader color="primary">
-						<h4 className={classes.cardTitleWhite}>All Staff</h4>
+					  <CardHeader color="info">
+						<h4 className={classes.cardTitleWhite}>All Users</h4>
 						<p className={classes.cardCategoryWhite}>
-						Show alls empoloyees of the school
+						 All Users of this system
 						</p>
 					  </CardHeader>
 					  <CardBody>
-						  <div  style={{width:'20rem', float:'right'}}>
-						  <MDBInput
+						    <GridContainer>
+								  <GridItem xs={12} sm={12} md={12} >
+								  <div  style={{width:'15rem', float:'right'}}>
+								  <MDBInput responsive
 
-							label={'Search'}
-							icon="search"
-							group
-							value={state.email}
-							onChange={this._handleSearch}
-							type="email"
-							
-							
-						  />
-						  </div>
-						  {state.loading?
-							  <div className="text-center" style={{height:300}}>
-						  		<div className="spinner-grow text-info"  role="status" style={{marginTop:150}}>
-							<span    className="sr-only">Loading...								</span>	
-				  			</div> 
-							  </div>:  
+									label={'Search'}
+									icon="search"
+									group
+									value={state.email}
+									onChange={this._handleSearch}
+									type="email"
+
+
+								  />
+								  </div>
+								</GridItem>
+						  </GridContainer>
+						  {state.loading?(
+							  <GridContainer>
+								  <GridItem xs={12} sm={12} md={12} >
+									<div className="text-center" style={{height:300}}>
+										<div className="spinner-grow text-info"  role="status" style={{marginTop:150}}>
+											<span    className="sr-only">Loading...</span>	
+										</div> 
+									</div>
+								  </GridItem>
+							  </GridContainer>):  
 							  <>
-							<MDBTable hover>
+						    {state.users.length>0?
+							<MDBTable hover responsive>
 							  <MDBTableHead>
 								<tr>
 								  <th>ID</th>
@@ -219,26 +248,30 @@ class AllUsers extends React.Component  {
 								</tr>
 							  </MDBTableHead>
 								  <MDBTableBody>
-									  {state.users?state.users.map(user =>
-										 <tr key={user._id}>
+									  {state.users.map(user =>
+										 <tr key={user._id} onClick={()=>{	this.props.history.push({pathname: '/admin/users/single', data:user})}} style={{cursor: 'pointer'}}>
 											  <td>{user._id}</td>
 											  <td>{user.email}</td>
 											  <td>{user.role.charAt(0).toUpperCase() + user.role.slice(1)}</td>
 											  <td>{user.status.charAt(0).toUpperCase() + user.status.slice(1)}</td>
 											</tr>
-											):<p> No Users</p>}
+																  )}
 								  </MDBTableBody>
 								</MDBTable>  
-							  
+							  :
+																   
+								<div className="text-center" style={{height:300}}><p style={{marginTop:145}}> {state.query?`No records found matching \" ${state.query}\"`:'No Users'}</p> </div>}
 							  
 							  </>}
-						  {state.loaded?<div className='text-center' >
+						  {state.loaded&& state.users.length>0?<div className='text-center' >
 						  
 						  {state.hasPrev?
-						   <MDBBtn color="primary "size="sm" style={{display:'inline-block'}} onClick={this._handlePrevious}><MDBIcon size="2x" icon="angle-double-left" />
+						   <MDBBtn size="sm" style={{display:'inline-block'}} onClick={this._handlePrevious}><MDBIcon size="2x" icon="angle-double-left" />
 						   </MDBBtn>:null}  
 							  <h4 style={{display:'inline-block', margin:'25px 30px'}}>{state.page} of {state.totalPages}</h4>
-							{state.hasNext?  <MDBBtn color="primary " size="sm" style={{display:'inline-block'}} onClick={this._handleNext}><MDBIcon size="2x" icon="angle-double-right" /></MDBBtn>:null}
+							{state.hasNext?  <MDBBtn  size="sm" style={{display:'inline-block'}} onClick={this._handleNext}><MDBIcon size="2x" icon="angle-double-right" /></MDBBtn>:null}
+						   
+						   <p style={{color:'grey'}}>(Showing {state.users.length} of {state.totalDocs} records) </p>
 						  </div>:null}
 						 
 					  </CardBody>

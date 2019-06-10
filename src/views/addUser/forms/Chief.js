@@ -3,64 +3,52 @@ import React from "react";
 import withStyles from "@material-ui/core/styles/withStyles";
 import InputLabel from "@material-ui/core/InputLabel";
 // core components
-import Snackbar from "../../components/dcomponents/Snackbar/Snackbar.jsx";
-import GridItem from "../../components/dcomponents/Grid/GridItem.jsx";
-import GridContainer from "../../components/dcomponents/Grid/GridContainer.jsx";
-import CustomInput from "../../components/dcomponents/CustomInput/CustomInput.jsx";
-import Button from "../../components/dcomponents/CustomButtons/Button.jsx";
-import Card from "../../components/dcomponents/Card/Card.jsx";
-import CardHeader from "../../components/dcomponents/Card/CardHeader.jsx";
-import CardAvatar from "../../components/dcomponents/Card/CardAvatar.jsx";
-import CardBody from "../../components/dcomponents/Card/CardBody.jsx";
-import CardFooter from "../../components/dcomponents/Card/CardFooter.jsx";
+
+import GridItem from "../../../components/dcomponents/Grid/GridItem.jsx";
+import GridContainer from "../../../components/dcomponents/Grid/GridContainer.jsx";
+
+import Button from "../../../components/dcomponents/CustomButtons/Button.jsx";
+
 import { MDBBtn, MDBInput } from 'mdbreact';
-import avatar from "../../assets/img/faces/marc.jpg";
+//mport avatar from "../../assets/img/faces/marc.jpg";
 import validate from './validation';
-import globals from '../../constants/Globals';
+import globals from '../../../constants/Globals';
 // @material-ui/icons
 import AddAlert from "@material-ui/icons/AddAlert";
-import { withGlobalContext } from '../../context/Provider';
-const styles = {
-  cardCategoryWhite: {
-    color: "rgba(255,255,255,.62)",
-    margin: "0",
-    fontSize: "14px",
-    marginTop: "0",
-    marginBottom: "0"
-  },
-  cardTitleWhite: {
-    color: "#FFFFFF",
-    marginTop: "0px",
-    minHeight: "auto",
-    fontWeight: "300",
-    fontFamily: "'Roboto', 'Helvetica', 'Arial', sans-serif",
-    marginBottom: "3px",
-    textDecoration: "none"
-  }
-};
+import { withGlobalContext } from '../../../context/Provider';
 
-class AddUser  extends React.Component  {
+
+
+
+class Admin  extends React.Component  {
 	  constructor(props) {
     super(props);
+		  console.log('[super props]',props);
     this.state = {
-     	role:null,
-     	roleError:null,
+		//form fields
+     	role:'chief-trainer',
+     
 	 	email:'',
 	 	emailError:null,
 		fname:'',
 		fnameError:null,
-	 	sname:'',
-	 	snameError:null,
-		oname:'',
-		onameError:null,
+	 	lname:'',
+	 	lnameError:null,
+		idno:'',
+		idnoError:null,
 		residence:'',
 		residenceError:null,
+		
 		phone_number:'',
 		phone_numberError:null,
+		alt_phone_number:'',
+		alt_phone_numberError:null,
+		
+		//other
 		addingUser:false,
 		open: false,
         place: 'bc',
-		resType:'',
+		resType:'warning',
     };
   } 
    handleSubmit= ()=> {
@@ -68,10 +56,15 @@ class AddUser  extends React.Component  {
 		let state = this.state;
 		 const fnameError = validate('fname', state.fname===''?null:state.fname);
 		 const emailError = validate('email', state.email===''?null:state.email);
-		 const snameError = validate('sname', state.email===''?null:state.sname);
-		 const onameError = validate('oname', state.oname===''?null:state.oname);
+		 const lnameError = validate('lname', state.lname===''?null:state.lname);
+		 const salutationError = validate('salutation', state.salutation===''?null:state.salutation)||this._validateSal();
 		 const residenceError = validate('residence', state.residence===''?null:state.residence);
+		 const countyError = validate('county', state.county===''?null:state.county);
+		 const sub_countyError = validate('sub_county', state.sub_county===''?null:state.sub_county);
+	
 		 const phoneError = validate('phone', state.phone_number===''?null:state.phone_number);
+		 const idnoError = validate('idno', state.idno===''?null:state.idno);
+		 const alt_phoneError = validate('alt_phone', state.alt_phone_number===''?null:state.alt_phone_number);
 		
  
 		
@@ -79,37 +72,43 @@ class AddUser  extends React.Component  {
       {
         emailError: emailError,
         fnameError:fnameError,
-        snameError:snameError,
-        onameError:onameError,
+        lnameError:lnameError,
+        idnoError:idnoError,
+        salutationError:salutationError,
         residenceError:residenceError,
         phone_numberError:phoneError,
+        alt_phone_numberError:alt_phoneError,
         
       },
       () => {
         
-        if ( !emailError && !fnameError && !snameError && !snameError && !onameError && !residenceError && !phoneError  ) {
+        if ( !emailError && !fnameError && !lnameError && !salutationError  && !phoneError  && !idnoError  &&!residenceError &&!alt_phoneError ) {
           // alert('Details are valid!'+globals.BASE_URL)
           let data = {
 			role:state.role,
             email: state.email,
+			salutation:state.salutation,
             fname:state.fname,
-            sname:state.sname,
-            oname:state.oname,
+            lname:state.lname,
+          	idNumber:state.idno,
+			  
             residence:state.residence,
-            phone_number:state.phone_number,
+            phone_number:{ main: state.phone_number,
+           				  alt:state.alt_phone_number
+						 },
 			 
           };
           console.log(data);
           this.setState({ addingUser: true, serverRes:null });
           const AddAsync = async () =>
-            await (await fetch(`${globals.BASE_URL}/api/users/register/staff`, {
+            await (await fetch(`${globals.BASE_URL}/api/admin/register`, {
               method: 'post',
               mode: 'cors', // no-cors, cors, *same-origin
               cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
               credentials: 'same-origin', // include, *same-origin, omit
               headers: {
                 'Content-Type': 'application/json',
-				'Authorization': this.props.global.token
+				   'Authorization': this.props.global.token
                 // "Content-Type": "application/x-www-form-urlencoded",
               },
               redirect: 'follow', // manual, *follow, error
@@ -119,29 +118,32 @@ class AddUser  extends React.Component  {
 
           AddAsync()
             .then(data => {
-			  this.setState({open: true, resType:data.success?'success':'warning' });
-        setTimeout(function(){
-            this.setState({open: false});
-        }.bind(this),6000);
+
+			  
+			  this.props.snack({type:data.success?'success':'warning', msg:data.message})
               //this.setState({currentPlace:data.results})
               if (data.success) {
                this.setState({
                   addingUser: false,
                   serverRes:data.message, 
-				  role:null,
-				  roleError:null,
-				  email:'',
-				  emailError:null,
-				  fname:'',
-				  fnameError:null,
-				  sname:'',
-				  snameError:null,
-				  oname:'',
-				  onameError:null,
-				  residence:'',
-				  residenceError:null,
-				  phone_number:'',
-				  phone_numberError:null,
+				
+				
+					email:'',
+					emailError:null,
+					fname:'',
+					fnameError:null,
+					lname:'',
+					lnameError:null,
+				   	salutation:'',
+					idno:'',
+					idnoError:null,
+					residence:'',
+					residenceError:null,
+					phone_number:'',
+					phone_numberError:null,
+					alt_phone_number:'',
+					alt_phone_numberError:null,
+				
                 });
               } else {
                 this.setState({
@@ -156,15 +158,14 @@ class AddUser  extends React.Component  {
               console.log(error);
               if (error == "TypeError: Failed to fetch") {
                 //   alert('Server is offline')
-                this.setState({
-                  serverRes:"Server is offline!"
-                });
+              
               } else if (error.message == 'Network request failed') {
                 // alert('No internet connection')
                 this.setState({
                    serverRes:"Network request failed"
                 });
               }
+			   this.props.snack({type:'warning', msg:error.toString()})
               this.setState({ addingUser: false });
               console.log(error);
             });
@@ -172,52 +173,74 @@ class AddUser  extends React.Component  {
       }
     );
 }
-   		
-
+_validateSal = (passed) =>{
+	let val = passed||this.state.salutation.toLowerCase();
+	const sal =['mr', 'mrs', 'miss', 'dr', 'prof', 'other','NA']
+	if(sal.includes(val)){
+		return null;
+	}else{
+		return 'Salutation must be either Mr, Mrs, Miss, Dr, Prof';
+	}
+	
+}
 render() {
   const { classes } = this.props; 
   const state = this.state
   return (
-    <div>
-		  <Snackbar
-                    place={this.state.place}
-                    color={state.resType}
-                    icon={AddAlert}
-                    message={state.serverRes}
-                    open={this.state.open}
-                    closeNotification={() => this.setState({open:false})}
-                    close
-                />
-      <GridContainer>
-        <GridItem xs={12} sm={12} md={8}>
-          <Card>
-            <CardHeader color="primary">
-              <h4 className={classes.cardTitleWhite}>Add a user of the system</h4>
-              <p className={classes.cardCategoryWhite}>Fill in their details below</p>
-            </CardHeader>
-			   <CardBody>
+	  		<>
+
+				  			   
 			  <GridContainer>
+              <GridItem xs={12} sm={12} md={12}>
+           			 <h1>Chief Trainer</h1>
+		  	</GridItem>
+               
+             	 <GridItem xs={12} sm={12} md={2}>
+                  <MDBInput
 				
-					<MDBBtn outline={state.role!=='teacher'} color="primary"
-						 	 onClick={()=>{ this.setState({role:'teacher'});}}
-					> Teacher</MDBBtn>
-					<MDBBtn outline={state.role!=='receptionist'} color="primary"
-						 	 onClick={()=>{this.setState({role:'receptionist'}); }}
-					>Receptionist</MDBBtn>	
+					label={"Salutaion"}
 					
-			 </GridContainer>
-            {state.role?
-				  
+					group
+					value={state.salutation}
+				    onChange={(event)=>{ this.setState({salutation:event.target.value})}}
+				    onBlur={()=>this.setState({salutationError:validate('salutation', state.salutation===''?null:state.salutation) ||this._validateSal()})}
+					error="Whoops!"
+					success="right"
+				  />
 				
+					<p style={{color:'red', fontSize:'0.8rem', textAlign:'center'}}>{state.salutationError}</p>
+                </GridItem>
+                <GridItem xs={12} sm={12} md={10}>
+                  <MDBInput
+				
+					label={"First Name"}
 					
-					<>
-				 
-				   
-              <GridContainer>
-             
-            
-				  
-                <GridItem xs={12} sm={12} md={4}>
+					group
+					value={state.fname}
+					 onChange={(event)=>{ this.setState({fname:event.target.value})}}
+					onBlur={()=>this.setState({fnameError:validate('fname', state.fname==''?null:state.fname)})}
+					error="Whoops!"
+					success="right"
+				  />
+					<p style={{color:'red', fontSize:'0.8rem', textAlign:'center'}}>{state.fnameError}</p>
+                </GridItem>
+                <GridItem xs={12} sm={12} md={6}>
+                    <MDBInput
+				
+					label={"Last Name"}
+					
+					group
+					value={state.lname}
+					  onChange={(event)=>{ this.setState({lname:event.target.value})}}
+					type="email"
+					onBlur={()=>this.setState({lnameError:validate('lname', state.lname==''?null:state.lname)})}
+					error="Whoops!"
+					success="right"
+				  />
+					<p style={{color:'red', fontSize:'0.8rem', textAlign:'center'}}>{state.lnameError}</p>
+                </GridItem>
+		
+		 	  <GridItem xs={12} sm={12} md={6}>
                  	  <MDBInput
 				
 					label={"Email Address"}
@@ -230,50 +253,6 @@ render() {
 					success="right"
 				  />
 					<p style={{color:'red', fontSize:'0.8rem', textAlign:'center'}}>{state.emailError}</p>
-                </GridItem>
-             
-                <GridItem xs={12} sm={12} md={6}>
-                  <MDBInput
-				
-					label={"First Name"}
-					
-					group
-					value={state.lname}
-					 onChange={(event)=>{ this.setState({fname:event.target.value})}}
-					onBlur={()=>this.setState({fnameError:validate('fname', state.fname==''?null:state.fname)})}
-					error="Whoops!"
-					success="right"
-				  />
-					<p style={{color:'red', fontSize:'0.8rem', textAlign:'center'}}>{state.fnameError}</p>
-                </GridItem>
-                <GridItem xs={12} sm={12} md={6}>
-                    <MDBInput
-				
-					label={"Surname"}
-					
-					group
-					value={state.sname}
-					  onChange={(event)=>{ this.setState({sname:event.target.value})}}
-					type="email"
-					onBlur={()=>this.setState({snameError:validate('sname', state.sname==''?null:state.sname)})}
-					error="Whoops!"
-					success="right"
-				  />
-					<p style={{color:'red', fontSize:'0.8rem', textAlign:'center'}}>{state.snameError}</p>
-                </GridItem>
-				 <GridItem xs={12} sm={12} md={6}>
-                  <MDBInput
-				
-					label={"Other Name"}
-					
-					group
-					value={state.oname}
-				    onChange={(event)=>{ this.setState({oname:event.target.value})}}
-				    onBlur={()=>this.setState({onameError:validate('oname', state.oname==''?null:state.oname)})}
-					error="Whoops!"
-					success="right"
-				  />
-					<p style={{color:'red', fontSize:'0.8rem', textAlign:'center'}}>{state.onameError}</p>
                 </GridItem>
 				  <GridItem xs={12} sm={12} md={6}>
                  <MDBInput
@@ -289,26 +268,54 @@ render() {
 				  />
 					<p style={{color:'red', fontSize:'0.8rem', textAlign:'center'}}>{state.residenceError}</p>
                 </GridItem>
+				  <GridItem xs={12} sm={12} md={6}>	   
+				<MDBInput
+				
+					label={"ID Number"}
+					
+					group
+					value={state.idno}
+					onChange={(event)=>{ this.setState({idno:event.target.value})}}
+					onBlur={()=>this.setState({idnoError:validate('idno', state.idno==''?null:state.idno)})}
+					error="Whoops!"
+					success="right"
+				  />
+					<p style={{color:'red', fontSize:'0.8rem', textAlign:'center'}}>{state.idnoError}</p>
+                </GridItem>
+		  
+		
              
-                <GridItem xs={12} sm={12} md={4}>
+                <GridItem xs={12} sm={12} md={6}>
                    <MDBInput
 				
 					label={"Phone Number"}
 					
 					group
 					value={state.phone_number}
-					 onChange={(event)=>{ this.setState({phone_number:event.target.value})}}
+					 onChange={(event)=>{ this.setState({phone_number:event.target.value,phone_numberError:validate('phone', event.target.value==''?null:event.target.value)})}}
 					onBlur={()=>this.setState({phone_numberError:validate('phone', state.phone_number==''?null:state.phone_number)})}
 					error="Whoops!"
 					success="right"
 				  />
 					<p style={{color:'red', fontSize:'0.8rem', textAlign:'center'}}>{state.phone_numberError}</p>
                 </GridItem>
+			    <GridItem xs={12} sm={12} md={6}>
+                   <MDBInput
+				
+					label={"Alternative Phone Number"}
+					
+					group
+					value={state.alt_phone_number}
+					 onChange={(event)=>{ this.setState({alt_phone_number:event.target.value, alt_phone_numberError:validate('alt_phone', event.target.value==''?null:event.target.value)})}}
+					onBlur={()=>this.setState({alt_phone_numberError:validate('alt_phone', state.alt_phone_number==''?null:state.alt_phone_number)})}
+					error="Whoops!"
+					success="right"
+				  />
+					<p style={{color:'red', fontSize:'0.8rem', textAlign:'center'}}>{state.alt_phone_numberError}</p>
+                </GridItem>
         
               </GridContainer>
-             
-            
-           		<GridContainer>
+	 		  <GridContainer>
 				  <GridItem xs={12} sm={12} md={6}>
 					<div className="text-center">
 				 {state.addingUser?  <div className="spinner-grow text-info" role="status" style={{marginBottom:'15px'}}>
@@ -318,20 +325,11 @@ render() {
 				   </GridItem>
         
               	</GridContainer>
-					</>
-					:null}
-				   </CardBody>
-          </Card>
-        </GridItem>
-		  
-		  
-        <GridItem xs={12} sm={12} md={4}>
-         
-        </GridItem>
-      </GridContainer>
-    </div>
+	  
+	         </>
+				 
   );
 }
 }
 
-export default withGlobalContext( withStyles(styles)(AddUser));
+export default withGlobalContext((Admin));

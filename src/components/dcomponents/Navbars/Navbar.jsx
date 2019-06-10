@@ -22,9 +22,9 @@ function Header({ ...props }) {
     props.brandRoutes.map((prop, key) => {
 		
       if (prop.layout + prop.path === props.location.pathname) {
-        name = props.rtlActive ? prop.rtlName : prop.name;
+        name =  prop.name;
       }
-		console.log('[lay]',prop.layout,'[path]', prop.path, '[location]', props.location.pathname )
+		// console.log('[lay]',prop.layout,'[path]', prop.path, '[location]', props.location.pathname )
 	//To handle embeded routes
 	
       return null;
@@ -45,7 +45,7 @@ function Header({ ...props }) {
           </Button>
         </div>
         <Hidden smDown implementation="css">
-          { <AdminNavbarLinks />}
+          { <AdminNavbarLinks handleLogoutModal={props.handleLogoutModal} />}
         </Hidden>
         <Hidden mdUp implementation="css">
           <IconButton
