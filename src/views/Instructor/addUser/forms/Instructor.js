@@ -20,13 +20,14 @@ import { withGlobalContext } from '../../../../context/Provider';
 
 
 
+
 class Admin  extends React.Component  {
 	  constructor(props) {
     super(props);
 		  console.log('[super props]',props);
     this.state = {
 		//form fields
-     	role:'admin',
+     	role:'instructor',
      
 	 	email:'',
 	 	emailError:null,
@@ -34,14 +35,14 @@ class Admin  extends React.Component  {
 		fnameError:null,
 	 	lname:'',
 	 	lnameError:null,
-		idno:'',
-		idnoError:null,
-		residence:'',
-		residenceError:null,
 		phone_number:'',
 		phone_numberError:null,
-		alt_phone_number:'',
-		alt_phone_numberError:null,
+		
+		county:'',
+		countyError:null,
+		sub_county:'',
+		sub_countyError:null,
+	
 		
 		//other
 		addingUser:false,
@@ -56,12 +57,10 @@ class Admin  extends React.Component  {
 		 const fnameError = validate('fname', state.fname===''?null:state.fname);
 		 const emailError = validate('email', state.email===''?null:state.email);
 		 const lnameError = validate('lname', state.lname===''?null:state.lname);
-		 const salutationError = validate('salutation', state.salutation===''?null:state.salutation)||this._validateSal();
-		 const residenceError = validate('residence', state.residence===''?null:state.residence);
-		 const phoneError = validate('phone', state.phone_number===''?null:state.phone_number);
-		 const idnoError = validate('idno', state.idno===''?null:state.idno);
-		 const alt_phoneError = validate('alt_phone', state.alt_phone_number===''?null:state.alt_phone_number);
-		
+			const phoneError = validate('phone', state.phone_number===''?null:state.phone_number);
+		 const countyError = validate('county', state.county===''?null:state.county);
+		 const sub_countyError = validate('sub_county', state.sub_county===''?null:state.sub_county);
+
  
 		
 		    this.setState(
@@ -69,35 +68,33 @@ class Admin  extends React.Component  {
         emailError: emailError,
         fnameError:fnameError,
         lnameError:lnameError,
-        idnoError:idnoError,
-        salutationError:salutationError,
-        residenceError:residenceError,
-        phone_numberError:phoneError,
-        alt_phone_numberError:alt_phoneError,
+         phone_numberError:phoneError,
+        
+		countyError:countyError,
+        sub_countyError:sub_countyError,
+    
         
       },
       () => {
         
-        if ( !emailError && !fnameError && !lnameError && !salutationError  && !phoneError  && !idnoError  &&!residenceError &&!alt_phoneError) {
+        if ( !emailError && !fnameError && !lnameError &&!countyError &&!sub_countyError && !phoneError ) {
           // alert('Details are valid!'+globals.BASE_URL)
           let data = {
 			role:state.role,
             email: state.email,
-			salutation:state.salutation,
+			
             fname:state.fname,
             lname:state.lname,
-          	idNumber:state.idno,
-			  
-            residence:state.residence,
-            phone_number:{ main: state.phone_number,
-           				  alt:state.alt_phone_number
-						 },
+        
+			county:state.county,
+			sub_county:state.sub_county, 
+        
 			 
           };
           console.log(data);
           this.setState({ addingUser: true, serverRes:null });
           const AddAsync = async () =>
-            await (await fetch(`${globals.BASE_URL}/api/admin/register`, {
+            await (await fetch(`${globals.BASE_URL}/api/${this.props.global.user.role}/register`, {
               method: 'post',
               mode: 'cors', // no-cors, cors, *same-origin
               cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
@@ -130,15 +127,14 @@ class Admin  extends React.Component  {
 					fnameError:null,
 					lname:'',
 					lnameError:null,
-				   	salutation:'',
-					idno:'',
-					idnoError:null,
-					residence:'',
-					residenceError:null,
-					phone_number:'',
+				     	phone_number:'',
 					phone_numberError:null,
-					alt_phone_number:'',
-					alt_phone_numberError:null,
+				   	
+				  	county:'',
+					countyError:null,
+					sub_county:'',
+					sub_countyError:null,
+
                 });
               } else {
                 this.setState({
@@ -187,24 +183,11 @@ render() {
 				  			   
 			  <GridContainer>
               <GridItem xs={12} sm={12} md={12}>
-           			 <h1>Admin</h1>
+           			 <h1>Instructor</h1>
 		  	</GridItem>
                
-             	 <GridItem xs={12} sm={12} md={2}>
-                  <MDBInput
-				
-					label={"Salutaion"}
-					
-					group
-					value={state.salutation}
-				    onChange={(event)=>{ this.setState({salutation:event.target.value})}}
-				    onBlur={()=>this.setState({salutationError:validate('salutation', state.salutation===''?null:state.salutation) ||this._validateSal()})}
-					error="Whoops!"
-					success="right"
-				  />
-				
-					<p style={{color:'red', fontSize:'0.8rem', textAlign:'center'}}>{state.salutationError}</p>
-                </GridItem>
+             	
+              
                 <GridItem xs={12} sm={12} md={10}>
                   <MDBInput
 				
@@ -249,37 +232,8 @@ render() {
 				  />
 					<p style={{color:'red', fontSize:'0.8rem', textAlign:'center'}}>{state.emailError}</p>
                 </GridItem>
-				  <GridItem xs={12} sm={12} md={6}>
-                 <MDBInput
 				
-					label={"Residence"}
-					
-					group
-					value={state.residence}
-					onChange={(event)=>{ this.setState({residence:event.target.value})}}
-					onBlur={()=>this.setState({residenceError:validate('residence', state.residence==''?null:state.residence)})}
-					error="Whoops!"
-					success="right"
-				  />
-					<p style={{color:'red', fontSize:'0.8rem', textAlign:'center'}}>{state.residenceError}</p>
-                </GridItem>
-		  
-				  <GridItem xs={12} sm={12} md={6}>	   
-				<MDBInput
-				
-					label={"ID Number"}
-					
-					group
-					value={state.idno}
-					onChange={(event)=>{ this.setState({idno:event.target.value})}}
-					onBlur={()=>this.setState({idnoError:validate('idno', state.idno==''?null:state.idno)})}
-					error="Whoops!"
-					success="right"
-				  />
-					<p style={{color:'red', fontSize:'0.8rem', textAlign:'center'}}>{state.idnoError}</p>
-                </GridItem>
-             
-                <GridItem xs={12} sm={12} md={6}>
+		    <GridItem xs={12} sm={12} md={6}>
                    <MDBInput
 				
 					label={"Phone Number"}
@@ -293,28 +247,45 @@ render() {
 				  />
 					<p style={{color:'red', fontSize:'0.8rem', textAlign:'center'}}>{state.phone_numberError}</p>
                 </GridItem>
-			    <GridItem xs={12} sm={12} md={6}>
-                   <MDBInput
+		  
+		 		 <GridItem xs={12} sm={12} md={6}>
+                 <MDBInput
 				
-					label={"Alternative Phone Number"}
+					label={"County"}
 					
 					group
-					value={state.alt_phone_number}
-					 onChange={(event)=>{ this.setState({alt_phone_number:event.target.value, alt_phone_numberError:validate('alt_phone', event.target.value==''?null:event.target.value)})}}
-					onBlur={()=>this.setState({alt_phone_numberError:validate('alt_phone', state.alt_phone_number==''?null:state.alt_phone_number)})}
+					value={state.county}
+					onChange={(event)=>{ this.setState({county:event.target.value})}}
+					onBlur={()=>this.setState({countyError:validate('county', state.county==''?null:state.county)})}
 					error="Whoops!"
 					success="right"
 				  />
-					<p style={{color:'red', fontSize:'0.8rem', textAlign:'center'}}>{state.alt_phone_numberError}</p>
+					<p style={{color:'red', fontSize:'0.8rem', textAlign:'center'}}>{state.countyError}</p>
                 </GridItem>
+			  <GridItem xs={12} sm={12} md={6}>
+                 <MDBInput
+				
+					label={"Sub County"}
+					
+					group
+					value={state.sub_county}
+					onChange={(event)=>{ this.setState({sub_county:event.target.value})}}
+					onBlur={()=>this.setState({sub_countyError:validate('sub_county', state.sub_county==''?null:state.sub_county)})}
+					error="Whoops!"
+					success="right"
+				  />
+					<p style={{color:'red', fontSize:'0.8rem', textAlign:'center'}}>{state.sub_countyError}</p>
+                </GridItem>
+             
         
-              </GridContainer>
+		
+	 		 </GridContainer>
 	 		  <GridContainer>
 				  <GridItem xs={12} sm={12} md={6}>
 					<div className="text-center">
 				 {state.addingUser?  <div className="spinner-grow text-info" role="status" style={{marginBottom:'15px'}}>
 					<span className="sr-only">Loading...</span>
-				  </div> :<MDBBtn onClick={this.handleSubmit}>Add user</MDBBtn>}
+				  </div> :<MDBBtn onClick={this.handleSubmit}>Add Instructor</MDBBtn>}
 				</div>
 				   </GridItem>
         

@@ -13,7 +13,7 @@ import Footer from "../components/dcomponents//Footer/Footer.jsx";
 import Sidebar from "../components/dcomponents//Sidebar/Sidebar.jsx";
 import FixedPlugin from "../components/dcomponents//FixedPlugin/FixedPlugin.jsx";
 
-import routes from "../routes/managerRoutes";
+import routes from "../routes/instructorRoutes";
 
 import dashboardStyle from "../assets/jss/material-dashboard-react/layouts/dashboardStyle.jsx";
 
@@ -29,7 +29,7 @@ import { MDBBtn, MDBModal, MDBModalHeader, MDBModalBody, MDBModalFooter } from "
 const switchRoutes = (
   <Switch>
     {routes.map((prop, key) => {
-      if (prop.layout === "/manager"  ) {
+      if (prop.layout === "/instructor"  ) {
         return (
           <Route
 			exact 
@@ -130,7 +130,7 @@ class Dashboard extends React.Component {
 		 </MDBModal>	
         <Sidebar
           routes={lRoutes}
-          logoText={"TotoSci-Manager"}
+          logoText={"TotoSci-Instructor"}
           logo={logo}
           image={this.state.image}
           handleDrawerToggle={this.handleDrawerToggle}

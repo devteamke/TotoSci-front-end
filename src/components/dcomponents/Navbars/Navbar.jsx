@@ -11,8 +11,10 @@ import Hidden from "@material-ui/core/Hidden";
 import Menu from "@material-ui/icons/Menu";
 // core components
 import AdminNavbarLinks from "./AdminNavbarLinks.jsx";
+import ManagerNavbarLinks from "./ManagerNavbarLinks.jsx";
 import Icon from "@material-ui/core/Icon";
 import Button from "../CustomButtons/Button.jsx";
+import { withGlobalContext } from '../../../context/Provider';
 
 import headerStyle from "../../../assets/jss/material-dashboard-react/components/headerStyle.jsx";
 
@@ -32,6 +34,7 @@ function Header({ ...props }) {
     return name;
   }
   const { classes, color } = props;
+  const user = props.global.user;
   const appBarClasses = classNames({
     [" " + classes[color]]: color
   });
@@ -45,7 +48,10 @@ function Header({ ...props }) {
           </Button>
         </div>
         <Hidden smDown implementation="css">
-          { <AdminNavbarLinks handleLogoutModal={props.handleLogoutModal} />}
+          {user.role=="admin"?
+				<AdminNavbarLinks handleLogoutModal={props.handleLogoutModal} />:
+				<ManagerNavbarLinks handleLogoutModal={props.handleLogoutModal} />
+		  }
         </Hidden>
         <Hidden mdUp implementation="css">
           <IconButton
@@ -66,4 +72,4 @@ Header.propTypes = {
   color: PropTypes.oneOf(["primary", "info", "success", "warning", "danger"])
 };
 
-export default withStyles(headerStyle)(Header);
+export default withGlobalContext(withStyles(headerStyle)(Header));

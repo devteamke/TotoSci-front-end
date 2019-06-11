@@ -31,10 +31,10 @@ class App extends React.Component {
 		residenceError:null,
 		idno:''||this.props.global.user.idNumber?this.props.global.user.idNumber.toString():'',
 		idnoError:null,
-		county:''||this.props.global.user.county,
-		countyError:null,
-		sub_county:''||this.props.global.user.sub_county,
-		sub_countyError:null,
+		// county:''||this.props.global.user.county,
+		// countyError:null,
+		// sub_county:''||this.props.global.user.sub_county,
+		// sub_countyError:null,
 	
 		alt_phone_number:''||this.props.global.user.alt_phone_number,
 		alt_phone_numberError:null,
@@ -58,8 +58,8 @@ class App extends React.Component {
 	
 		 const salutationError = validate('salutation', state.salutation===''?null:state.salutation)||this._validateSal();
 		 const residenceError = validate('residence', state.residence===''?null:state.residence);
-		 const countyError = validate('county', state.county===''?null:state.county);
-		 const sub_countyError = validate('sub_county', state.sub_county===''?null:state.sub_county);
+		 // const countyError = validate('county', state.county===''?null:state.county);
+		 // const sub_countyError = validate('sub_county', state.sub_county===''?null:state.sub_county);
 	 const idnoError = validate('idno', state.idno===''?null:state.idno);
 		 const alt_phoneError = validate('alt_phone', state.alt_phone_number===''?null:state.alt_phone_number);
 		
@@ -71,15 +71,15 @@ class App extends React.Component {
         idnoError:idnoError,
         salutationError:salutationError,
         residenceError:residenceError,
-        countyError:this.props.global.user.role=='trainer'||this.props.global.user.role=='instructor'?countyError:null,
-        sub_countyError:this.props.global.user.role=='trainer'||this.props.global.user.role=='instructor'?countyError:null,
+        // countyError:this.props.global.user.role=='trainer'||this.props.global.user.role=='instructor'?countyError:null,
+        // sub_countyError:this.props.global.user.role=='trainer'||this.props.global.user.role=='instructor'?countyError:null,
       
         alt_phone_numberError:alt_phoneError,
         
       },
       () => {
         
-        if (  !salutationError &&!countyError &&!sub_countyError && !idnoError  &&!residenceError &&!alt_phoneError) {
+        if (  !salutationError  && !idnoError  &&!residenceError &&!alt_phoneError) {
           // alert('Details are valid!'+globals.BASE_URL)
           let data = {
 			
@@ -94,12 +94,12 @@ class App extends React.Component {
 						
 			 
           };
-			if(this.props.global.user.role=='trainer'||this.props.global.user.role=='instructor'){
-				data ={ ...data, 
-					   county:state.county,
-						sub_county:state.sub_county,
-					  }
-			}
+			// if(this.props.global.user.role=='trainer'||this.props.global.user.role=='instructor'){
+			// 	data ={ ...data, 
+			// 		   county:state.county,
+			// 			sub_county:state.sub_county,
+			// 		  }
+			// }
           console.log(data);
           this.setState({ savingInfo: true});
           const SaveAsync = async () =>
@@ -277,8 +277,8 @@ class App extends React.Component {
 				  />
 					<p style={{color:'red', fontSize:'0.8rem', textAlign:'center'}}>{state.idnoError}</p>
                 </GridItem>
-		  	{user.role=="trainer"||user.role=="instructor"?(
-				<div>
+		  	{false?(
+				<>
 				<GridItem xs={12} sm={12} md={6}>
                  <MDBInput
 				
@@ -307,7 +307,7 @@ class App extends React.Component {
 				  />
 					<p style={{color:'red', fontSize:'0.8rem', textAlign:'center'}}>{state.sub_countyError}</p>
                 </GridItem>
-				</div>
+				</>
 					):null}
              
               

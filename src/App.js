@@ -18,6 +18,10 @@ import "./assets/scss/mdb.scss";
 import { withGlobalContext } from './context/Provider';
 import Admin from "./layouts/Admin";
 import Manager from "./layouts/Manager";
+import Chief from "./layouts/Chief";
+import Trainer from "./layouts/Trainer";
+import Instructor from "./layouts/Instructor";
+
 import Original from "./layouts/Original";
 
 class App extends React.Component {
@@ -64,15 +68,43 @@ class App extends React.Component {
 							  return (
 									<Router>
 									  <div>
-
-
 											<Switch>
-
-
 												   <Route path="/manager" component={Manager} />
 													<Route path="/**/" component={Manager} />
 											</Switch>
-
+									  </div>
+									</Router>
+								  )
+					}else if(gstate.user.role=='chief-trainer'){
+							  return (
+									<Router>
+									  <div>
+											<Switch>
+												   <Route path="/chief-trainer" component={Chief} />
+													<Route path="/**/" component={Chief} />
+											</Switch>
+									  </div>
+									</Router>
+								  )
+					}else if(gstate.user.role=='trainer'){
+							  return ( 
+									<Router>
+									  <div>
+											<Switch>
+												   <Route path="/trainer" component={Trainer} />
+													<Route path="/**/" component={Trainer} />
+											</Switch>
+									  </div>
+									</Router>
+								  )
+					}else if(gstate.user.role=='instructor'){
+							  return (
+									<Router>
+									  <div>
+											<Switch>
+												   <Route path="/trainer" component={Instructor} />
+													<Route path="/**/" component={Instructor} />
+											</Switch>
 									  </div>
 									</Router>
 								  )

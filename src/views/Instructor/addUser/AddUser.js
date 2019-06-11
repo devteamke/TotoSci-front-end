@@ -21,8 +21,6 @@ import globals from '../../../constants/Globals';
 import AddAlert from "@material-ui/icons/AddAlert";
 import { withGlobalContext } from '../../../context/Provider';
 //Form components
-
-import ChiefForm from './forms/Chief';
 import TrainerForm from './forms/Trainer';
 import InstructorForm from './forms/Instructor';
 import ParentForm from './forms/Parent';
@@ -106,9 +104,7 @@ render() {
 			   <CardBody>
 			  <GridContainer>
 			
-				  <MDBBtn outline={state.role!=='chief-trainer'} color="primary"
-						 	 onClick={()=>{ this.setState({role:'chief-trainer'});}}
-					> Chief Trainer</MDBBtn> 
+				 
 				  <MDBBtn outline={state.role!=='trainer'} color="primary"
 						 	 onClick={()=>{ this.setState({role:'trainer'});}}
 					> Trainer</MDBBtn> 
@@ -122,11 +118,7 @@ render() {
 			 </GridContainer>
             {state.role?(
 				  <>
-				  {state.role=="chief-trainer"?
-				   (
-				   
-				   <ChiefForm snack={this._snack}/>
-				   ):state.role=="trainer"?
+				  {state.role=="trainer"?
 				   (
 				   <TrainerForm snack={this._snack}/>
 				   ):state.role=="instructor"?
