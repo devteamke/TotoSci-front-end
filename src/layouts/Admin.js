@@ -130,7 +130,7 @@ class Dashboard extends React.Component {
 		 </MDBModal>	
         <Sidebar
           routes={lRoutes}
-          logoText={"TotoSci Academy"}
+          logoText={"Admin"}
           logo={logo}
           image={this.state.image}
           handleDrawerToggle={this.handleDrawerToggle}

@@ -54,7 +54,7 @@ class HeaderLinks extends React.Component {
           simple={!(window.innerWidth > 959)}
           aria-label="Dashboard"
           className={classes.buttonLink}
-		  onClick={()=>{this.props.history.push('/manager/dashboard')}}
+		  onClick={()=>{this.props.history.push(`/${this.props.global.user.role}/dashboard`)}}
         >
           <Dashboard className={classes.icons} />
           <Hidden mdUp implementation="css">
@@ -148,7 +148,7 @@ class HeaderLinks extends React.Component {
           simple={!(window.innerWidth > 959)}
           aria-label="Person"
           className={classes.buttonLink}
-		  onClick={()=>{this.props.history.push('/manager/profile')}}
+		  onClick={()=>{this.props.history.push(`/${this.props.global.user.role}/profile`)}}
         >
           <Person className={classes.icons} />
 			  

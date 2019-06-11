@@ -768,7 +768,7 @@ render = () => {
   			 <GridItem xs={12} sm={12} md={12}>
 				   <MDBBtn  onClick={()=>{	this.props.history.goBack()}}>Back</MDBBtn>
 		  </GridItem>
-        <GridItem xs={12} sm={12} md={4}>
+        <GridItem xs={12} sm={12} md={8}>
           <Card profile>
             <CardAvatar profile>
               <a href="#pablo" onClick={e => e.preventDefault()}>

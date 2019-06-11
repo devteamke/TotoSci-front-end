@@ -89,11 +89,9 @@ class App extends React.Component {
 					  if(!user.isSetUp){
 						    this.props.history.push({pathname:'/completeprofile', snack:{type:'success', msg:'Login was successful'}});
 					  }else{
-						  if(user.role=="manager"){
-							     this.props.history.push({pathname:'/manager/AddUsers', snack:{type:'success', msg:'Login was successful'}});
-						  }else if(user.role=="chief-trainer"){
-							     this.props.history.push({pathname:'/chief/AddUsers', snack:{type:'success', msg:'Login was successful'}});
-						  }
+					
+							     this.props.history.push({pathname:`/${user.role}/AddUsers`, snack:{type:'success', msg:'Login was successful'}});
+						
 					  }
 					
 				  }

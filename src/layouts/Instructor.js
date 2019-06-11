@@ -19,6 +19,7 @@ import dashboardStyle from "../assets/jss/material-dashboard-react/layouts/dashb
 
 import image from "../assets/img/sidebar-2.jpg";
 import logo from "../assets/img/reactlogo.png";
+import logo2 from "../assets/img/totosci.png";
 
 import { withGlobalContext } from '../context/Provider';
 
@@ -130,8 +131,8 @@ class Dashboard extends React.Component {
 		 </MDBModal>	
         <Sidebar
           routes={lRoutes}
-          logoText={"TotoSci-Instructor"}
-          logo={logo}
+          logoText={"Instructor"}
+          logo={logo2}
           image={this.state.image}
           handleDrawerToggle={this.handleDrawerToggle}
           open={this.state.mobileOpen}

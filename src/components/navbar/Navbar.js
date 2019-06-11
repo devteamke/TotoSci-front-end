@@ -1,19 +1,32 @@
 import React, { Component } from "react";
-import { MDBNavbar, MDBNavbarBrand, MDBNavbarNav, MDBNavItem, MDBNavLink, MDBNavbarToggler, MDBCollapse, MDBDropdown,
-MDBDropdownToggle, MDBDropdownMenu, MDBDropdownItem, MDBIcon } from "mdbreact";
+import {
+  MDBNavbar,
+  MDBNavbarBrand,
+  MDBNavbarNav,
+  MDBNavItem,
+  MDBNavLink,
+  MDBNavbarToggler,
+  MDBCollapse,
+  MDBDropdown,
+  MDBDropdownToggle,
+  MDBDropdownMenu,
+  MDBDropdownItem,
+  MDBIcon
+}
+from "mdbreact";
 
 class NavbarPage extends Component {
-state = {
-  isOpen: false
-};
+  state = {
+    isOpen: false
+  };
 
-toggleCollapse = () => {
-  this.setState({ isOpen: !this.state.isOpen });
-}
+  toggleCollapse = () => {
+    this.setState({ isOpen: !this.state.isOpen });
+  }
 
-render() {
-  return (
-    <MDBNavbar color="default-color" dark expand="md">
+  render() {
+    return (
+      <MDBNavbar color="default-color" dark expand="md">
       <MDBNavbarBrand>
         <strong className="white-text">School Management System</strong>
       </MDBNavbarBrand>

@@ -125,9 +125,9 @@ class App extends React.Component {
 			  this._snack({type:data.success?'success':'warning', msg:data.message})
               //this.setState({currentPlace:data.results})
               if (data.success) {
-				  if(data.user.role=="manager"){
-							     this.props.history.push({pathname:'/manager/AddUsers', snack:{type:'success', msg:'Your profile was successfully updated'}});
-						  }
+			
+							     this.props.history.push({pathname:`/${data.user.role}/AddUsers`, snack:{type:'success', msg:'Your profile was successfully updated'}});
+				
                		this.props.global.updateUser(data.user, data.token);
               } else {
                        this.setState({ savingInfo: false });

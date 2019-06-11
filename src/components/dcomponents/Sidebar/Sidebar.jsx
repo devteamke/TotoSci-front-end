@@ -132,8 +132,8 @@ if(prop.type !=="hidden"){
         })}
       >
         <div className={classes.logoImage}>
-          <img src={logo} alt="logo" className={classes.img} />
-        </div>
+          <img src={logo} alt="logo" style={{height:'50px'}} />
+        </div><br/>
         {logoText}
       </a>
     </div>

@@ -16,179 +16,181 @@ import { MDBTable, MDBTableBody, MDBTableHead, MDBBtn, MDBIcon, MDBInput } from 
 import { withGlobalContext } from '../../../context/Provider';
 
 const styles = {
-  cardCategoryWhite: {
-    "&,& a,& a:hover,& a:focus": {
-      color: "rgba(255,255,255,.62)",
-      margin: "0",
-      fontSize: "14px",
-      marginTop: "0",
-      marginBottom: "0"
-    },
-    "& a,& a:hover,& a:focus": {
-      color: "#FFFFFF"
-    }
-  },
-  cardTitleWhite: {
-    color: "#FFFFFF",
-    marginTop: "0px",
-    minHeight: "auto",
-    fontWeight: "300",
-    fontFamily: "'Roboto', 'Helvetica', 'Arial', sans-serif",
-    marginBottom: "3px",
-    textDecoration: "none",
-    "& small": {
-      color: "#777",
-      fontSize: "65%",
-      fontWeight: "400",
-      lineHeight: "1"
-    }
-  },
-   btnBg :{
-	 backgroundColor:'#01afc4!important'
+	cardCategoryWhite: {
+		"&,& a,& a:hover,& a:focus": {
+			color: "rgba(255,255,255,.62)",
+			margin: "0",
+			fontSize: "14px",
+			marginTop: "0",
+			marginBottom: "0"
+		},
+		"& a,& a:hover,& a:focus": {
+			color: "#FFFFFF"
+		}
+	},
+	cardTitleWhite: {
+		color: "#FFFFFF",
+		marginTop: "0px",
+		minHeight: "auto",
+		fontWeight: "300",
+		fontFamily: "'Roboto', 'Helvetica', 'Arial', sans-serif",
+		marginBottom: "3px",
+		textDecoration: "none",
+		"& small": {
+			color: "#777",
+			fontSize: "65%",
+			fontWeight: "400",
+			lineHeight: "1"
+		}
+	},
+	btnBg: {
+		backgroundColor: '#01afc4!important'
 	},
 };
-class AllUsers extends React.Component  {
+class AllUsers extends React.Component {
 	constructor(props) {
 		super(props);
 		this.state = {
-			serverRes:'',
-			loading:true,
-			loaded:false,
-			users:[],
-			page:1,
+			serverRes: '',
+			loading: true,
+			loaded: false,
+			users: [],
+			page: 1,
 			limit: 10,
 			//skip:0,
 			//snack
 			open: false,
-       		place: 'bc',
-			resType:'warning',
-			query:'',
-			totalPages:null,
-		    hasNext:null,
-		    hasPrev:null,
-		    totalDocs:null,
+			place: 'bc',
+			resType: 'warning',
+			query: '',
+			totalPages: null,
+			hasNext: null,
+			hasPrev: null,
+			totalDocs: null,
 		};
 		this.myRef = React.createRef();
 	};
 	_fetchUsers = () => {
 		let state = this.state
-	    let data = {
-				limit:state.limit,
-				page:state.page,
-				query:state.query
-			}
-		        const FetchAsync = async () =>
-		
-            await (await fetch(`${globals.BASE_URL}/api/admin/all`, {
-              method: 'post',
-              mode: 'cors', // no-cors, cors, *same-origin
-              cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
-              credentials: 'same-origin', // include, *same-origin, omit
-              headers: {
-                'Content-Type': 'application/json',
-				   'Authorization': this.props.global.token
-                // "Content-Type": "application/x-www-form-urlencoded",
-              },
-              redirect: 'follow', // manual, *follow, error
-              referrer: 'no-referrer', // no-referrer, *client
-              body: JSON.stringify(data)
-            })).json();
+		let data = {
+			limit: state.limit,
+			page: state.page,
+			query: state.query
+		}
+		const FetchAsync = async() =>
 
-          FetchAsync()
-            .then(data => {
-              //this.setState({currentPlace:data.results})
-              if (data.success) {
-				  console.log('[users]', data)
-               this.setState({
-                  users:data.result.docs,
-				  page:data.result.page,
-				  totalPages:data.result.totalPages,
-				  totalDocs:data.result.totalDocs,
-				   hasNext:data.result.hasNextPage,
-				   hasPrev:data.result.hasPrevPage,
-                });
-              } else {
-                
-              }
-			  this.setState({
-                  loading:false,loaded:true,
-                });
-            })
-            .catch(error => {
-              console.log(error);
-              if (error == "TypeError: Failed to fetch") {
-                
-                this.setState({
-                  serverRes:"Failed to contact server!"
-                });
-              } else if (error.message == 'Network request failed') {
-                // alert('No internet connection')
-                this.setState({
-                   serverRes:"Network request failed"
-                });
-              }
-             
-              console.log(error);
-			  	  this.setState({open: true, resType:data.success?'success':'warning' });
-        setTimeout(function(){
-            this.setState({open: false});
-        }.bind(this),6000*9999);
-            });
+			await (await fetch(`${globals.BASE_URL}/api/admin/all`, {
+				method: 'post',
+				mode: 'cors', // no-cors, cors, *same-origin
+				cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+				credentials: 'same-origin', // include, *same-origin, omit
+				headers: {
+					'Content-Type': 'application/json',
+					'Authorization': this.props.global.token
+					// "Content-Type": "application/x-www-form-urlencoded",
+				},
+				redirect: 'follow', // manual, *follow, error
+				referrer: 'no-referrer', // no-referrer, *client
+				body: JSON.stringify(data)
+			})).json();
+
+		FetchAsync()
+			.then(data => {
+				//this.setState({currentPlace:data.results})
+				if (data.success) {
+					console.log('[users]', data)
+					this.setState({
+						users: data.result.docs,
+						page: data.result.page,
+						totalPages: data.result.totalPages,
+						totalDocs: data.result.totalDocs,
+						hasNext: data.result.hasNextPage,
+						hasPrev: data.result.hasPrevPage,
+					});
+				}
+				else {
+
+				}
+				this.setState({
+					loading: false,
+					loaded: true,
+				});
+			})
+			.catch(error => {
+				console.log(error);
+				if (error == "TypeError: Failed to fetch") {
+
+					this.setState({
+						serverRes: "Failed to contact server!"
+					});
+				}
+				else if (error.message == 'Network request failed') {
+					// alert('No internet connection')
+					this.setState({
+						serverRes: "Network request failed"
+					});
+				}
+
+				console.log(error);
+				this.setState({ open: true, resType: data.success ? 'success' : 'warning' });
+				setTimeout(function() {
+					this.setState({ open: false });
+				}.bind(this), 6000 * 9999);
+			});
 	}
 	_handlePrevious = () => {
-		
+
 		this.setState({
-			page:this.state.page-1,
-			loading:true,
-			loaded:false,
-		},()=>{
+			page: this.state.page - 1,
+			loading: true,
+			loaded: false,
+		}, () => {
 			this._fetchUsers()
 		})
-	}	
+	}
 	_handleNext = () => {
 		// console.log('[offset]',-this.myRef.current.offsetTop)
 		//  window.scrollTo(0, -this.myRef.current.offsetTop);
-		 this.myN.scrollIntoView({block: "start"});
+		this.myN.scrollIntoView({ block: "start" });
 		this.setState({
-			page:this.state.page+1,
-			loading:true,
-			loaded:false,
-		},()=>{
+			page: this.state.page + 1,
+			loading: true,
+			loaded: false,
+		}, () => {
 			this._fetchUsers()
 		})
 	}
 	_handleSearch = (event) => {
-	
+
 		this.setState({
-			query:event.target.value,
-			loading:true,
-			loaded:false,
-		},()=>{
+			query: event.target.value,
+			loading: true,
+			loaded: false,
+		}, () => {
 			this._fetchUsers()
-		})
-		;
-		
+		});
+
 	}
 	_snack = () => {
-		if(this.props.location.snack){
+		if (this.props.location.snack) {
 			let snack = this.props.location.snack
-			 this.setState({open: true, resType:snack.type, serverRes:snack.msg});
-					setTimeout(function(){
-						this.setState({open: false});
-					}.bind(this),9000);
+			this.setState({ open: true, resType: snack.type, serverRes: snack.msg });
+			setTimeout(function() {
+				this.setState({ open: false });
+			}.bind(this), 9000);
 		}
 	}
-  	componentDidMount = () => {
+	componentDidMount = () => {
 		this._fetchUsers();
 		this._snack();
 	}
-		  
-	render = () =>{
+
+	render = () => {
 		const { classes } = this.props;
 		const state = this.state;
-	
-	  return (
-		  <div ref={(el) => { this.myN = el }} >
+
+		return (
+			<div ref={(el) => { this.myN = el }} >
 		  <Snackbar
                     place={this.state.place}
                     color={state.resType}
@@ -280,8 +282,8 @@ class AllUsers extends React.Component  {
 
 				</GridContainer>
 		  </div>
-			  );
-}		  
+		);
+	}
 
 }
 

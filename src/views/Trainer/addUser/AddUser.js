@@ -21,9 +21,10 @@ import globals from '../../../constants/Globals';
 import AddAlert from "@material-ui/icons/AddAlert";
 import { withGlobalContext } from '../../../context/Provider';
 //Form components
-import TrainerForm from './forms/Trainer';
+
 import InstructorForm from './forms/Instructor';
 import ParentForm from './forms/Parent';
+
 
 import validate from './validation';
 const styles = {
@@ -105,9 +106,7 @@ render() {
 			  <GridContainer>
 			
 				 
-				  <MDBBtn outline={state.role!=='trainer'} color="primary"
-						 	 onClick={()=>{ this.setState({role:'trainer'});}}
-					> Trainer</MDBBtn> 
+			
 				  <MDBBtn outline={state.role!=='instructor'} color="primary"
 						 	 onClick={()=>{ this.setState({role:'instructor'});}}
 					> Instructor</MDBBtn>
@@ -118,10 +117,7 @@ render() {
 			 </GridContainer>
             {state.role?(
 				  <>
-				  {state.role=="trainer"?
-				   (
-				   <TrainerForm snack={this._snack}/>
-				   ):state.role=="instructor"?
+				  {state.role=="instructor"?
 				   (
 				   <InstructorForm snack={this._snack}/>
 				   ):state.role=="parent"?(
