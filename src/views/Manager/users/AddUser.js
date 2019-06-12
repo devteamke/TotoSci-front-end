@@ -105,6 +105,28 @@ class AddUser extends React.Component {
         />
         <GridContainer>
           <GridItem xs={12} sm={12} md={11}>
+            <div
+              style={{
+                width: "15rem",
+                marginTop: "3px",
+                float: "left"
+              }}
+            >
+              <MDBBtn
+                size=""
+                style={{ display: "inline-block" }}
+                onClick={() => {
+                  this.props.history.push({
+                    pathname: `/${this.props.global.user.role}/users`,
+                    data: ""
+                  });
+                }}
+              >
+                Back
+              </MDBBtn>
+            </div>
+          </GridItem>
+          <GridItem xs={12} sm={12} md={11}>
             <Card>
               <CardHeader color="info">
                 <h4 className={classes.cardTitleWhite}>Add new Personnel</h4>

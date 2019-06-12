@@ -23,7 +23,7 @@ import { withGlobalContext } from '../../../context/Provider';
 //Form components
 import TrainerForm from './forms/Trainer';
 import InstructorForm from './forms/Instructor';
-import ParentForm from './forms/Parent';
+
 
 import validate from './validation';
 const styles = {
@@ -98,8 +98,8 @@ render() {
         <GridItem xs={12} sm={12} md={11}>
           <Card>
             <CardHeader color="info">
-              <h4 className={classes.cardTitleWhite}>Add a user of the system</h4>
-              <p className={classes.cardCategoryWhite}>Fill in their details below</p>
+              <h4 className={classes.cardTitleWhite}>Add  new personnel</h4>
+              <p className={classes.cardCategoryWhite}>Trainer, instructor etc</p>
             </CardHeader>
 			   <CardBody>
 			  <GridContainer>
@@ -111,9 +111,7 @@ render() {
 				  <MDBBtn outline={state.role!=='instructor'} color="primary"
 						 	 onClick={()=>{ this.setState({role:'instructor'});}}
 					> Instructor</MDBBtn>
-				  <MDBBtn outline={state.role!=='parent'} color="primary"
-						 	 onClick={()=>{ this.setState({role:'parent'});}}
-					> Parent</MDBBtn>
+			
 					
 			 </GridContainer>
             {state.role?(
@@ -124,8 +122,6 @@ render() {
 				   ):state.role=="instructor"?
 				   (
 				   <InstructorForm snack={this._snack}/>
-				   ):state.role=="parent"?(
-				   <parentForm snack={this._snack}/>
 				   ):null
 				   
 				   }

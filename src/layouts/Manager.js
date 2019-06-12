@@ -18,21 +18,26 @@ import routes from "../routes/managerRoutes";
 import dashboardStyle from "../assets/jss/material-dashboard-react/layouts/dashboardStyle.jsx";
 
 import image from "../assets/img/sidebar-2.jpg";
-import logo from "../assets/img/reactlogo.png";
+import logo from "../assets/img/totosci.png";
 
-import { withGlobalContext } from '../context/Provider';
+import { withGlobalContext } from "../context/Provider";
 
-//Modal logout 
-import { MDBBtn, MDBModal, MDBModalHeader, MDBModalBody, MDBModalFooter } from "mdbreact";
-
+//Modal logout
+import {
+  MDBBtn,
+  MDBModal,
+  MDBModalHeader,
+  MDBModalBody,
+  MDBModalFooter
+} from "mdbreact";
 
 const switchRoutes = (
   <Switch>
     {routes.map((prop, key) => {
-      if (prop.layout === "/manager"  ) {
+      if (prop.layout === "/manager") {
         return (
           <Route
-			exact 
+            exact
             path={prop.layout + prop.path}
             component={prop.component}
             key={key}
@@ -52,17 +57,21 @@ class Dashboard extends React.Component {
       hasImage: true,
       fixedClasses: "dropdown show",
       mobileOpen: false,
-		//
-		logoutModal:false,
+      //
+      logoutModal: false
     };
   }
- //Weed out nested routes
+  //Weed out nested routes
   _lRoutes = () => {
-	  lRoutes =[];
-	 routes.map((r)=>{if(r.type!=='nested'){lRoutes.push(r)}else{}});
-	  console.log(lRoutes);
-	  
-  }
+    lRoutes = [];
+    routes.map(r => {
+      if (r.type !== "nested") {
+        lRoutes.push(r);
+      } else {
+      }
+    });
+    console.log(lRoutes);
+  };
   handleImageClick = image => {
     this.setState({ image: image });
   };
@@ -89,14 +98,13 @@ class Dashboard extends React.Component {
   };
 
   handleLogoutModal = () => {
-	this.setState({logoutModal:!this.state.logoutModal});
-  }
+    this.setState({ logoutModal: !this.state.logoutModal });
+  };
 
-  componentWillMount =  () => {
-	  this._lRoutes()
-  }
+  componentWillMount = () => {
+    this._lRoutes();
+  };
   componentDidMount() {
-	
     if (navigator.platform.indexOf("Win") > -1) {
       const ps = new PerfectScrollbar(this.refs.mainPanel);
     }
@@ -117,17 +125,22 @@ class Dashboard extends React.Component {
     const { classes, ...rest } = this.props;
     return (
       <div className={classes.wrapper}>
-		 <MDBModal isOpen={this.state.logoutModal} toggle={this.handleLogoutModal} centered>
-			  <MDBModalHeader toggle={this.handleLogoutModal}>Logout Confirmation</MDBModalHeader>
-			  <MDBModalBody>
-			   Are you sure you want to logout?
-			  </MDBModalBody>
-			  <MDBModalFooter>
-				<MDBBtn
-					onClick={this.handleLogoutModal}>Cancel</MDBBtn>
-				<MDBBtn color="danger" onClick={this.props.global.onLogout}>Yes</MDBBtn>
-			  </MDBModalFooter>
-		 </MDBModal>	
+        <MDBModal
+          isOpen={this.state.logoutModal}
+          toggle={this.handleLogoutModal}
+          centered
+        >
+          <MDBModalHeader toggle={this.handleLogoutModal}>
+            Logout Confirmation
+          </MDBModalHeader>
+          <MDBModalBody>Are you sure you want to logout?</MDBModalBody>
+          <MDBModalFooter>
+            <MDBBtn onClick={this.handleLogoutModal}>Cancel</MDBBtn>
+            <MDBBtn color="danger" onClick={this.props.global.onLogout}>
+              Yes
+            </MDBBtn>
+          </MDBModalFooter>
+        </MDBModal>
         <Sidebar
           routes={lRoutes}
           logoText={"Manager"}
@@ -136,15 +149,15 @@ class Dashboard extends React.Component {
           handleDrawerToggle={this.handleDrawerToggle}
           open={this.state.mobileOpen}
           color={this.state.color}
-		  handleLogoutModal={this.handleLogoutModal}
+          handleLogoutModal={this.handleLogoutModal}
           {...rest}
         />
         <div className={classes.mainPanel} ref="mainPanel">
           <Navbar
-			brandRoutes={routes}  
+            brandRoutes={routes}
             routes={lRoutes}
             handleDrawerToggle={this.handleDrawerToggle}
-			handleLogoutModal={this.handleLogoutModal}
+            handleLogoutModal={this.handleLogoutModal}
             {...rest}
           />
           {/* On the /maps route we want the map to be on full screen - this is not possible if the content and conatiner classes are present because they have some paddings which would make the map smaller */}
@@ -156,7 +169,6 @@ class Dashboard extends React.Component {
             <div className={classes.map}>{switchRoutes}</div>
           )}
           {this.getRoute() ? <Footer /> : null}
-         
         </div>
       </div>
     );

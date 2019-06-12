@@ -1,0 +1,24 @@
+ecmaFeatures:
+    jsx: true
+
+plugins: 
+  - react
+  
+rules:
+    jsx-curly-spacing: 1
+    no-did-mount-set-state: 1
+    no-did-update-set-state: 1
+    no-direct-mutation-state: 1
+    no-is-mounted: 1
+    no-unknown-property: 1
+    prefer-es6-class: [1, "never"]
+    prop-types: 1
+    react-in-jsx-scope: 1
+    self-closing-comp: 1
+    sort-comp: 1
+    wrap-multilines: 1
+    jsx-boolean-value: [1, "always"]
+    jsx-equals-spacing: 1
+    jsx-indent-props: 1
+    jsx-key: 1
+    jsx-indent: 1

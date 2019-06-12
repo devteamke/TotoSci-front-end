@@ -126,15 +126,17 @@ if(prop.type !=="hidden"){
   var brand = (
     <div className={classes.logo}>
       <a
-        href="https://www.creative-tim.com"
+        href="#"
         className={classNames(classes.logoLink, {
           [classes.logoLinkRTL]: props.rtlActive
         })}
       >
         <div className={classes.logoImage}>
-          <img src={logo} alt="logo" style={{height:'50px'}} />
+          <img src={logo} alt="logo" style={{height:'50px',    marginLeft: "35px"}} />
         </div><br/>
+        <div className="text-center">
         {logoText}
+        </div>
       </a>
     </div>
   );

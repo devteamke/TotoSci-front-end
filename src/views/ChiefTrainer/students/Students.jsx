@@ -241,10 +241,8 @@ class AllUsers extends React.Component {
           <GridItem xs={12} sm={12} md={12}>
             <Card>
               <CardHeader color="info">
-                <h4 className={classes.cardTitleWhite}>All Personnel</h4>
-                <p className={classes.cardCategoryWhite}>
-                  Chief Trainers, Trainers, Instuctors etc...
-                </p>
+                <h4 className={classes.cardTitleWhite}>All students</h4>
+                <p className={classes.cardCategoryWhite}>...</p>
               </CardHeader>
               <CardBody>
                 <GridContainer>
@@ -261,12 +259,12 @@ class AllUsers extends React.Component {
                         style={{ display: "inline-block" }}
                         onClick={() => {
                           this.props.history.push({
-                            pathname: `/${this.props.global.user.role}/users/add`,
+                            pathname: `/${this.props.global.user.role}/students/register`,
                             data: ""
                           });
                         }}
                       >
-                        Add Personnel
+                        Register a new Student
                       </MDBBtn>
                     </div>
                     <div style={{ width: "15rem", float: "right" }}>
@@ -314,7 +312,7 @@ class AllUsers extends React.Component {
                               key={user._id}
                               onClick={() => {
                                 this.props.history.push({
-                                  pathname: `/${this.props.global.user.role}/users/single`,
+                                  pathname: `/${this.props.global.user.role}/students/single`,
                                   data: user
                                 });
                               }}

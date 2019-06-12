@@ -18,7 +18,12 @@ import {
   MDBTableHead,
   MDBBtn,
   MDBIcon,
-  MDBInput
+  MDBInput,
+  MDBCard,
+  MDBCardImage,
+  MDBCardBody,
+  MDBCardTitle,
+  MDBCardText
 } from "mdbreact";
 import { withGlobalContext } from "../../../context/Provider";
 
@@ -241,10 +246,8 @@ class AllUsers extends React.Component {
           <GridItem xs={12} sm={12} md={12}>
             <Card>
               <CardHeader color="info">
-                <h4 className={classes.cardTitleWhite}>All Personnel</h4>
-                <p className={classes.cardCategoryWhite}>
-                  Chief Trainers, Trainers, Instuctors etc...
-                </p>
+                <h4 className={classes.cardTitleWhite}>All Courses</h4>
+                <p className={classes.cardCategoryWhite}>...</p>
               </CardHeader>
               <CardBody>
                 <GridContainer>
@@ -261,12 +264,12 @@ class AllUsers extends React.Component {
                         style={{ display: "inline-block" }}
                         onClick={() => {
                           this.props.history.push({
-                            pathname: `/${this.props.global.user.role}/users/add`,
+                            pathname: `/${this.props.global.user.role}/courses/add`,
                             data: ""
                           });
                         }}
                       >
-                        Add Personnel
+                        Add Course
                       </MDBBtn>
                     </div>
                     <div style={{ width: "15rem", float: "right" }}>
@@ -277,7 +280,7 @@ class AllUsers extends React.Component {
                         group
                         value={state.email}
                         onChange={this._handleSearch}
-                        type="email"
+                        type="text"
                       />
                     </div>
                   </GridItem>
@@ -299,48 +302,32 @@ class AllUsers extends React.Component {
                 ) : (
                   <>
                     {state.users.length > 0 ? (
-                      <MDBTable hover responsive>
-                        <MDBTableHead>
-                          <tr>
-                            <th>ID</th>
-                            <th>Email</th>
-                            <th>Role</th>
-                            <th>Status</th>
-                          </tr>
-                        </MDBTableHead>
-                        <MDBTableBody>
-                          {state.users.map(user => (
-                            <tr
-                              key={user._id}
-                              onClick={() => {
-                                this.props.history.push({
-                                  pathname: `/${this.props.global.user.role}/users/single`,
-                                  data: user
-                                });
-                              }}
-                              style={{ cursor: "pointer" }}
-                            >
-                              <td>{user._id}</td>
-                              <td>{user.email}</td>
-                              <td>
-                                {user.role.charAt(0).toUpperCase() +
-                                  user.role.slice(1)}
-                              </td>
-                              <td>
-                                {user.status.charAt(0).toUpperCase() +
-                                  user.status.slice(1)}
-                              </td>
-                            </tr>
-                          ))}
-                        </MDBTableBody>
-                      </MDBTable>
+                      <GridContainer>
+                        {state.users.map(each => {
+                          return (
+                            <GridItem xs={12} sm={6} md={3}>
+                              {" "}
+                              <MDBCard
+                                style={{ width: "22rem", margin: "1rem" }}
+                              >
+                                <MDBCardBody>
+                                  <MDBCardTitle>{each.fname}</MDBCardTitle>
+                                  <MDBCardText>
+                                    <p>{each.fname}</p>
+                                  </MDBCardText>
+                                </MDBCardBody>
+                              </MDBCard>
+                            </GridItem>
+                          );
+                        })}
+                      </GridContainer>
                     ) : (
                       <div className="text-center" style={{ height: 300 }}>
                         <p style={{ marginTop: 145 }}>
                           {" "}
                           {state.query
                             ? `No records found matching \" ${state.query}\"`
-                            : "No Users"}
+                            : "No Courses yet"}
                         </p>{" "}
                       </div>
                     )}
@@ -374,7 +361,7 @@ class AllUsers extends React.Component {
 
                     <p style={{ color: "grey" }}>
                       (Showing {state.users.length} of {state.totalDocs}{" "}
-                      records){" "}
+                      courses){" "}
                     </p>
                   </div>
                 ) : null}

@@ -21,9 +21,7 @@ import globals from "../../../constants/Globals";
 import AddAlert from "@material-ui/icons/AddAlert";
 import { withGlobalContext } from "../../../context/Provider";
 //Form components
-
-import ChiefForm from "./forms/Chief";
-
+import TrainerForm from "./forms/Trainer";
 import InstructorForm from "./forms/Instructor";
 
 import validate from "./validation";
@@ -105,30 +103,64 @@ class AddUser extends React.Component {
         />
         <GridContainer>
           <GridItem xs={12} sm={12} md={11}>
+            <div
+              style={{
+                width: "15rem",
+                marginTop: "3px",
+                float: "left"
+              }}
+            >
+              <MDBBtn
+                size=""
+                style={{ display: "inline-block" }}
+                onClick={() => {
+                  this.props.history.push({
+                    pathname: `/${this.props.global.user.role}/users`,
+                    data: ""
+                  });
+                }}
+              >
+                Back
+              </MDBBtn>
+            </div>
+          </GridItem>
+          <GridItem xs={12} sm={12} md={11}>
             <Card>
               <CardHeader color="info">
-                <h4 className={classes.cardTitleWhite}>Add new Personnel</h4>
+                <h4 className={classes.cardTitleWhite}>Add new personnel</h4>
                 <p className={classes.cardCategoryWhite}>
-                  Chief Trainer etc...
+                  Trainer, instructor etc
                 </p>
               </CardHeader>
               <CardBody>
                 <GridContainer>
                   <MDBBtn
-                    outline={state.role !== "chief-trainer"}
+                    outline={state.role !== "trainer"}
                     color="primary"
                     onClick={() => {
-                      this.setState({ role: "chief-trainer" });
+                      this.setState({ role: "trainer" });
                     }}
                   >
                     {" "}
-                    Chief Trainer
+                    Trainer
+                  </MDBBtn>
+                  <MDBBtn
+                    outline={state.role !== "instructor"}
+                    color="primary"
+                    onClick={() => {
+                      this.setState({ role: "instructor" });
+                    }}
+                  >
+                    {" "}
+                    Instructor
                   </MDBBtn>
                 </GridContainer>
                 {state.role ? (
                   <>
-                    {state.role == "chief-trainer" ? (
-                      <ChiefForm snack={this._snack} />
+                    {state.role == "trainer" ? (
+                      <TrainerForm snack={this._snack} />
+                    ) : state.role == "instructor" ? (
+                      <InstructorForm snack={this._snack} />
                     ) : null}
 
                     <></>
