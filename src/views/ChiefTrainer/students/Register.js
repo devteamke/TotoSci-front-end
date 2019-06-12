@@ -132,36 +132,43 @@ class AddUser extends React.Component {
       state.lname === "" ? null : state.lname
     );
     //parent valudation
-    const pfnameError = validate(
+
+    let pfnameError = validate(
       "fname",
       state.pfname === "" ? null : state.pfname
     );
-    const plnameError = validate(
+    let plnameError = validate(
       "lname",
       state.plname === "" ? null : state.plname
     );
-    const emailError = validate(
+    let emailError = validate(
       "email",
       state.email === "" ? null : state.email
     );
-
-    const phoneError = validate(
+    let phoneError = validate(
       "phone",
       state.phone_number === "" ? null : state.phone_number
     );
+
     //other validation
     const schoolError = validate(
       "school",
       state.school === "" ? null : state.school
     );
+    if (state.existingSelected) {
+      pfnameError = null;
+      plnameError = null;
+      emailError = null;
+      phoneError = null;
+    }
 
     this.setState(
       {
         fnameError: fnameError,
         lnameError: lnameError,
         //parent
-        pfnameError: fnameError,
-        plnameError: lnameError,
+        pfnameError: pfnameError,
+        plnameError: plnameError,
         emailError: emailError,
         phone_numberError: phoneError,
         //Other info
@@ -183,16 +190,25 @@ class AddUser extends React.Component {
 
             studentFname: state.fname,
             studentLname: state.lname,
-            parentFname: state.pfname,
-            parentLname: state.plname,
-            email: state.email,
-            phone_number: state.phone_number
+            school: state.school
           };
+          if (!state.isExisting) {
+            data = {
+              ...data,
+              parentFname: state.pfname,
+              parentLname: state.plname,
+              email: state.email,
+              phone_number: { main: state.phone_number },
+              existingParent: false
+            };
+          } else {
+            data = { ...data, existingParent: state.selected._id };
+          }
           console.log(data);
           this.setState({ registering: true, serverRes: null });
           const AddAsync = async () =>
             await (await fetch(
-              `${globals.BASE_URL}/api/${this.props.global.user.role}/register_student`,
+              `${globals.BASE_URL}/api/${this.props.global.user.role}/new_student`,
               {
                 method: "post",
                 mode: "cors", // no-cors, cors, *same-origin
@@ -235,11 +251,12 @@ class AddUser extends React.Component {
                   residence: "",
                   residenceError: "",
 
-                  school: ""
+                  school: "",
+                  registering: false
                 });
               } else {
                 this.setState({
-                  addingUser: false,
+                  registering: false,
 
                   serverRes: data.message
                 });
@@ -256,7 +273,7 @@ class AddUser extends React.Component {
                 });
               }
               this._snack({ type: "warning", msg: error.toString() });
-              this.setState({ addingUser: false });
+              this.setState({ registering: false });
               console.log(error);
             });
         }
@@ -287,11 +304,6 @@ class AddUser extends React.Component {
 
     SearchAsync()
       .then(data => {
-        this._snack({
-          type: data.success ? "success" : "warning",
-          msg: data.message
-        });
-        console.log("[search return]", data);
         //this.setState({currentPlace:data.results})
         if (data.success) {
           this.setState({
@@ -567,7 +579,7 @@ class AddUser extends React.Component {
 
                                   <td>
                                     {capitalize(
-                                      state.selected.phone_number.main
+                                      state.selected.phone_number?state.selected.phone_number.main:''
                                     )}
                                   </td>
                                 </tr>
@@ -594,7 +606,22 @@ class AddUser extends React.Component {
                                         );
                                       })}
                                     </MDBListGroup>
-                                  ) : null}
+                                  ) : (
+                                    <div
+                                      className="text-center"
+                                      style={{
+                                        height: 50,
+                                        width: "270px",
+                                        paddingLeft: "7rem"
+                                      }}
+                                    >
+                                      <p style={{ marginTop: 50 }}>
+                                        {" "}
+                                        No parent found matching "
+                                        {state.searchStr}"
+                                      </p>{" "}
+                                    </div>
+                                  )}
                                 </>
                               ) : null}
                             </>
