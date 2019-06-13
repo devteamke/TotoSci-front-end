@@ -66,7 +66,7 @@ class AllUsers extends React.Component {
       serverRes: "",
       loading: true,
       loaded: false,
-      users: [],
+      courses: [],
       page: 1,
       limit: 10,
       //skip:0,
@@ -91,7 +91,7 @@ class AllUsers extends React.Component {
     };
     const FetchAsync = async () =>
       await (await fetch(
-        `${globals.BASE_URL}/api/${this.props.global.user.role}/all`,
+        `${globals.BASE_URL}/api/${this.props.global.user.role}/all_courses`,
         {
           method: "post",
           mode: "cors", // no-cors, cors, *same-origin
@@ -112,9 +112,9 @@ class AllUsers extends React.Component {
       .then(data => {
         //this.setState({currentPlace:data.results})
         if (data.success) {
-          console.log("[users]", data);
+          console.log("[Courses]", data);
           this.setState({
-            users: data.result.docs,
+            courses: data.result.docs,
             page: data.result.page,
             totalPages: data.result.totalPages,
             totalDocs: data.result.totalDocs,
@@ -301,19 +301,32 @@ class AllUsers extends React.Component {
                   </GridContainer>
                 ) : (
                   <>
-                    {state.users.length > 0 ? (
+                    {state.courses.length > 0 ? (
                       <GridContainer>
-                        {state.users.map(each => {
+                        {state.courses.map(each => {
                           return (
-                            <GridItem xs={12} sm={6} md={3}>
+                            <GridItem xs={12} sm={6} key={each._id} md={3}>
                               {" "}
                               <MDBCard
                                 style={{ width: "22rem", margin: "1rem" }}
+                                onClick={() => {
+                                  this.props.history.push({
+                                    pathname: `/${this.props.global.user.role}/courses/single`,
+                                    data: each
+                                  });
+                                }}
+                                style={{ cursor: "pointer" }}
                               >
+                                {console.log("Each Course", each)}
                                 <MDBCardBody>
-                                  <MDBCardTitle>{each.fname}</MDBCardTitle>
+                                  <MDBCardTitle>{each.name}</MDBCardTitle>
                                   <MDBCardText>
-                                    <p>{each.fname}</p>
+                                    <p>{each.description}</p>
+                                    <div style={{}}>
+                                      <p>
+                                        <i>Ksh {each.charge}</i>
+                                      </p>
+                                    </div>
                                   </MDBCardText>
                                 </MDBCardBody>
                               </MDBCard>
@@ -333,7 +346,7 @@ class AllUsers extends React.Component {
                     )}
                   </>
                 )}
-                {state.loaded && state.users.length > 0 ? (
+                {state.loaded && state.courses.length > 0 ? (
                   <div className="text-center">
                     {state.hasPrev ? (
                       <MDBBtn
@@ -360,7 +373,7 @@ class AllUsers extends React.Component {
                     ) : null}
 
                     <p style={{ color: "grey" }}>
-                      (Showing {state.users.length} of {state.totalDocs}{" "}
+                      (Showing {state.courses.length} of {state.totalDocs}{" "}
                       courses){" "}
                     </p>
                   </div>

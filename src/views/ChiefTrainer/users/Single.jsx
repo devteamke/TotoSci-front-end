@@ -1227,7 +1227,10 @@ class Single extends React.Component {
 export default withGlobalContext(withStyles(styles)(Single));
 
 const capitalize = str => {
-  return str.charAt(0).toUpperCase() + str.slice(1);
+  if (str) {
+    str = str.charAt(0).toUpperCase() + str.slice(1);
+  }
+  return str;
 };
 const btnBg = {
   backgroundColor: "#01afc4 !important"

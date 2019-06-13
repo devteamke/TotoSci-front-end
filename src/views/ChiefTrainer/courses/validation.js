@@ -10,15 +10,15 @@ export default function validate(fieldName, value) {
         message: "^Email is required!"
       }
     },
-    fname: {
+    name: {
       presence: {
-        message: "^First Name is required!"
+        message: "^Course Name is required!"
       }
     },
 
-    lname: {
+    description: {
       presence: {
-        message: "^Last Name is required!"
+        message: "^Course description is required!"
       }
     },
     salutation: {
@@ -31,65 +31,61 @@ export default function validate(fieldName, value) {
         message: "^Residence is required!"
       }
     },
-    school: {
-      presence: {
-        message: "^This field is required!"
-      }
-    },
-    county: {
-      presence: {
-        message: "^County is required!"
-      }
-    },
-    sub_county: {
-      presence: {
-        message: "^Sub County is required!"
-      }
-    },
     idno: {
       presence: {
         message: "^ID number is required!"
       },
+      length: {
+        minimum: 7,
+        tooShort: "^ID number needs to have %{count} digits or more",
+        maximum: 8,
+        tooLong: "^ID number needs to have less than %{count} digits "
+      },
       numericality: {
         onlyInteger: true,
         notInteger: "^ID number must be a number"
-      },
-      length: {
-        minimum: 7,
-        maximum: 8,
-        tooLong: "^ID number needs to have less than %{count} digits  ",
-        tooShort: "^ID number needs to have %{count} digits or more"
       }
     },
     phone: {
       presence: {
         message: "^Phone number is required!"
       },
+      length: {
+        minimum: 10,
+        tooShort: "^Phone number needs to have %{count} digits or more",
+        maximum: 15,
+        tooLong: "^Phone number needs to have less than %{count} digits "
+      },
       numericality: {
         onlyInteger: true,
         notInteger: "^ Phone number must be a number"
-      },
-      length: {
-        minimum: 10,
-        maximum: 15,
-        tooLong: "^Phone number needs to have less than %{count} digits  ",
-        tooShort: "^Phone number needs to have %{count} digits or more"
       }
     },
     alt_phone: {
       presence: {
         message: "^Alternative phone number is required!"
       },
+      length: {
+        minimum: 10,
+        tooShort:
+          "^Alternative phone number needs to have %{count} digits or more",
+        maximum: 15,
+        tooLong:
+          "^Alternative phone number needs to have less than %{count} digits "
+      },
       numericality: {
         onlyInteger: true,
         notInteger: "^Alternative phone number must be a number"
+      }
+    },
+    charge: {
+      presence: {
+        message: "^Session charge is required!"
       },
-      length: {
-        minimum: 10,
-        maximum: 15,
-        tooLong: "^Phone number needs to have less than %{count} digits  ",
-        tooShort:
-          "^Alternative phone number needs to have %{count} digits or more"
+
+      numericality: {
+        onlyInteger: true,
+        notInteger: "^Session charge must be a number"
       }
     }
   };

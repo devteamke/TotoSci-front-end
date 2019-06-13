@@ -3,7 +3,7 @@ import Dashboard from "@material-ui/icons/Dashboard";
 import SupervisedUserCircle from "@material-ui/icons/SupervisedUserCircle";
 import Add from "@material-ui/icons/Add";
 import Person from "@material-ui/icons/Person";
-import ListAlt from "@material-ui/icons/ListAlt";
+
 
 // core components/views for Admin layout
 import DashboardPage from "../views/Dashboard/Dashboard.jsx";
@@ -12,8 +12,7 @@ import AddUser from "../views/Manager/users/AddUser.js";
 import Users from "../views/Manager/users/Users.jsx";
 import Single from "../views/Manager/users/Single";
 
-import Courses from "../views/Manager/courses/Courses";
-import AddCourse from "../views/Manager/courses/Add";
+
 
 import Profile from "../views/profile/Profile.jsx";
 
@@ -45,22 +44,6 @@ const dashboardRoutes = [
     type: "nested"
   },
 
-  {
-    path: "/courses",
-    name: "Courses",
-
-    icon: ListAlt,
-    component: Courses,
-    layout: "/manager"
-  },
-  {
-    path: "/courses/add",
-    name: "Courses : Add",
-
-    component: AddCourse,
-    layout: "/manager",
-    type: "nested"
-  },
   {
     path: "/users/single",
     name: "Users : Single",

@@ -18,7 +18,12 @@ import {
   MDBTableHead,
   MDBBtn,
   MDBIcon,
-  MDBInput
+  MDBInput,
+  MDBCard,
+  MDBCardImage,
+  MDBCardBody,
+  MDBCardTitle,
+  MDBCardText
 } from "mdbreact";
 import { withGlobalContext } from "../../../context/Provider";
 
@@ -61,7 +66,7 @@ class AllUsers extends React.Component {
       serverRes: "",
       loading: true,
       loaded: false,
-      users: [],
+      schools: [],
       page: 1,
       limit: 10,
       //skip:0,
@@ -86,7 +91,7 @@ class AllUsers extends React.Component {
     };
     const FetchAsync = async () =>
       await (await fetch(
-        `${globals.BASE_URL}/api/${this.props.global.user.role}/all_students`,
+        `${globals.BASE_URL}/api/${this.props.global.user.role}/all_schools`,
         {
           method: "post",
           mode: "cors", // no-cors, cors, *same-origin
@@ -107,9 +112,9 @@ class AllUsers extends React.Component {
       .then(data => {
         //this.setState({currentPlace:data.results})
         if (data.success) {
-          console.log("[users]", data);
+          console.log("[Schools]", data);
           this.setState({
-            users: data.result.docs,
+            schools: data.result.docs,
             page: data.result.page,
             totalPages: data.result.totalPages,
             totalDocs: data.result.totalDocs,
@@ -241,7 +246,7 @@ class AllUsers extends React.Component {
           <GridItem xs={12} sm={12} md={12}>
             <Card>
               <CardHeader color="info">
-                <h4 className={classes.cardTitleWhite}>All students</h4>
+                <h4 className={classes.cardTitleWhite}>All Schools</h4>
                 <p className={classes.cardCategoryWhite}>...</p>
               </CardHeader>
               <CardBody>
@@ -259,12 +264,12 @@ class AllUsers extends React.Component {
                         style={{ display: "inline-block" }}
                         onClick={() => {
                           this.props.history.push({
-                            pathname: `/${this.props.global.user.role}/students/register`,
+                            pathname: `/${this.props.global.user.role}/schools/add`,
                             data: ""
                           });
                         }}
                       >
-                        Register a new Student
+                        Add School
                       </MDBBtn>
                     </div>
                     <div style={{ width: "15rem", float: "right" }}>
@@ -275,7 +280,7 @@ class AllUsers extends React.Component {
                         group
                         value={state.email}
                         onChange={this._handleSearch}
-                        type="email"
+                        type="text"
                       />
                     </div>
                   </GridItem>
@@ -296,30 +301,30 @@ class AllUsers extends React.Component {
                   </GridContainer>
                 ) : (
                   <>
-                    {state.users.length > 0 ? (
+                    {state.schools.length > 0 ? (
                       <MDBTable hover responsive>
                         <MDBTableHead>
                           <tr>
-                            <th>First Name</th>
-                            <th>Last Name</th>
-                            <th>School</th>
+                            <th>Name</th>
+                            <th>County</th>
+                            <th>Sub County</th>
                           </tr>
                         </MDBTableHead>
                         <MDBTableBody>
-                          {state.users.map(user => (
+                          {state.schools.map(school => (
                             <tr
-                              key={user._id}
+                              key={school._id}
                               onClick={() => {
                                 this.props.history.push({
-                                  pathname: `/${this.props.global.user.role}/students/single`,
-                                  data: user
+                                  pathname: `/${this.props.global.user.role}/schools/single`,
+                                  data: school
                                 });
                               }}
                               style={{ cursor: "pointer" }}
                             >
-                              <td>{capitalize(user.fname)}</td>
-                              <td>{capitalize(user.lname)}</td>
-                              <td>{unKebab(user.school[0].name)}</td>
+                              <td>{unKebab(school.name)}</td>
+                              <td>{capitalize(school.county)}</td>
+                              <td>{capitalize(school.sub_county)}</td>
                             </tr>
                           ))}
                         </MDBTableBody>
@@ -330,13 +335,13 @@ class AllUsers extends React.Component {
                           {" "}
                           {state.query
                             ? `No records found matching \" ${state.query}\"`
-                            : "No students yet"}
+                            : "No Schools yet"}
                         </p>{" "}
                       </div>
                     )}
                   </>
                 )}
-                {state.loaded && state.users.length > 0 ? (
+                {state.loaded && state.schools.length > 0 ? (
                   <div className="text-center">
                     {state.hasPrev ? (
                       <MDBBtn
@@ -363,8 +368,8 @@ class AllUsers extends React.Component {
                     ) : null}
 
                     <p style={{ color: "grey" }}>
-                      (Showing {state.users.length} of {state.totalDocs}{" "}
-                      records){" "}
+                      (Showing {state.schools.length} of {state.totalDocs}{" "}
+                      schools){" "}
                     </p>
                   </div>
                 ) : null}
@@ -396,4 +401,5 @@ const capitalize = str => {
   }
   return str;
 };
+
 export default withGlobalContext(withStyles(styles)(AllUsers));

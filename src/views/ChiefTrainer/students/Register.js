@@ -64,6 +64,7 @@ class AddUser extends React.Component {
       fnameError: null,
       lname: "",
       lnameError: null,
+
       //parent
       pfname: "",
       pfnameError: null,
@@ -75,6 +76,8 @@ class AddUser extends React.Component {
       residenceError: "",
 
       school: "",
+      schools: [],
+
       //Existing parent
       isExisting: true,
       searchStr: "",
@@ -82,6 +85,10 @@ class AddUser extends React.Component {
       parentList: [],
       existingSelected: false,
 
+      //sponsor
+      isSponsored: true,
+
+      loading: true,
       //other
       addingUser: false,
       open: false,
@@ -141,10 +148,7 @@ class AddUser extends React.Component {
       "lname",
       state.plname === "" ? null : state.plname
     );
-    let emailError = validate(
-      "email",
-      state.email === "" ? null : state.email
-    );
+    let emailError = validate("email", state.email === "" ? null : state.email);
     let phoneError = validate(
       "phone",
       state.phone_number === "" ? null : state.phone_number
@@ -155,7 +159,7 @@ class AddUser extends React.Component {
       "school",
       state.school === "" ? null : state.school
     );
-    if (state.existingSelected) {
+    if (state.existingSelected || state.isSponsored) {
       pfnameError = null;
       plnameError = null;
       emailError = null;
@@ -186,23 +190,24 @@ class AddUser extends React.Component {
         ) {
           // alert('Details are valid!'+globals.BASE_URL)
           let data = {
-            role: "parent",
-
             studentFname: state.fname,
             studentLname: state.lname,
-            school: state.school
+            school: state.school,
+            isSponsored: state.isSponsored
           };
-          if (!state.isExisting) {
-            data = {
-              ...data,
-              parentFname: state.pfname,
-              parentLname: state.plname,
-              email: state.email,
-              phone_number: { main: state.phone_number },
-              existingParent: false
-            };
-          } else {
-            data = { ...data, existingParent: state.selected._id };
+          if (!state.isSponsored) {
+            if (!state.isExisting) {
+              data = {
+                ...data,
+                parentFname: state.pfname,
+                parentLname: state.plname,
+                email: state.email,
+                phone_number: { main: state.phone_number },
+                existingParent: false
+              };
+            } else {
+              data = { ...data, existingParent: state.selected._id };
+            }
           }
           console.log(data);
           this.setState({ registering: true, serverRes: null });
@@ -250,6 +255,8 @@ class AddUser extends React.Component {
                   emailError: null,
                   residence: "",
                   residenceError: "",
+                  //Sponsored
+                  isSponsored: true,
 
                   school: "",
                   registering: false
@@ -328,13 +335,61 @@ class AddUser extends React.Component {
         console.log(error);
       });
   };
+  _fetchSchools = () => {
+    const FetchAsync = async () =>
+      await (await fetch(
+        `${globals.BASE_URL}/api/${this.props.global.user.role}/fetch_schools`,
+        {
+          method: "post",
+          mode: "cors", // no-cors, cors, *same-origin
+          cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
+          credentials: "same-origin", // include, *same-origin, omit
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: this.props.global.token
+            // "Content-Type": "application/x-www-form-urlencoded",
+          },
+          redirect: "follow", // manual, *follow, error
+          referrer: "no-referrer", // no-referrer, *client
+          body: JSON.stringify({ data: "hello server" })
+        }
+      )).json();
 
-  schools = () => {
-    return <MenuItem value={"heri-hub"}>Heri Hub</MenuItem>;
+    FetchAsync()
+      .then(data => {
+        //this.setState({currentPlace:data.results})
+        if (data.success) {
+          this.setState({
+            schools: data.schools,
+            loading: false
+          });
+        } else {
+        }
+      })
+      .catch(error => {
+        console.log(error);
+        if (error == "TypeError: Failed to fetch") {
+          //   alert('Server is offline')
+        } else if (error.message == "Network request failed") {
+          // alert('No internet connection')
+          this.setState({
+            serverRes: "Network request failed"
+          });
+        }
+        this._snack({ type: "warning", msg: error.toString() });
+
+        console.log(error);
+      });
   };
+
   handleOptionChange = () => {
     this.setState({
       isExisting: !this.state.isExisting
+    });
+  };
+  handleTypeChange = () => {
+    this.setState({
+      isSponsored: !this.state.isSponsored
     });
   };
   _handleSelect = obj => {
@@ -342,11 +397,36 @@ class AddUser extends React.Component {
   };
   componentDidMount = () => {
     this._snack();
+    this._fetchSchools();
   };
 
   render() {
     const { classes } = this.props;
     const state = this.state;
+
+    let items = null;
+    if (state.schools.length > 0) {
+      console.log("schools", this.state.schools);
+      items = state.schools.map(each => {
+        let school = unKebab(each.name);
+
+        return <MenuItem value={each._id}>{school}</MenuItem>;
+      });
+    }
+
+    if (state.loading) {
+      return (
+        <div style={center}>
+          <div
+            className="spinner-grow text-info"
+            role="status"
+            style={{ marginBottom: "15px" }}
+          >
+            <span className="sr-only">Loading...</span>
+          </div>
+        </div>
+      );
+    }
     return (
       <div>
         <Snackbar
@@ -453,317 +533,365 @@ class AddUser extends React.Component {
                       {state.lnameError}
                     </p>
                   </GridItem>
-
                   <GridItem xs={12} sm={12} md={12}>
-                    <h5>Parent details</h5>
+                    <p>
+                      <b>Type</b>
+                    </p>
                   </GridItem>
                   <GridItem xs={12} sm={12} md={12}>
                     <div style={{ marginLeft: "1.3rem" }}>
                       <label>
                         <input
                           type="radio"
-                          name="react-tips"
+                          name="sponsor"
                           value="option1"
-                          checked={state.isExisting}
-                          onChange={this.handleOptionChange}
+                          checked={state.isSponsored}
+                          onChange={this.handleTypeChange}
                           className="form-check-input"
                         />
-                        Existing parent
+                        Sponsored
                       </label>
                       <label style={{ marginLeft: "3rem" }}>
                         <input
                           type="radio"
-                          name="react-tips"
+                          name="sponsor"
                           value="option1"
-                          checked={!state.isExisting}
-                          onChange={this.handleOptionChange}
+                          checked={!state.isSponsored}
+                          onChange={this.handleTypeChange}
                           className="form-check-input"
                         />
-                        New Parent
+                        Self-Sponsored
                       </label>
                     </div>
                   </GridItem>
-
-                  {state.isExisting ? (
-                    <span style={{ marginBottom: "24px" }}>
+                  {!state.isSponsored ? (
+                    <>
                       <GridItem xs={12} sm={12} md={12}>
-                        <div
-                          style={{
-                            width: "22rem",
-                            float: "left",
-                            marginBottom: "-24px"
-                          }}
-                        >
-                          {state.existingSelected ? (
-                            <MDBIcon
-                              size="2x"
-                              className="red-text pr-3"
-                              style={{ marginLeft: "6rem" }}
-                              onClick={() =>
+                        <h5>Parent details</h5>
+                      </GridItem>
+                      <GridItem xs={12} sm={12} md={12}>
+                        <div style={{ marginLeft: "1.3rem" }}>
+                          <label>
+                            <input
+                              type="radio"
+                              name="react-tips"
+                              value="option1"
+                              checked={state.isExisting}
+                              onChange={this.handleOptionChange}
+                              className="form-check-input"
+                            />
+                            Existing parent
+                          </label>
+                          <label style={{ marginLeft: "3rem" }}>
+                            <input
+                              type="radio"
+                              name="react-tips"
+                              value="option1"
+                              checked={!state.isExisting}
+                              onChange={this.handleOptionChange}
+                              className="form-check-input"
+                            />
+                            New Parent
+                          </label>
+                        </div>
+                      </GridItem>
+
+                      {state.isExisting ? (
+                        <span style={{ marginBottom: "24px" }}>
+                          <GridItem xs={12} sm={12} md={12}>
+                            <div
+                              style={{
+                                width: "18rem",
+                                float: "left",
+                                marginBottom: "-24px"
+                              }}
+                            >
+                              {state.existingSelected ? (
+                                <MDBIcon
+                                  size="2x"
+                                  className="red-text pr-3"
+                                  style={{ marginLeft: "6rem" }}
+                                  onClick={() =>
+                                    this.setState({
+                                      selected: null,
+                                      existingSelected: false,
+                                      searchStr: ""
+                                    })
+                                  }
+                                  icon="user-times"
+                                />
+                              ) : (
+                                <MDBInput
+                                  responsive
+                                  label={"Search existing parent by name"}
+                                  group
+                                  value={state.searchStr}
+                                  onChange={event => {
+                                    this.setState(
+                                      { searchStr: event.target.value },
+                                      () => this._handleSearch()
+                                    );
+                                  }}
+                                  type="email"
+                                />
+                              )}
+                            </div>
+                            <br />
+                            <div
+                              style={{ width: "1rem", marginBottom: "30px" }}
+                            >
+                              {state.searching ? (
+                                <div className="text-center">
+                                  <div
+                                    className="spinner-grow text-info"
+                                    role="status"
+                                    style={{
+                                      marginBottom: "15px",
+                                      marginLeft: "9rem",
+                                      marginTop: "1.1rem"
+                                    }}
+                                  >
+                                    <span className="sr-only">Loading...</span>
+                                  </div>
+                                </div>
+                              ) : null}
+
+                              {state.existingSelected ? (
+                                <MDBTable borderless hover small>
+                                  <MDBTableBody>
+                                    <tr>
+                                      <td style={{ width: "50%" }}>
+                                        <b style={{ fontSize: "1.25em" }}>
+                                          First Name
+                                        </b>
+                                      </td>
+
+                                      <td>
+                                        {capitalize(state.selected.fname)}
+                                      </td>
+                                    </tr>
+                                    <tr>
+                                      <td style={{ width: "50%" }}>
+                                        <b style={{ fontSize: "1.25em" }}>
+                                          Last Name
+                                        </b>
+                                      </td>
+
+                                      <td>
+                                        {capitalize(state.selected.lname)}
+                                      </td>
+                                    </tr>
+                                    <tr>
+                                      <td style={{ width: "50%" }}>
+                                        <b style={{ fontSize: "1.25em" }}>
+                                          Email
+                                        </b>
+                                      </td>
+
+                                      <td>
+                                        {capitalize(state.selected.email)}
+                                      </td>
+                                    </tr>
+                                    <tr>
+                                      <td style={{ width: "50%" }}>
+                                        <b style={{ fontSize: "1.25em" }}>
+                                          Phone_number
+                                        </b>
+                                      </td>
+
+                                      <td>
+                                        {capitalize(
+                                          state.selected.phone_number
+                                            ? state.selected.phone_number.main
+                                            : ""
+                                        )}
+                                      </td>
+                                    </tr>
+                                  </MDBTableBody>
+                                </MDBTable>
+                              ) : (
+                                <>
+                                  {state.searchStr !== "" &&
+                                  !this.state.searching ? (
+                                    <>
+                                      {state.parentList.length > 0 ? (
+                                        <MDBListGroup
+                                          style={{ width: "18rem" }}
+                                        >
+                                          {state.parentList.map(parent => {
+                                            return (
+                                              <MDBListGroupItem
+                                                className="item"
+                                                onClick={() =>
+                                                  this._handleSelect(parent)
+                                                }
+                                              >
+                                                {capitalize(parent.fname)}{" "}
+                                                {capitalize(parent.lname)}
+                                              </MDBListGroupItem>
+                                            );
+                                          })}
+                                        </MDBListGroup>
+                                      ) : (
+                                        <div
+                                          className="text-center"
+                                          style={{
+                                            height: 50,
+                                            width: "270px",
+                                            paddingLeft: "7rem"
+                                          }}
+                                        >
+                                          <p style={{ marginTop: 50 }}>
+                                            {" "}
+                                            No parent found matching "
+                                            {state.searchStr}"
+                                          </p>{" "}
+                                        </div>
+                                      )}
+                                    </>
+                                  ) : null}
+                                </>
+                              )}
+                            </div>
+                          </GridItem>
+                        </span>
+                      ) : (
+                        <>
+                          <GridItem xs={12} sm={12} md={6}>
+                            <MDBInput
+                              label={"First Name"}
+                              group
+                              value={state.pfname}
+                              onChange={event => {
+                                this.setState({ pfname: event.target.value });
+                              }}
+                              onBlur={() =>
                                 this.setState({
-                                  selected: null,
-                                  existingSelected: false,
-                                  searchStr: ""
+                                  pfnameError: validate(
+                                    "fname",
+                                    state.pfname == "" ? null : state.pfname
+                                  )
                                 })
                               }
-                              icon="user-times"
+                              error="Whoops!"
+                              success="right"
                             />
-                          ) : (
-                            <MDBInput
-                              responsive
-                              label={"Search existing parent by name"}
-                              group
-                              value={state.searchStr}
-                              onChange={event => {
-                                this.setState(
-                                  { searchStr: event.target.value },
-                                  () => this._handleSearch()
-                                );
+                            <p
+                              style={{
+                                color: "red",
+                                fontSize: "0.8rem",
+                                textAlign: "center"
                               }}
-                              type="email"
+                            >
+                              {state.pfnameError}
+                            </p>
+                          </GridItem>
+                          <GridItem xs={12} sm={12} md={6}>
+                            <MDBInput
+                              label={"Last Name"}
+                              group
+                              value={state.plname}
+                              onChange={event => {
+                                this.setState({ plname: event.target.value });
+                              }}
+                              type="text"
+                              onBlur={() =>
+                                this.setState({
+                                  plnameError: validate(
+                                    "lname",
+                                    state.plname == "" ? null : state.plname
+                                  )
+                                })
+                              }
+                              error="Whoops!"
+                              success="right"
                             />
-                          )}
-                        </div>
-                        <br />
-                        <div style={{ width: "1rem", marginBottom: "30px" }}>
-                          {state.searching ? (
-                            <div className="text-center">
-                              <div
-                                className="spinner-grow text-info"
-                                role="status"
-                                style={{
-                                  marginBottom: "15px",
-                                  marginLeft: "9rem",
-                                  marginTop: "1.1rem"
-                                }}
-                              >
-                                <span className="sr-only">Loading...</span>
-                              </div>
-                            </div>
-                          ) : null}
+                            <p
+                              style={{
+                                color: "red",
+                                fontSize: "0.8rem",
+                                textAlign: "center"
+                              }}
+                            >
+                              {state.plnameError}
+                            </p>
+                          </GridItem>
 
-                          {state.existingSelected ? (
-                            <MDBTable borderless hover small>
-                              <MDBTableBody>
-                                <tr>
-                                  <td style={{ width: "50%" }}>
-                                    <b style={{ fontSize: "1.25em" }}>
-                                      First Name
-                                    </b>
-                                  </td>
-
-                                  <td>{capitalize(state.selected.fname)}</td>
-                                </tr>
-                                <tr>
-                                  <td style={{ width: "50%" }}>
-                                    <b style={{ fontSize: "1.25em" }}>
-                                      Last Name
-                                    </b>
-                                  </td>
-
-                                  <td>{capitalize(state.selected.lname)}</td>
-                                </tr>
-                                <tr>
-                                  <td style={{ width: "50%" }}>
-                                    <b style={{ fontSize: "1.25em" }}>Email</b>
-                                  </td>
-
-                                  <td>{capitalize(state.selected.email)}</td>
-                                </tr>
-                                <tr>
-                                  <td style={{ width: "50%" }}>
-                                    <b style={{ fontSize: "1.25em" }}>
-                                      Phone_number
-                                    </b>
-                                  </td>
-
-                                  <td>
-                                    {capitalize(
-                                      state.selected.phone_number?state.selected.phone_number.main:''
-                                    )}
-                                  </td>
-                                </tr>
-                              </MDBTableBody>
-                            </MDBTable>
-                          ) : (
-                            <>
-                              {state.searchStr !== "" &&
-                              !this.state.searching ? (
-                                <>
-                                  {state.parentList.length > 0 ? (
-                                    <MDBListGroup style={{ width: "22rem" }}>
-                                      {state.parentList.map(parent => {
-                                        return (
-                                          <MDBListGroupItem
-                                            className="item"
-                                            onClick={() =>
-                                              this._handleSelect(parent)
-                                            }
-                                          >
-                                            {capitalize(parent.fname)}{" "}
-                                            {capitalize(parent.lname)}
-                                          </MDBListGroupItem>
-                                        );
-                                      })}
-                                    </MDBListGroup>
-                                  ) : (
-                                    <div
-                                      className="text-center"
-                                      style={{
-                                        height: 50,
-                                        width: "270px",
-                                        paddingLeft: "7rem"
-                                      }}
-                                    >
-                                      <p style={{ marginTop: 50 }}>
-                                        {" "}
-                                        No parent found matching "
-                                        {state.searchStr}"
-                                      </p>{" "}
-                                    </div>
-                                  )}
-                                </>
-                              ) : null}
-                            </>
-                          )}
-                        </div>
-                      </GridItem>
-                    </span>
-                  ) : (
-                    <>
-                      <GridItem xs={12} sm={12} md={6}>
-                        <MDBInput
-                          label={"First Name"}
-                          group
-                          value={state.pfname}
-                          onChange={event => {
-                            this.setState({ pfname: event.target.value });
-                          }}
-                          onBlur={() =>
-                            this.setState({
-                              pfnameError: validate(
-                                "fname",
-                                state.pfname == "" ? null : state.pfname
-                              )
-                            })
-                          }
-                          error="Whoops!"
-                          success="right"
-                        />
-                        <p
-                          style={{
-                            color: "red",
-                            fontSize: "0.8rem",
-                            textAlign: "center"
-                          }}
-                        >
-                          {state.pfnameError}
-                        </p>
-                      </GridItem>
-                      <GridItem xs={12} sm={12} md={6}>
-                        <MDBInput
-                          label={"Last Name"}
-                          group
-                          value={state.plname}
-                          onChange={event => {
-                            this.setState({ plname: event.target.value });
-                          }}
-                          type="text"
-                          onBlur={() =>
-                            this.setState({
-                              plnameError: validate(
-                                "lname",
-                                state.plname == "" ? null : state.plname
-                              )
-                            })
-                          }
-                          error="Whoops!"
-                          success="right"
-                        />
-                        <p
-                          style={{
-                            color: "red",
-                            fontSize: "0.8rem",
-                            textAlign: "center"
-                          }}
-                        >
-                          {state.plnameError}
-                        </p>
-                      </GridItem>
-
-                      <GridItem xs={12} sm={12} md={12}>
-                        <MDBInput
-                          label={"Email Address"}
-                          group
-                          value={state.email}
-                          onChange={event => {
-                            this.setState({ email: event.target.value });
-                          }}
-                          onBlur={() =>
-                            this.setState({
-                              emailError: validate(
-                                "email",
-                                state.email == "" ? null : state.email
-                              )
-                            })
-                          }
-                          error="Whoops!"
-                          success="right"
-                        />
-                        <p
-                          style={{
-                            color: "red",
-                            fontSize: "0.8rem",
-                            textAlign: "center"
-                          }}
-                        >
-                          {state.emailError}
-                        </p>
-                      </GridItem>
-                      <GridItem xs={12} sm={12} md={6}>
-                        <MDBInput
-                          label={"Phone Number"}
-                          group
-                          value={state.phone_number}
-                          onChange={event => {
-                            this.setState({
-                              phone_number: event.target.value,
-                              phone_numberError: validate(
-                                "phone",
-                                event.target.value == ""
-                                  ? null
-                                  : event.target.value
-                              )
-                            });
-                          }}
-                          onBlur={() =>
-                            this.setState({
-                              phone_numberError: validate(
-                                "phone",
-                                state.phone_number == ""
-                                  ? null
-                                  : state.phone_number
-                              )
-                            })
-                          }
-                          error="Whoops!"
-                          success="right"
-                        />
-                        <p
-                          style={{
-                            color: "red",
-                            fontSize: "0.8rem",
-                            textAlign: "center"
-                          }}
-                        >
-                          {state.phone_numberError}
-                        </p>
-                      </GridItem>
+                          <GridItem xs={12} sm={12} md={12}>
+                            <MDBInput
+                              label={"Email Address"}
+                              group
+                              value={state.email}
+                              onChange={event => {
+                                this.setState({ email: event.target.value });
+                              }}
+                              onBlur={() =>
+                                this.setState({
+                                  emailError: validate(
+                                    "email",
+                                    state.email == "" ? null : state.email
+                                  )
+                                })
+                              }
+                              error="Whoops!"
+                              success="right"
+                            />
+                            <p
+                              style={{
+                                color: "red",
+                                fontSize: "0.8rem",
+                                textAlign: "center"
+                              }}
+                            >
+                              {state.emailError}
+                            </p>
+                          </GridItem>
+                          <GridItem xs={12} sm={12} md={6}>
+                            <MDBInput
+                              label={"Phone Number"}
+                              group
+                              value={state.phone_number}
+                              onChange={event => {
+                                this.setState({
+                                  phone_number: event.target.value,
+                                  phone_numberError: validate(
+                                    "phone",
+                                    event.target.value == ""
+                                      ? null
+                                      : event.target.value
+                                  )
+                                });
+                              }}
+                              onBlur={() =>
+                                this.setState({
+                                  phone_numberError: validate(
+                                    "phone",
+                                    state.phone_number == ""
+                                      ? null
+                                      : state.phone_number
+                                  )
+                                })
+                              }
+                              error="Whoops!"
+                              success="right"
+                            />
+                            <p
+                              style={{
+                                color: "red",
+                                fontSize: "0.8rem",
+                                textAlign: "center"
+                              }}
+                            >
+                              {state.phone_numberError}
+                            </p>
+                          </GridItem>
+                        </>
+                      )}
+                      <br />
+                      <br />
+                      <br />
                     </>
-                  )}
-                  <br />
-                  <br />
-                  <br />
+                  ) : null}
                   <GridItem xs={12} sm={12} md={12} className="mt-5">
                     <h5>Other details</h5>
                   </GridItem>
@@ -785,7 +913,7 @@ class AddUser extends React.Component {
                         <MenuItem value="">
                           <em>-</em>
                         </MenuItem>
-                        {this.schools()}
+                        {items}
                       </Select>
                     </FormControl>
                     <p
@@ -835,6 +963,26 @@ const capitalize = str => {
     str = str.charAt(0).toUpperCase() + str.slice(1);
   }
   return str;
+};
+const unKebab = string => {
+  if (string) {
+    string = string.replace(/-/g, " ").toLowerCase();
+
+    let splitStr = string.toLowerCase().split(" ");
+    string = splitStr.map(str => {
+      return str.charAt(0).toUpperCase() + str.slice(1) + " ";
+    });
+  }
+
+  return string;
+};
+
+const center = {
+  position: "absolute",
+  left: "50%",
+  top: "50%",
+  "-webkit-transform": "translate(-50%, -50%)",
+  transform: "translate(-50%, -50%)"
 };
 
 export default withGlobalContext(withStyles(styles)(AddUser));

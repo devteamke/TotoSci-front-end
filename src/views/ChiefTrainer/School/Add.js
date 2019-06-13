@@ -51,9 +51,10 @@ class AddUser extends React.Component {
       //form fields
       name: "",
       nameError: null,
-      description: "",
-      descriptionError: null,
-
+      county: "",
+      countyError: null,
+      sub_county: "",
+      sub_countyError: null,
       //other
       adding: false,
       open: false,
@@ -95,29 +96,35 @@ class AddUser extends React.Component {
 
   handleSubmit = () => {
     let state = this.state;
-    const nameError = validate("fname", state.name === "" ? null : state.name);
-    const descriptionError = validate(
-      "lname",
-      state.description === "" ? null : state.description
+    const nameError = validate("name", state.name === "" ? null : state.name);
+    const countyError = validate(
+      "county",
+      state.county === "" ? null : state.county
+    );
+    const sub_countyError = validate(
+      "sub_county",
+      state.sub_county === "" ? null : state.sub_county
     );
 
     this.setState(
       {
         nameError: nameError,
-        descriptionError: descriptionError
+        countyError: countyError,
+        sub_countyError: sub_countyError
       },
       () => {
-        if (!descriptionError && !nameError) {
+        if (!countyError && !nameError && !sub_countyError) {
           // alert('Details are valid!'+globals.BASE_URL)
           let data = {
             name: state.name,
-            description: state.description
+            county: state.county,
+            sub_county: state.sub_county
           };
           console.log(data);
           this.setState({ adding: true, serverRes: null });
           const AddAsync = async () =>
             await (await fetch(
-              `${globals.BASE_URL}/api/${this.props.global.user.role}/add_course`,
+              `${globals.BASE_URL}/api/${this.props.global.user.role}/new_school`,
               {
                 method: "post",
                 mode: "cors", // no-cors, cors, *same-origin
@@ -136,20 +143,22 @@ class AddUser extends React.Component {
 
           AddAsync()
             .then(data => {
-              this.props.snack({
+              this._snack({
                 type: data.success ? "success" : "warning",
                 msg: data.message
               });
               //this.setState({currentPlace:data.results})
               if (data.success) {
                 this.setState({
-                  registering: false,
+                  adding: false,
                   serverRes: data.message,
                   //form fields
                   name: "",
                   nameError: null,
-                  description: "",
-                  descriptionError: null
+                  county: "",
+                  countyError: null,
+                  sub_county: "",
+                  sub_countyError: null
                 });
               } else {
                 this.setState({
@@ -213,7 +222,7 @@ class AddUser extends React.Component {
                 style={{ display: "inline-block" }}
                 onClick={() => {
                   this.props.history.push({
-                    pathname: `/${this.props.global.user.role}/courses`,
+                    pathname: `/${this.props.global.user.role}/schools`,
                     data: ""
                   });
                 }}
@@ -225,8 +234,8 @@ class AddUser extends React.Component {
           <GridItem xs={12} sm={12} md={11}>
             <Card>
               <CardHeader color="info">
-                <h4 className={classes.cardTitleWhite}>Add a new course</h4>
-                <p className={classes.cardCategoryWhite}>Fill in course info</p>
+                <h4 className={classes.cardTitleWhite}>Add a new School</h4>
+                <p className={classes.cardCategoryWhite}>Fill in School info</p>
               </CardHeader>
               <CardBody>
                 <GridContainer>
@@ -240,9 +249,9 @@ class AddUser extends React.Component {
                       }}
                       onBlur={() =>
                         this.setState({
-                          pfnameError: validate(
-                            "fname",
-                            state.pfname == "" ? null : state.pfname
+                          nameError: validate(
+                            "name",
+                            state.name == "" ? null : state.name
                           )
                         })
                       }
@@ -261,18 +270,17 @@ class AddUser extends React.Component {
                   </GridItem>
                   <GridItem xs={12} sm={12} md={8}>
                     <MDBInput
-                      label={"Description"}
+                      label={"Sub County"}
                       group
-                      type="textarea"
-                      value={state.description}
+                      value={state.sub_county}
                       onChange={event => {
-                        this.setState({ description: event.target.value });
+                        this.setState({ sub_county: event.target.value });
                       }}
                       onBlur={() =>
                         this.setState({
-                          descriptionError: validate(
-                            "description",
-                            state.description == "" ? null : state.description
+                          sub_countyError: validate(
+                            "sub_county",
+                            state.sub_county == "" ? null : state.sub_county
                           )
                         })
                       }
@@ -286,7 +294,36 @@ class AddUser extends React.Component {
                         textAlign: "center"
                       }}
                     >
-                      {state.descriptionError}
+                      {state.sub_countyError}
+                    </p>
+                  </GridItem>
+                  <GridItem xs={12} sm={12} md={8}>
+                    <MDBInput
+                      label={"County"}
+                      group
+                      value={state.county}
+                      onChange={event => {
+                        this.setState({ county: event.target.value });
+                      }}
+                      onBlur={() =>
+                        this.setState({
+                          countyError: validate(
+                            "county",
+                            state.county == "" ? null : state.county
+                          )
+                        })
+                      }
+                      error="Whoops!"
+                      success="right"
+                    />
+                    <p
+                      style={{
+                        color: "red",
+                        fontSize: "0.8rem",
+                        textAlign: "center"
+                      }}
+                    >
+                      {state.countyError}
                     </p>
                   </GridItem>
                 </GridContainer>
@@ -303,7 +340,7 @@ class AddUser extends React.Component {
                           <span className="sr-only">Loading...</span>
                         </div>
                       ) : (
-                        <MDBBtn onClick={this.handleSubmit}>Add Course</MDBBtn>
+                        <MDBBtn onClick={this.handleSubmit}>Add School</MDBBtn>
                       )}
                     </div>
                   </GridItem>
