@@ -547,7 +547,7 @@ class Single extends React.Component {
                     </p>
                   </GridItem>
 
-                  <GridItem xs={12} sm={12} md={6}>
+                  <GridItem xs={12} sm={12} md={8}>
                     <FormControl style={{ width: "100%" }}>
                       <InputLabel htmlFor="">
                         Learning Venue or School

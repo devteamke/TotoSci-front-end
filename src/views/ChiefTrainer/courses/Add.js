@@ -114,14 +114,14 @@ class AddUser extends React.Component {
       },
       () => {
         if (!descriptionError && !nameError && !chargeError) {
-          // alert('Details are valid!'+globals.BASE_URL)
+         this.setState({ adding:true});
           let data = {
             name: state.name,
             description: state.description,
             charge: state.charge
           };
           console.log(data);
-          this.setState({ adding: true, serverRes: null });
+          this.setState({ serverRes: null });
           const AddAsync = async () =>
             await (await fetch(
               `${globals.BASE_URL}/api/${this.props.global.user.role}/new_course`,

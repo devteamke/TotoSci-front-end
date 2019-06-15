@@ -2,9 +2,6 @@ import React from "react";
 // @material-ui/core components
 import withStyles from "@material-ui/core/styles/withStyles";
 import InputLabel from "@material-ui/core/InputLabel";
-import MenuItem from "@material-ui/core/MenuItem";
-import FormControl from "@material-ui/core/FormControl";
-import Select from "@material-ui/core/Select";
 // core components
 
 import GridItem from "../../../../components/dcomponents/Grid/GridItem.jsx";
@@ -26,7 +23,7 @@ class Admin extends React.Component {
     console.log("[super props]", props);
     this.state = {
       //form fields
-      role: "trainer",
+      role: "instructor",
 
       email: "",
       emailError: null,
@@ -34,13 +31,9 @@ class Admin extends React.Component {
       fnameError: null,
       lname: "",
       lnameError: null,
-
       phone_number: "",
       phone_numberError: null,
 
-      school: "",
-      schools: [],
-      loading: true,
       //other
       addingUser: false,
       open: false,
@@ -48,57 +41,6 @@ class Admin extends React.Component {
       resType: "warning"
     };
   }
-  handleChange = event => {
-    console.log("value", event.target.value);
-    this.setState({ [event.target.name]: event.target.value });
-  };
-
-  _fetchSchools = () => {
-    const FetchAsync = async () =>
-      await (await fetch(
-        `${globals.BASE_URL}/api/${this.props.global.user.role}/fetch_schools`,
-        {
-          method: "post",
-          mode: "cors", // no-cors, cors, *same-origin
-          cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
-          credentials: "same-origin", // include, *same-origin, omit
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: this.props.global.token
-            // "Content-Type": "application/x-www-form-urlencoded",
-          },
-          redirect: "follow", // manual, *follow, error
-          referrer: "no-referrer", // no-referrer, *client
-          body: JSON.stringify({ data: "hello server" })
-        }
-      )).json();
-
-    FetchAsync()
-      .then(data => {
-        //this.setState({currentPlace:data.results})
-        if (data.success) {
-          this.setState({
-            schools: data.schools,
-            loading: false
-          });
-        } else {
-        }
-      })
-      .catch(error => {
-        console.log(error);
-        if (error == "TypeError: Failed to fetch") {
-          //   alert('Server is offline')
-        } else if (error.message == "Network request failed") {
-          // alert('No internet connection')
-          this.setState({
-            serverRes: "Network request failed"
-          });
-        }
-        this._snack({ type: "warning", msg: error.toString() });
-
-        console.log(error);
-      });
-  };
   handleSubmit = () => {
     let state = this.state;
     const fnameError = validate(
@@ -113,11 +55,6 @@ class Admin extends React.Component {
       "lname",
       state.lname === "" ? null : state.lname
     );
-    const schoolError = validate(
-      "school",
-      state.school === "" ? null : state.school
-    );
-
     const phoneError = validate(
       "phone",
       state.phone_number === "" ? null : state.phone_number
@@ -128,17 +65,10 @@ class Admin extends React.Component {
         emailError: emailError,
         fnameError: fnameError,
         lnameError: lnameError,
-        schoolError: schoolError,
         phone_numberError: phoneError
       },
       () => {
-        if (
-          !emailError &&
-          !fnameError &&
-          !lnameError &&
-          !phoneError &&
-          !schoolError
-        ) {
+        if (!emailError && !fnameError && !lnameError && !phoneError) {
           // alert('Details are valid!'+globals.BASE_URL)
           let data = {
             role: state.role,
@@ -146,8 +76,9 @@ class Admin extends React.Component {
 
             fname: state.fname,
             lname: state.lname,
-            school: state.school,
-            phone_number: { main: state.phone_number, alt: "" }
+            phone_number: { main: state.phone_number },
+            county: state.county,
+            sub_county: state.sub_county
           };
           console.log(data);
           this.setState({ addingUser: true, serverRes: null });
@@ -188,11 +119,8 @@ class Admin extends React.Component {
                   fnameError: null,
                   lname: "",
                   lnameError: null,
-                  salutation: "",
-                  school: "",
                   phone_number: "",
-                  phone_numberError: null,
-              
+                  phone_numberError: null
                 });
               } else {
                 this.setState({
@@ -229,43 +157,17 @@ class Admin extends React.Component {
       return "Salutation must be either Mr, Mrs, Miss, Dr, Prof";
     }
   };
-  componentDidMount = () => {
-    this._fetchSchools();
-  };
   render() {
     const { classes } = this.props;
     const state = this.state;
-    let items = null;
-    if (state.schools.length > 0) {
-      console.log("schools", this.state.schools);
-      items = state.schools.map(each => {
-        let school = unKebab(each.name);
-
-        return <MenuItem value={each._id}>{school}</MenuItem>;
-      });
-    }
-
-    if (state.loading) {
-      return (
-        <div style={{...center, marginTop:300}}>
-          <div
-            className="spinner-grow text-info"
-            role="status"
-            style={{ marginBottom: "15px" }}
-          >
-            <span className="sr-only">Loading...</span>
-          </div>
-        </div>
-      );
-    }
     return (
-      <>
+      <span>
         <GridContainer>
           <GridItem xs={12} sm={12} md={12}>
-            <h1>Trainer</h1>
+            <h1>Instructor</h1>
           </GridItem>
 
-          <GridItem xs={12} sm={12} md={10}>
+          <GridItem xs={12} sm={12} md={6}>
             <MDBInput
               label={"First Name"}
               group
@@ -374,38 +276,9 @@ class Admin extends React.Component {
               {state.phone_numberError}
             </p>
           </GridItem>
-
-          <GridItem xs={12} sm={12} md={6}>
-            <FormControl style={{ width: "100%",marginTop:'1.095rem' }}>
-              <InputLabel htmlFor="">Learning Venue or School</InputLabel>
-              <Select
-                value={state.school}
-                onChange={this.handleChange}
-                inputProps={{
-                  name: "school",
-                  id: ""
-                }}
-                style={{ width: "100%" }}
-              >
-                <MenuItem value="">
-                  <em>-</em>
-                </MenuItem>
-                {items}
-              </Select>
-            </FormControl>
-            <p
-              style={{
-                color: "red",
-                fontSize: "0.8rem",
-                textAlign: "center"
-              }}
-            >
-              {state.schoolError}
-            </p>
-          </GridItem>
         </GridContainer>
         <GridContainer>
-          <GridItem xs={12} sm={12} md={6}>
+          <GridItem xs={12} sm={12} md={12}>
             <div className="text-center">
               {state.addingUser ? (
                 <div
@@ -416,34 +289,14 @@ class Admin extends React.Component {
                   <span className="sr-only">Loading...</span>
                 </div>
               ) : (
-                <MDBBtn onClick={this.handleSubmit}>Add Trainer</MDBBtn>
+                <MDBBtn onClick={this.handleSubmit}>Add Instructor</MDBBtn>
               )}
             </div>
           </GridItem>
         </GridContainer>
-      </>
+      </span>
     );
   }
 }
 
-const center = {
-  position: "absolute",
-  left: "50%",
-  top: "50%",
-  "-webkit-transform": "translate(-50%, -50%)",
-  transform: "translate(-50%, -50%)"
-};
-
-const unKebab = string => {
-  if (string) {
-    string = string.replace(/-/g, " ").toLowerCase();
-
-    let splitStr = string.toLowerCase().split(" ");
-    string = splitStr.map(str => {
-      return str.charAt(0).toUpperCase() + str.slice(1) + " ";
-    });
-  }
-
-  return string;
-};
 export default withGlobalContext(Admin);

@@ -21,7 +21,7 @@ import globals from "../../../constants/Globals";
 import AddAlert from "@material-ui/icons/AddAlert";
 import { withGlobalContext } from "../../../context/Provider";
 //Form components
-import TrainerForm from "./forms/Trainer";
+
 import InstructorForm from "./forms/Instructor";
 
 import validate from "./validation";
@@ -115,7 +115,7 @@ class AddUser extends React.Component {
                 style={{ display: "inline-block" }}
                 onClick={() => {
                   this.props.history.push({
-                    pathname: `/${this.props.global.user.role}/users`,
+                    pathname: `/${this.props.global.user.role}/instructors`,
                     data: ""
                   });
                 }}
@@ -127,21 +127,13 @@ class AddUser extends React.Component {
           <GridItem xs={12} sm={12} md={11}>
             <Card>
               <CardHeader color="info">
-                <h4 className={classes.cardTitleWhite}>Add new personnel</h4>
-                <p className={classes.cardCategoryWhite}>
-                  Trainer,...
-                </p>
+                <h4 className={classes.cardTitleWhite}>Add Instructor</h4>
+                <p className={classes.cardCategoryWhite}>....</p>
               </CardHeader>
               <CardBody>
-               
-              
-              
-                 
-                      <TrainerForm snack={this._snack} />
-                
+                <GridContainer></GridContainer>
 
-             
-               
+                <InstructorForm snack={this._snack} />
               </CardBody>
             </Card>
           </GridItem>

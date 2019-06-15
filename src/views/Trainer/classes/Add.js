@@ -115,7 +115,7 @@ class AddUser extends React.Component {
       () => {
         if (!countyError && !nameError && !sub_countyError) {
           // alert('Details are valid!'+globals.BASE_URL)
-          this.setState({ adding:true});
+          this.setState({ adding: true });
           let data = {
             name: state.name,
             county: state.county,
@@ -125,7 +125,7 @@ class AddUser extends React.Component {
           this.setState({ serverRes: null });
           const AddAsync = async () =>
             await (await fetch(
-              `${globals.BASE_URL}/api/${this.props.global.user.role}/new_school`,
+              `${globals.BASE_URL}/api/${this.props.global.user.role}/new_class`,
               {
                 method: "post",
                 mode: "cors", // no-cors, cors, *same-origin
@@ -187,9 +187,6 @@ class AddUser extends React.Component {
       }
     );
   };
-  schools = () => {
-    return <MenuItem value={"heri-hub"}>Heri Hub</MenuItem>;
-  };
 
   componentDidMount = () => {
     this._snack();
@@ -223,7 +220,7 @@ class AddUser extends React.Component {
                 style={{ display: "inline-block" }}
                 onClick={() => {
                   this.props.history.push({
-                    pathname: `/${this.props.global.user.role}/schools`,
+                    pathname: `/${this.props.global.user.role}/classes`,
                     data: ""
                   });
                 }}
@@ -235,8 +232,8 @@ class AddUser extends React.Component {
           <GridItem xs={12} sm={12} md={11}>
             <Card>
               <CardHeader color="info">
-                <h4 className={classes.cardTitleWhite}>Add a new School</h4>
-                <p className={classes.cardCategoryWhite}>Fill in School info</p>
+                <h4 className={classes.cardTitleWhite}>Add a new Class</h4>
+                <p className={classes.cardCategoryWhite}>Fill in Class info</p>
               </CardHeader>
               <CardBody>
                 <GridContainer>
@@ -341,7 +338,7 @@ class AddUser extends React.Component {
                           <span className="sr-only">Loading...</span>
                         </div>
                       ) : (
-                        <MDBBtn onClick={this.handleSubmit}>Add School</MDBBtn>
+                        <MDBBtn onClick={this.handleSubmit}>Add Class</MDBBtn>
                       )}
                     </div>
                   </GridItem>

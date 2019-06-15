@@ -20,15 +20,13 @@ import CustomInput from "../CustomInput/CustomInput.jsx";
 import Button from "../CustomButtons/Button.jsx";
 import Icon from "@material-ui/core/Icon";
 import headerLinksStyle from "../../../assets/jss/material-dashboard-react/components/headerLinksStyle.jsx";
-import { withGlobalContext } from '../../../context/Provider';
-import { Route , withRouter} from 'react-router-dom';
-//Modal logout 
-
+import { withGlobalContext } from "../../../context/Provider";
+import { Route, withRouter } from "react-router-dom";
+//Modal logout
 
 class HeaderLinks extends React.Component {
   state = {
-    open: false,
-	
+    open: false
   };
   handleToggle = () => {
     this.setState(state => ({ open: !state.open }));
@@ -47,14 +45,15 @@ class HeaderLinks extends React.Component {
     const { open } = this.state;
     return (
       <div>
-	  
         <Button
           color={window.innerWidth > 959 ? "transparent" : "white"}
           justIcon={window.innerWidth > 959}
           simple={!(window.innerWidth > 959)}
           aria-label="Dashboard"
           className={classes.buttonLink}
-		  onClick={()=>{this.props.history.push('/admin/dashboard')}}
+          onClick={() => {
+            this.props.history.push("/admin/dashboard");
+          }}
         >
           <Dashboard className={classes.icons} />
           <Hidden mdUp implementation="css">
@@ -148,27 +147,31 @@ class HeaderLinks extends React.Component {
           simple={!(window.innerWidth > 959)}
           aria-label="Person"
           className={classes.buttonLink}
-		  onClick={()=>{this.props.history.push('/admin/profile')}}
+          onClick={() => {
+            this.props.history.push("/admin/profile");
+          }}
         >
           <Person className={classes.icons} />
-			  
+
           <Hidden mdUp implementation="css">
             <p className={classes.linkText}>Profile</p>
           </Hidden>
         </Button>
-		<Button
+        <Button
           color={window.innerWidth > 959 ? "transparent" : "white"}
           justIcon={window.innerWidth > 959}
           simple={!(window.innerWidth > 959)}
           aria-label="Person"
           className={classes.buttonLink}
+          onClick={this.props.handleLogoutModal}
         >
-		<ExitToApp className={classes.icons} onClick={this.props.handleLogoutModal} />
+          <ExitToApp className={classes.icons} />
         </Button>
-			
       </div>
     );
   }
 }
 
-export default withGlobalContext(withRouter(withStyles(headerLinksStyle)(HeaderLinks)));
+export default withGlobalContext(
+  withRouter(withStyles(headerLinksStyle)(HeaderLinks))
+);

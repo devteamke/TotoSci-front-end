@@ -18,15 +18,8 @@ import {
   MDBTableHead,
   MDBBtn,
   MDBIcon,
-  MDBInput,
-  MDBCard,
-  MDBCardImage,
-  MDBCardBody,
-  MDBCardTitle,
-  MDBRow,
-  MDBCardText
+  MDBInput
 } from "mdbreact";
-import ReactDOM from "react-dom";
 import { withGlobalContext } from "../../../context/Provider";
 
 const styles = {
@@ -68,9 +61,9 @@ class AllUsers extends React.Component {
       serverRes: "",
       loading: true,
       loaded: false,
-      courses: [],
+      users: [],
       page: 1,
-      limit: 6,
+      limit: 10,
       //skip:0,
       //snack
       open: false,
@@ -83,7 +76,6 @@ class AllUsers extends React.Component {
       totalDocs: null
     };
     this.myRef = React.createRef();
-    this.MasonryRef = React.createRef();
   }
   _fetchUsers = () => {
     let state = this.state;
@@ -94,7 +86,7 @@ class AllUsers extends React.Component {
     };
     const FetchAsync = async () =>
       await (await fetch(
-        `${globals.BASE_URL}/api/${this.props.global.user.role}/all_courses`,
+        `${globals.BASE_URL}/api/${this.props.global.user.role}/all`,
         {
           method: "post",
           mode: "cors", // no-cors, cors, *same-origin
@@ -115,18 +107,15 @@ class AllUsers extends React.Component {
       .then(data => {
         //this.setState({currentPlace:data.results})
         if (data.success) {
-          console.log("[Courses]", data);
-          this.setState(
-            {
-              courses: data.result.docs,
-              page: data.result.page,
-              totalPages: data.result.totalPages,
-              totalDocs: data.result.totalDocs,
-              hasNext: data.result.hasNextPage,
-              hasPrev: data.result.hasPrevPage
-            },
-            () => setTimeout(() => this.arrangeMasonry(), 1)
-          );
+          console.log("[users]", data);
+          this.setState({
+            users: data.result.docs,
+            page: data.result.page,
+            totalPages: data.result.totalPages,
+            totalDocs: data.result.totalDocs,
+            hasNext: data.result.hasNextPage,
+            hasPrev: data.result.hasPrevPage
+          });
         } else {
           this._snack({ type: "warning", msg: data.message });
         }
@@ -228,20 +217,6 @@ class AllUsers extends React.Component {
     this._fetchUsers();
     this._snack();
   };
-  arrangeMasonry = () => {
-    const numCols = 3;
-    const colHeights = Array(numCols).fill(0);
-    const container = ReactDOM.findDOMNode(this.MasonryRef.current);
-    const container2 = this.MasonryRef;
-    console.log("container", container);
-    console.log("container2", container2);
-    Array.from(container.children).forEach((child, i) => {
-      const order = i % numCols;
-      child.style.order = order;
-      colHeights[order] += parseFloat(child.clientHeight);
-    });
-    container.style.height = Math.max(...colHeights) + "px";
-  };
 
   render = () => {
     const { classes } = this.props;
@@ -262,22 +237,18 @@ class AllUsers extends React.Component {
           closeNotification={() => this.setState({ open: false })}
           close
         />
-
         <GridContainer>
           <GridItem xs={12} sm={12} md={12}>
             <Card>
               <CardHeader color="info">
-                <h4 className={classes.cardTitleWhite}>All Courses</h4>
-                <p className={classes.cardCategoryWhite}>...</p>
+                <h4 className={classes.cardTitleWhite}>All Personnel</h4>
+                <p className={classes.cardCategoryWhite}>
+                  Chief Trainers, Trainers, Instuctors etc...
+                </p>
               </CardHeader>
               <CardBody>
                 <GridContainer>
-                  <GridItem
-                    xs={12}
-                    sm={12}
-                    md={12}
-                    style={{ paddingHorizontal: "70px" }}
-                  >
+                  <GridItem xs={12} sm={12} md={12}>
                     <div
                       style={{
                         width: "15rem",
@@ -290,12 +261,12 @@ class AllUsers extends React.Component {
                         style={{ display: "inline-block" }}
                         onClick={() => {
                           this.props.history.push({
-                            pathname: `/${this.props.global.user.role}/courses/add`,
+                            pathname: `/${this.props.global.user.role}/instructors/add`,
                             data: ""
                           });
                         }}
                       >
-                        Add Course
+                        Add Instructor
                       </MDBBtn>
                     </div>
                     <div style={{ width: "15rem", float: "right" }}>
@@ -306,13 +277,11 @@ class AllUsers extends React.Component {
                         group
                         value={state.email}
                         onChange={this._handleSearch}
-                        type="text"
+                        type="email"
                       />
                     </div>
                   </GridItem>
                 </GridContainer>
-              </CardBody>
-              <CardBody style={{ display: "block", overflow: "auto" }}>
                 {state.loading ? (
                   <GridContainer>
                     <GridItem xs={12} sm={12} md={12}>
@@ -329,122 +298,87 @@ class AllUsers extends React.Component {
                   </GridContainer>
                 ) : (
                   <>
-                    <GridContainer
-                      className="masonry-with-columns"
-                      ref={this.MasonryRef}
-                    >
-                      {state.courses.length > 0 ? (
-                        <>
-                          {state.courses.map(each => {
-                            return (
-                              <div style={{ width: "30rem", margin: "1rem" }}>
-                                <MDBCard
-                                  key={each._id}
-                                  style={{ width: "100%", margin: "1rem" }}
-                                  onClick={() => {
-                                    this.props.history.push({
-                                      pathname: `/${this.props.global.user.role}/courses/single`,
-                                      data: each
-                                    });
-                                  }}
-                                  style={{ cursor: "pointer" }}
-                                >
-                                  {console.log("Each Course", each)}
-                                  <MDBCardBody>
-                                    <MDBCardTitle>{each.name}</MDBCardTitle>
-                                    <MDBCardText>
-                                      <p>{each.description}</p>
-                                      <div style={{}}>
-                                        <p>
-                                          <i>Ksh {each.charge}</i>
-                                        </p>
-                                      </div>
-                                    </MDBCardText>
-                                  </MDBCardBody>
-                                </MDBCard>
-                              </div>
-                            );
-                          })}
-                          {/* // <GridContainer>
-                      //   {state.courses.map(each => {
-                      //     return (
-                      //       <GridItem xs={12} sm={6} key={each._id} md={3}>
-                      //         {" "}
-                      //         <MDBCard
-                      //           style={{ width: "22rem", margin: "1rem" }}
-                      //           onClick={() => {
-                      //             this.props.history.push({
-                      //               pathname: `/${this.props.global.user.role}/courses/single`,
-                      //               data: each
-                      //             });
-                      //           }}
-                      //           style={{ cursor: "pointer" }}
-                      //         >
-                      //           {console.log("Each Course", each)}
-                      //           <MDBCardBody>
-                      //             <MDBCardTitle>{each.name}</MDBCardTitle>
-                      //             <MDBCardText>
-                      //               <p>{each.description}</p>
-                      //               <div style={{}}>
-                      //                 <p>
-                      //                   <i>Ksh {each.charge}</i>
-                      //                 </p>
-                      //               </div>
-                      //             </MDBCardText>
-                      //           </MDBCardBody>
-                      //         </MDBCard>
-                      //       </GridItem>
-                      //     );
-                      //   })}
-                      // </GridContainer>*/}
-                        </>
-                      ) : (
-                        <div
-                          className="text-center"
-                          style={{ height: 300, width: "100%" }}
-                        >
-                          <p style={{ marginTop: 145 }}>
-                            {" "}
-                            {state.query
-                              ? `No records found matching \" ${state.query}\"`
-                              : "No Courses yet"}
-                          </p>{" "}
-                        </div>
-                      )}
-                    </GridContainer>
+                    {state.users.length > 0 ? (
+                      <MDBTable hover responsive>
+                        <MDBTableHead>
+                          <tr>
+                            <th>ID</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th>Status</th>
+                          </tr>
+                        </MDBTableHead>
+                        <MDBTableBody>
+                          {state.users.map(user => (
+                            <tr
+                              key={user._id}
+                              onClick={() => {
+                                this.props.history.push({
+                                  pathname: `/${this.props.global.user.role}/instructors/single`,
+                                  data: user
+                                });
+                              }}
+                              style={{ cursor: "pointer" }}
+                            >
+                              <td>{user._id}</td>
+                              <td>{user.email}</td>
+                              <td>
+                                {user.role.charAt(0).toUpperCase() +
+                                  user.role.slice(1)}
+                              </td>
+                              <td>
+                                {user.status.charAt(0).toUpperCase() +
+                                  user.status.slice(1)}
+                              </td>
+                            </tr>
+                          ))}
+                        </MDBTableBody>
+                      </MDBTable>
+                    ) : (
+                      <div className="text-center" style={{ height: 300 }}>
+                        <p style={{ marginTop: 145 }}>
+                          {" "}
+                          {state.query
+                            ? `No records found matching \" ${state.query}\"`
+                            : "No Users"}
+                        </p>{" "}
+                      </div>
+                    )}
                   </>
                 )}
-              </CardBody>
-              {state.loaded && state.courses.length > 0 ? (
-                <div className="text-center">
-                  {state.hasPrev ? (
-                    <MDBBtn
-                      size="sm"
-                      style={{ display: "inline-block" }}
-                      onClick={this._handlePrevious}
+                {state.loaded && state.users.length > 0 ? (
+                  <div className="text-center">
+                    {state.hasPrev ? (
+                      <MDBBtn
+                        size="sm"
+                        style={{ display: "inline-block" }}
+                        onClick={this._handlePrevious}
+                      >
+                        <MDBIcon size="2x" icon="angle-double-left" />
+                      </MDBBtn>
+                    ) : null}
+                    <h4
+                      style={{ display: "inline-block", margin: "25px 30px" }}
                     >
-                      <MDBIcon size="2x" icon="angle-double-left" />
-                    </MDBBtn>
-                  ) : null}
-                  <h4 style={{ display: "inline-block", margin: "25px 30px" }}>
-                    {state.page} of {state.totalPages}
-                  </h4>
-                  {state.hasNext ? (
-                    <MDBBtn
-                      size="sm"
-                      style={{ display: "inline-block" }}
-                      onClick={this._handleNext}
-                    >
-                      <MDBIcon size="2x" icon="angle-double-right" />
-                    </MDBBtn>
-                  ) : null}
+                      {state.page} of {state.totalPages}
+                    </h4>
+                    {state.hasNext ? (
+                      <MDBBtn
+                        size="sm"
+                        style={{ display: "inline-block" }}
+                        onClick={this._handleNext}
+                      >
+                        <MDBIcon size="2x" icon="angle-double-right" />
+                      </MDBBtn>
+                    ) : null}
 
-                  <p style={{ color: "grey" }}>
-                    (Showing {state.courses.length} of {state.totalDocs}{" "}
-                    courses){" "}
-                  </p>
-                </div>
-              ) : null}
+                    <p style={{ color: "grey" }}>
+                      (Showing {state.users.length} of {state.totalDocs}{" "}
+                      records){" "}
+                    </p>
+                  </div>
+                ) : null}
+              </CardBody>
             </Card>
           </GridItem>
         </GridContainer>

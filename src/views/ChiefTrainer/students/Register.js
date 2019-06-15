@@ -125,7 +125,9 @@ class AddUser extends React.Component {
 
   handleChange = event => {
     console.log("value", event.target.value);
-    this.setState({ [event.target.name]: event.target.value });
+    this.setState({
+      [event.target.name]: event.target.value
+    });
   };
 
   handleSubmit = () => {
@@ -255,6 +257,9 @@ class AddUser extends React.Component {
                   emailError: null,
                   residence: "",
                   residenceError: "",
+                  selected: null,
+                  existingSelected: false,
+                  searchStr: "",
                   //Sponsored
                   isSponsored: true,
 
@@ -509,6 +514,7 @@ class AddUser extends React.Component {
                       group
                       value={state.lname}
                       onChange={event => {
+                        sch;
                         this.setState({ lname: event.target.value });
                       }}
                       type="text"
