@@ -12,16 +12,12 @@ function Footer({ ...props }) {
   return (
     <footer className={classes.footer}>
       <div className={classes.container}>
-        <div className={classes.left}>
-         
-        </div>
+        <div className={classes.left}></div>
         <p className={classes.right}>
           <span>
             &copy; {1900 + new Date().getYear()}{" "}
-            <a href="" className={classes.a}>
-           
-            </a>
-            Made with love.
+            <a href="" className={classes.a}></a>
+            TotoSci Devs
           </span>
         </p>
       </div>

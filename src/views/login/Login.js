@@ -15,9 +15,12 @@ import globals from "../../constants/Globals";
 //Material kit header
 import Header from "../../components/webcomponents/Header/Header.jsx";
 import HeaderLinks from "../../components/webcomponents/Header/HeaderLinks.jsx";
+//
+import { Form, Spin, Icon, Input, Button, Checkbox, Alert } from "antd";
 
 const dashboardRoutes = [];
-
+const antIcon = <Icon type="loading" style={{ fontSize: 24 }} spin />;
+const antIconLarge = <Icon type="loading" style={{ fontSize: 40 }} spin />;
 const parseUser = user => {
   if (typeof user.phone_number == "object") {
     user = {
@@ -42,101 +45,88 @@ class App extends React.Component {
     loading: true
   };
 
-  handleSubmit = () => {
-    console.log("submit clicked");
-    let state = this.state;
-    const emailError = !state.email
-      ? "Please enter your email address!"
-      : null || validate("email", state.email);
-    const passwordError =
-      validate("password", state.password) || !state.password
-        ? "Please enter your password!"
-        : null;
+  handleSubmit = e => {
+    e.preventDefault();
 
-    this.setState(
-      {
-        emailError: emailError,
-        passwordError: passwordError
-      },
-      () => {
-        if (!passwordError && !emailError) {
-          // alert('Details are valid!'+globals.BASE_URL)
-          let data = {
-            email: this.state.email,
-            password: this.state.password
-          };
-          console.log(data);
-          this.setState({ checkingDetails: true, serverRes: null });
-          const LoginAsync = async () =>
-            await (await fetch(`${globals.BASE_URL}/api/users/login`, {
-              method: "post",
-              mode: "cors", // no-cors, cors, *same-origin
-              cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
-              credentials: "same-origin", // include, *same-origin, omit
-              headers: {
-                "Content-Type": "application/json"
-                // "Content-Type": "application/x-www-form-urlencoded",
-              },
-              redirect: "follow", // manual, *follow, error
-              referrer: "no-referrer", // no-referrer, *client
-              body: JSON.stringify(data)
-            })).json();
+    this.props.form.validateFields((err, values) => {
+      if (!err) {
+        console.log("Received values of form: ", values);
 
-          LoginAsync()
-            .then(data => {
-              //this.setState({currentPlace:data.results})
-              if (data.success) {
-                let user = jwt_decode(data.token);
-                console.log("[Current User]", user);
+        let data = {
+          email: values.email,
+          password: values.password
+        };
+        console.log(data);
+        this.setState({ checkingDetails: true, serverRes: null });
+        const LoginAsync = async () =>
+          await (await fetch(`${globals.BASE_URL}/api/users/login`, {
+            method: "post",
+            mode: "cors", // no-cors, cors, *same-origin
+            cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
+            credentials: "same-origin", // include, *same-origin, omit
+            headers: {
+              "Content-Type": "application/json"
+              // "Content-Type": "application/x-www-form-urlencoded",
+            },
+            redirect: "follow", // manual, *follow, error
+            referrer: "no-referrer", // no-referrer, *client
+            body: JSON.stringify(data)
+          })).json();
 
-                //add role based redirection
-                if (user.role == "admin") {
+        LoginAsync()
+          .then(data => {
+            //this.setState({currentPlace:data.results})
+            if (data.success) {
+              let user = jwt_decode(data.token);
+              console.log("[Current User]", user);
+
+              //add role based redirection
+              if (user.role == "admin") {
+                this.props.history.push({
+                  pathname: "/admin/dashboard",
+                  snack: { type: "success", msg: "Login was successful" }
+                });
+              } else {
+                if (!user.isSetUp) {
                   this.props.history.push({
-                    pathname: "/admin/dashboard",
+                    pathname: "/completeprofile",
                     snack: { type: "success", msg: "Login was successful" }
                   });
                 } else {
-                  if (!user.isSetUp) {
-                    this.props.history.push({
-                      pathname: "/completeprofile",
-                      snack: { type: "success", msg: "Login was successful" }
-                    });
-                  } else {
-                    this.props.history.push({
-                      pathname: `/${user.role}/dashboard`,
-                      snack: { type: "success", msg: "Login was successful" }
-                    });
-                  }
+                  this.props.history.push({
+                    pathname: `/${user.role}/dashboard`,
+                    snack: { type: "success", msg: "Login was successful" }
+                  });
                 }
+              }
 
-                this.props.global.onLogin(data.token, user);
-                // this.props.global._logoutHelper(user.exp - user.iat);
-              } else {
-                this.setState({
-                  checkingDetails: false,
-                  serverRes: data.message
-                });
-              }
-            })
-            .catch(error => {
-              console.log(error);
-              if (error == "TypeError: Failed to fetch") {
-                //   alert('Server is offline')
-                this.setState({
-                  serverRes: "Failed to contact server!"
-                });
-              } else if (error.message == "Network request failed") {
-                // alert('No internet connection')
-                this.setState({
-                  serverRes: "Network request failed"
-                });
-              }
-              this.setState({ checkingDetails: false });
-              console.log(error);
-            });
-        }
+              this.props.global.onLogin(data.token, user);
+              // this.props.global._logoutHelper(user.exp - user.iat);
+            } else {
+              this.setState({
+                checkingDetails: false,
+                serverRes: data.message
+              });
+            }
+          })
+          .catch(error => {
+            console.log(error);
+            if (error == "TypeError: Failed to fetch") {
+              //   alert('Server is offline')
+              this.setState({
+                serverRes: "Failed to contact server!"
+              });
+            } else if (error.message == "Network request failed") {
+              // alert('No internet connection')
+              this.setState({
+                serverRes: "Network request failed"
+              });
+            }
+            this.setState({ checkingDetails: false });
+            console.log(error);
+          });
       }
-    );
+    });
   };
   _loaded = () => {
     setTimeout(() => {
@@ -150,17 +140,11 @@ class App extends React.Component {
   render() {
     const { classes, ...rest } = this.props;
     const state = this.state;
-
+    const { getFieldDecorator } = this.props.form;
     if (state.loading) {
       return (
         <div style={center}>
-          <div
-            className="spinner-grow text-info"
-            role="status"
-            style={{ marginBottom: "15px" }}
-          >
-            <span className="sr-only">Loading...</span>
-          </div>
+          <Spin indicator={antIconLarge} />
         </div>
       );
     }
@@ -180,26 +164,93 @@ class App extends React.Component {
             {...rest}
           />
           <MDBCard
-            style={{ margin: "18% auto", width: "30rem", padding: "30px 60px" }}
+            style={{
+              margin: "8.5rem auto",
+              width: "30rem",
+              padding: "20px 40px"
+            }}
           >
-            <form>
-              <p className="h5 text-center mb-4">
-                Sign in {console.log(this.props.global.check)}
-              </p>
-              {state.serverRes ? (
-                <MDBAlert color="danger" className="text-center">
-                  {state.serverRes}
-                </MDBAlert>
-              ) : (
-                <div style={{ height: "43px" }}></div>
-              )}
-              {/*<MDBBtn outline={this.state.isStudent} color="primary"
+            {/*<MDBBtn outline={this.state.isStudent} color="primary"
 						 	 onClick={()=>{ this.setState({isStudent:false});}}
 					>Staff </MDBBtn>
 			 <MDBBtn   outline={!this.state.isStudent}color="primary"
 				 onClick={()=>{ this.setState({isStudent:true});}}
 				 >Student </MDBBtn>*/}
-              <div className="grey-text">
+            <Form onSubmit={this.handleSubmit} className="login-form">
+              <Form.Item>
+                {" "}
+                <div
+                  className="h5 text-center mb-4"
+                  style={{ marginTop: "10px" }}
+                >
+                  <img
+                    src={require("../../assets/img/totosci.png")}
+                    style={{ height: "50px" }}
+                  />
+                </div>
+                {state.serverRes ? (
+                  <Alert message={state.serverRes} type="error" showIcon />
+                ) : null}
+              </Form.Item>
+              <Form.Item>
+                {getFieldDecorator("email", {
+                  rules: [
+                    {
+                      type: "email",
+                      message: "The input is not valid E-mail!"
+                    },
+                    { required: true, message: "Please input your email!" }
+                  ]
+                })(
+                  <Input
+                    prefix={
+                      <Icon type="user" style={{ color: "rgba(0,0,0,.25)" }} />
+                    }
+                    placeholder="email"
+                  />
+                )}
+              </Form.Item>
+              <Form.Item>
+                {getFieldDecorator("password", {
+                  rules: [
+                    { required: true, message: "Please input your Password!" }
+                  ]
+                })(
+                  <Input
+                    prefix={
+                      <Icon type="lock" style={{ color: "rgba(0,0,0,.25)" }} />
+                    }
+                    type="password"
+                    placeholder="Password"
+                  />
+                )}
+              </Form.Item>
+              <Form.Item>
+                {getFieldDecorator("remember", {
+                  valuePropName: "checked",
+                  initialValue: true
+                })(<Checkbox>Remember me</Checkbox>)}
+                <Link className="login-form-forgot" to={`/reset`}>
+                  Forgot password
+                </Link>
+              </Form.Item>
+              <Form.Item>
+                <div className="text-center">
+                  {state.checkingDetails ? (
+                    <Spin indicator={antIcon} />
+                  ) : (
+                    <Button
+                      type="primary"
+                      htmlType="submit"
+                      className="login-form-button"
+                    >
+                      Log in
+                    </Button>
+                  )}
+                </div>
+              </Form.Item>
+            </Form>
+            {/* <div className="grey-text">
                 <MDBInput
                   label={
                     this.state.isStudent
@@ -265,29 +316,7 @@ class App extends React.Component {
                 >
                   {state.passwordError}
                 </p>
-              </div>
-              <div style={{ height: "40px" }}>
-                <Link
-                  style={{ position: "absolute", right: "10%" }}
-                  to={`/reset`}
-                >
-                  Forgot your password?
-                </Link>
-              </div>
-              <div className="text-center">
-                {state.checkingDetails ? (
-                  <div
-                    className="spinner-grow text-info"
-                    role="status"
-                    style={{ marginBottom: "15px" }}
-                  >
-                    <span className="sr-only">Loading...</span>
-                  </div>
-                ) : (
-                  <MDBBtn onClick={this.handleSubmit}>Login</MDBBtn>
-                )}
-              </div>
-            </form>
+              </div>*/}
           </MDBCard>
         </MDBRow>
       </MDBContainer>
@@ -303,4 +332,4 @@ const center = {
   transform: "translate(-50%, -50%)"
 };
 
-export default withGlobalContext(App);
+export default Form.create({ name: "normal_login" })(withGlobalContext(App));

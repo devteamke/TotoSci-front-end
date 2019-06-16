@@ -4,13 +4,11 @@ import withStyles from "@material-ui/core/styles/withStyles";
 import InputLabel from "@material-ui/core/InputLabel";
 import MenuItem from "@material-ui/core/MenuItem";
 import FormControl from "@material-ui/core/FormControl";
-import Select from "@material-ui/core/Select";
+
 // core components
 
 import GridItem from "../../../../components/dcomponents/Grid/GridItem.jsx";
 import GridContainer from "../../../../components/dcomponents/Grid/GridContainer.jsx";
-
-import Button from "../../../../components/dcomponents/CustomButtons/Button.jsx";
 
 import { MDBBtn, MDBInput } from "mdbreact";
 //mport avatar from "../../assets/img/faces/marc.jpg";
@@ -19,6 +17,23 @@ import globals from "../../../../constants/Globals";
 // @material-ui/icons
 import AddAlert from "@material-ui/icons/AddAlert";
 import { withGlobalContext } from "../../../../context/Provider";
+import {
+  Form,
+  Input,
+  Tooltip,
+  Icon,
+  Cascader,
+  Select,
+  Row,
+  Col,
+  Checkbox,
+  Button,
+  AutoComplete,
+  Card,
+  Radio
+} from "antd";
+
+const { Option } = Select;
 
 class Admin extends React.Component {
   constructor(props) {
@@ -27,16 +42,6 @@ class Admin extends React.Component {
     this.state = {
       //form fields
       role: "trainer",
-
-      email: "",
-      emailError: null,
-      fname: "",
-      fnameError: null,
-      lname: "",
-      lnameError: null,
-
-      phone_number: "",
-      phone_numberError: null,
 
       school: "",
       schools: [],
@@ -94,7 +99,7 @@ class Admin extends React.Component {
             serverRes: "Network request failed"
           });
         }
-        this._snack({ type: "warning", msg: error.toString() });
+        this.props.snack({ type: "warning", msg: error.toString() });
 
         console.log(error);
       });
@@ -191,8 +196,7 @@ class Admin extends React.Component {
                   salutation: "",
                   school: "",
                   phone_number: "",
-                  phone_numberError: null,
-              
+                  phone_numberError: null
                 });
               } else {
                 this.setState({
@@ -220,34 +224,17 @@ class Admin extends React.Component {
       }
     );
   };
-  _validateSal = passed => {
-    let val = passed || this.state.salutation.toLowerCase();
-    const sal = ["mr", "mrs", "miss", "dr", "prof", "other", "NA"];
-    if (sal.includes(val)) {
-      return null;
-    } else {
-      return "Salutation must be either Mr, Mrs, Miss, Dr, Prof";
-    }
-  };
+
   componentDidMount = () => {
     this._fetchSchools();
   };
   render() {
     const { classes } = this.props;
     const state = this.state;
-    let items = null;
-    if (state.schools.length > 0) {
-      console.log("schools", this.state.schools);
-      items = state.schools.map(each => {
-        let school = unKebab(each.name);
-
-        return <MenuItem value={each._id}>{school}</MenuItem>;
-      });
-    }
 
     if (state.loading) {
       return (
-        <div style={{...center, marginTop:300}}>
+        <div style={{ ...center, marginTop: 300 }}>
           <div
             className="spinner-grow text-info"
             role="status"
@@ -260,150 +247,112 @@ class Admin extends React.Component {
     }
     return (
       <>
-        <GridContainer>
-          <GridItem xs={12} sm={12} md={12}>
-            <h1>Trainer</h1>
-          </GridItem>
+        <GridItem xs={12} sm={12} md={12}>
+          <h1>Trainer</h1>
+        </GridItem>
 
-          <GridItem xs={12} sm={12} md={10}>
-            <MDBInput
-              label={"First Name"}
-              group
-              value={state.fname}
-              onChange={event => {
-                this.setState({ fname: event.target.value });
-              }}
-              onBlur={() =>
-                this.setState({
-                  fnameError: validate(
-                    "fname",
-                    state.fname == "" ? null : state.fname
-                  )
-                })
-              }
-              error="Whoops!"
-              success="right"
-            />
-            <p
-              style={{ color: "red", fontSize: "0.8rem", textAlign: "center" }}
-            >
-              {state.fnameError}
-            </p>
-          </GridItem>
-          <GridItem xs={12} sm={12} md={6}>
-            <MDBInput
-              label={"Last Name"}
-              group
-              value={state.lname}
-              onChange={event => {
-                this.setState({ lname: event.target.value });
-              }}
-              type="email"
-              onBlur={() =>
-                this.setState({
-                  lnameError: validate(
-                    "lname",
-                    state.lname == "" ? null : state.lname
-                  )
-                })
-              }
-              error="Whoops!"
-              success="right"
-            />
-            <p
-              style={{ color: "red", fontSize: "0.8rem", textAlign: "center" }}
-            >
-              {state.lnameError}
-            </p>
-          </GridItem>
+        <GridItem xs={12} sm={12} md={6}>
+          <MDBInput
+            label={"First Name"}
+            group
+            value={state.fname}
+            onChange={event => {
+              this.setState({ fname: event.target.value });
+            }}
+            onBlur={() =>
+              this.setState({
+                fnameError: validate(
+                  "fname",
+                  state.fname == "" ? null : state.fname
+                )
+              })
+            }
+            error="Whoops!"
+            success="right"
+          />
+          <p style={{ color: "red", fontSize: "0.8rem", textAlign: "center" }}>
+            {state.fnameError}
+          </p>
+        </GridItem>
+        <GridItem xs={12} sm={12} md={6}>
+          <MDBInput
+            label={"Last Name"}
+            group
+            value={state.lname}
+            onChange={event => {
+              this.setState({ lname: event.target.value });
+            }}
+            type="email"
+            onBlur={() =>
+              this.setState({
+                lnameError: validate(
+                  "lname",
+                  state.lname == "" ? null : state.lname
+                )
+              })
+            }
+            error="Whoops!"
+            success="right"
+          />
+          <p style={{ color: "red", fontSize: "0.8rem", textAlign: "center" }}>
+            {state.lnameError}
+          </p>
+        </GridItem>
 
-          <GridItem xs={12} sm={12} md={6}>
-            <MDBInput
-              label={"Email Address"}
-              group
-              value={state.email}
-              onChange={event => {
-                this.setState({ email: event.target.value });
-              }}
-              onBlur={() =>
-                this.setState({
-                  emailError: validate(
-                    "email",
-                    state.email == "" ? null : state.email
-                  )
-                })
-              }
-              error="Whoops!"
-              success="right"
-            />
-            <p
-              style={{ color: "red", fontSize: "0.8rem", textAlign: "center" }}
-            >
-              {state.emailError}
-            </p>
-          </GridItem>
+        <GridItem xs={12} sm={12} md={6}>
+          <MDBInput
+            label={"Email Address"}
+            group
+            value={state.email}
+            onChange={event => {
+              this.setState({ email: event.target.value });
+            }}
+            onBlur={() =>
+              this.setState({
+                emailError: validate(
+                  "email",
+                  state.email == "" ? null : state.email
+                )
+              })
+            }
+            error="Whoops!"
+            success="right"
+          />
+          <p style={{ color: "red", fontSize: "0.8rem", textAlign: "center" }}>
+            {state.emailError}
+          </p>
+        </GridItem>
 
-          <GridItem xs={12} sm={12} md={6}>
-            <MDBInput
-              label={"Phone Number"}
-              group
-              value={state.phone_number}
-              onChange={event => {
-                this.setState({
-                  phone_number: event.target.value,
-                  phone_numberError: validate(
-                    "phone",
-                    event.target.value == "" ? null : event.target.value
-                  )
-                });
-              }}
-              onBlur={() =>
-                this.setState({
-                  phone_numberError: validate(
-                    "phone",
-                    state.phone_number == "" ? null : state.phone_number
-                  )
-                })
-              }
-              error="Whoops!"
-              success="right"
-            />
-            <p
-              style={{ color: "red", fontSize: "0.8rem", textAlign: "center" }}
-            >
-              {state.phone_numberError}
-            </p>
-          </GridItem>
+        <GridItem xs={12} sm={12} md={6}>
+          <MDBInput
+            label={"Phone Number"}
+            group
+            value={state.phone_number}
+            onChange={event => {
+              this.setState({
+                phone_number: event.target.value,
+                phone_numberError: validate(
+                  "phone",
+                  event.target.value == "" ? null : event.target.value
+                )
+              });
+            }}
+            onBlur={() =>
+              this.setState({
+                phone_numberError: validate(
+                  "phone",
+                  state.phone_number == "" ? null : state.phone_number
+                )
+              })
+            }
+            error="Whoops!"
+            success="right"
+          />
+          <p style={{ color: "red", fontSize: "0.8rem", textAlign: "center" }}>
+            {state.phone_numberError}
+          </p>
+        </GridItem>
 
-          <GridItem xs={12} sm={12} md={6}>
-            <FormControl style={{ width: "100%",marginTop:'1.095rem' }}>
-              <InputLabel htmlFor="">Learning Venue or School</InputLabel>
-              <Select
-                value={state.school}
-                onChange={this.handleChange}
-                inputProps={{
-                  name: "school",
-                  id: ""
-                }}
-                style={{ width: "100%" }}
-              >
-                <MenuItem value="">
-                  <em>-</em>
-                </MenuItem>
-                {items}
-              </Select>
-            </FormControl>
-            <p
-              style={{
-                color: "red",
-                fontSize: "0.8rem",
-                textAlign: "center"
-              }}
-            >
-              {state.schoolError}
-            </p>
-          </GridItem>
-        </GridContainer>
         <GridContainer>
           <GridItem xs={12} sm={12} md={6}>
             <div className="text-center">
@@ -446,4 +395,4 @@ const unKebab = string => {
 
   return string;
 };
-export default withGlobalContext(Admin);
+export default Form.create({ name: "add_trainer" })(withGlobalContext(Admin));

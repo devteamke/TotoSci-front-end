@@ -1,170 +1,233 @@
-/* eslint-disable */
 import React from "react";
-import PropTypes from "prop-types";
+import { Layout, Menu, Breadcrumb, Icon, Modal } from "antd";
+import { Link, withRouter } from "react-router-dom";
+import { withGlobalContext } from "../context/Provider";
 import { Switch, Route, Redirect } from "react-router-dom";
-// creates a beautiful scrollbar
-import PerfectScrollbar from "perfect-scrollbar";
-import "perfect-scrollbar/css/perfect-scrollbar.css";
-// @material-ui/core components
-import withStyles from "@material-ui/core/styles/withStyles";
-// core components
-import Navbar from "../components/dcomponents/Navbars/Navbar.jsx";
-import Footer from "../components/dcomponents//Footer/Footer.jsx";
-import Sidebar from "../components/dcomponents//Sidebar/Sidebar.jsx";
-import FixedPlugin from "../components/dcomponents//FixedPlugin/FixedPlugin.jsx";
-
 import routes from "../routes/trainerRoutes";
+const { Header, Content, Footer, Sider } = Layout;
+const { SubMenu } = Menu;
+const confirm = Modal.confirm;
 
-import dashboardStyle from "../assets/jss/material-dashboard-react/layouts/dashboardStyle.jsx";
-
-import image from "../assets/img/sidebar-2.jpg";
-import logo from "../assets/img/totosci.png";
-
-import { withGlobalContext } from '../context/Provider';
-
-//Modal logout 
-import { MDBBtn, MDBModal, MDBModalHeader, MDBModalBody, MDBModalFooter } from "mdbreact";
-
-
-const switchRoutes = (
-  <Switch>
-    {routes.map((prop, key) => {
-      if (prop.layout === "/trainer"  ) {
-        return (
-          <Route
-			exact 
-            path={prop.layout + prop.path}
-            component={prop.component}
-            key={key}
-          />
-        );
-      }
-    })}
-  </Switch>
-);
-let lRoutes = [];
-class Dashboard extends React.Component {
+let mainRoutes;
+class Slider extends React.Component {
   constructor(props) {
     super(props);
+    mainRoutes = routes
+      .filter(each => each.type == undefined)
+      .map(each => {
+        return each;
+      });
+
+    mainRoutes = mainRoutes.map(main => {
+      let child = [];
+      routes
+        .filter(each => each.type == "nested")
+        .map(each => {
+          if (each.path.includes(main.path)) {
+            child.push(each);
+          }
+        });
+      main.child = child;
+      return main;
+    });
+
+    console.log("mapped Routes", mainRoutes);
+
     this.state = {
-      image: image,
-      color: "blue",
-      hasImage: true,
-      fixedClasses: "dropdown show",
-      mobileOpen: false,
-		//
-		logoutModal:false,
+      collapsed: false
     };
   }
- //Weed out nested routes
-  _lRoutes = () => {
-	  lRoutes =[];
-	 routes.map((r)=>{if(r.type!=='nested'){lRoutes.push(r)}else{}});
-	  console.log(lRoutes);
-	  
-  }
-  handleImageClick = image => {
-    this.setState({ image: image });
-  };
-  handleColorClick = color => {
-    this.setState({ color: color });
-  };
-  handleFixedClick = () => {
-    if (this.state.fixedClasses === "dropdown") {
-      this.setState({ fixedClasses: "dropdown show" });
-    } else {
-      this.setState({ fixedClasses: "dropdown" });
-    }
-  };
-  handleDrawerToggle = () => {
-    this.setState({ mobileOpen: !this.state.mobileOpen });
-  };
-  getRoute() {
-    return this.props.location.pathname !== "/admin/maps";
-  }
-  resizeFunction = () => {
-    if (window.innerWidth >= 960) {
-      this.setState({ mobileOpen: false });
-    }
-  };
 
-  handleLogoutModal = () => {
-	this.setState({logoutModal:!this.state.logoutModal});
-  }
-
-  componentWillMount =  () => {
-	  this._lRoutes()
-  }
-  componentDidMount() {
-	
-    if (navigator.platform.indexOf("Win") > -1) {
-      const ps = new PerfectScrollbar(this.refs.mainPanel);
-    }
-    window.addEventListener("resize", this.resizeFunction);
-  }
-  componentDidUpdate(e) {
-    if (e.history.location.pathname !== e.location.pathname) {
-      this.refs.mainPanel.scrollTop = 0;
-      if (this.state.mobileOpen) {
-        this.setState({ mobileOpen: false });
+  onCollapse = collapsed => {
+    console.log(collapsed);
+    this.setState({ collapsed });
+  };
+  ok = () => {
+    console.log("OK");
+    this.props.history.push({
+      pathname: "/login",
+      snack: { type: "success", msg: "Logout successful" }
+    });
+    this.props.global.onLogout();
+  };
+  showDeleteConfirm = () => {
+    confirm({
+      title: "Are you sure you want to logout?",
+      content: "Some descriptions",
+      okText: "Yes",
+      okType: "danger",
+      cancelText: "No",
+      onOk: this.ok,
+      onCancel() {
+        console.log("Cancel");
       }
-    }
-  }
-  componentWillUnmount() {
-    window.removeEventListener("resize", this.resizeFunction);
-  }
+    });
+  };
+  componentDidMount = () => {
+    console.log(
+      "current route: ",
+      this.props.location.pathname,
+      " vs layout: ",
+      routes[0].layout,
+      " and  path",
+      routes[0].path
+    );
+  };
   render() {
-    const { classes, ...rest } = this.props;
+    const role = this.props.global.user.role;
     return (
-      <div className={classes.wrapper}>
-		 <MDBModal isOpen={this.state.logoutModal} toggle={this.handleLogoutModal} centered>
-			  <MDBModalHeader toggle={this.handleLogoutModal}>Logout Confirmation</MDBModalHeader>
-			  <MDBModalBody>
-			   Are you sure you want to logout?
-			  </MDBModalBody>
-			  <MDBModalFooter>
-				<MDBBtn
-					onClick={this.handleLogoutModal}>Cancel</MDBBtn>
-				<MDBBtn color="danger" onClick={this.props.global.onLogout}>Yes</MDBBtn>
-			  </MDBModalFooter>
-		 </MDBModal>	
-        <Sidebar
-          routes={lRoutes}
-          logoText={"Trainer"}
-          logo={logo}
-          image={this.state.image}
-          handleDrawerToggle={this.handleDrawerToggle}
-          open={this.state.mobileOpen}
-          color={this.state.color}
-		  handleLogoutModal={this.handleLogoutModal}
-          {...rest}
-        />
-        <div className={classes.mainPanel} ref="mainPanel">
-          <Navbar
-			brandRoutes={routes}  
-            routes={lRoutes}
-            handleDrawerToggle={this.handleDrawerToggle}
-			handleLogoutModal={this.handleLogoutModal}
-            {...rest}
-          />
-          {/* On the /maps route we want the map to be on full screen - this is not possible if the content and conatiner classes are present because they have some paddings which would make the map smaller */}
-          {this.getRoute() ? (
-            <div className={classes.content}>
-              <div className={classes.container}>{switchRoutes}</div>
-            </div>
-          ) : (
-            <div className={classes.map}>{switchRoutes}</div>
-          )}
-          {this.getRoute() ? <Footer /> : null}
-         
-        </div>
-      </div>
+      <Layout style={{ minHeight: "100vh" }}>
+        <Sider
+          theme="dark"
+          breakpoint="lg"
+          collapsedWidth="0"
+          onBreakpoint={broken => {
+            console.log(broken);
+          }}
+          onCollapse={(collapsed, type) => {
+            console.log(collapsed, type);
+          }}
+        >
+          <div
+            className="logo"
+            style={{
+              height: "4.3rem",
+              padding: "1.3rem",
+              backgroundColor: "#fff"
+            }}
+          >
+            <img
+              src={require("../assets/img/totosci.png")}
+              style={{ height: "36px" }}
+            />
+          </div>
+          <Menu
+            theme="dark"
+            mode="inline"
+            selectedKeys={[this.props.location.pathname]}
+            style={{ height: "100%", borderRight: 0 }}
+          >
+            {mainRoutes.map(main => {
+              if (main.child.length == 0) {
+                return (
+                  <Menu.Item key={`${main.layout}${main.path}`}>
+                    <Link to={`${main.layout}${main.path}`}>
+                      <Icon type="dashboard" />
+                      <span className="nav-text">{main.name}</span>
+                    </Link>
+                  </Menu.Item>
+                );
+              } else {
+                let items = main.child.map(child => {
+                  return (
+                    <Menu.Item key={`${child.layout}${child.path}`}>
+                      <Link to={`${child.layout}${child.path}`}>
+                        {child.name}
+                      </Link>
+                    </Menu.Item>
+                  );
+                });
+                items.unshift(
+                  <Menu.Item key={`${main.layout}${main.path}`}>
+                    <Link to={`${main.layout}${main.path}`}>
+                      <span className="nav-text">{main.sub}</span>
+                    </Link>
+                  </Menu.Item>
+                );
+                return (
+                  <SubMenu
+                    key={`${main.layout}${main.path}`}
+                    title={
+                      <span>
+                        <Icon type={main.icon} />
+                        <span>{main.name}</span>
+                      </span>
+                    }
+                    onTitleClick={() => {
+                      // this.props.history.push({
+                      //   pathname: `${main.layout}${main.path}`
+                      // });
+                    }}
+                  >
+                    {items}
+                  </SubMenu>
+                );
+              }
+            })}
+          </Menu>
+        </Sider>
+        <Layout>
+          <Header
+            style={{
+              height: "4.3rem",
+              backgroundColor: "#fff",
+              padding: "1rem"
+            }}
+          >
+            <Menu
+              onClick={this.handleClick}
+              selectedKeys={[this.state.current]}
+              mode="horizontal"
+            >
+              <SubMenu
+                style={{ float: "right" }}
+                title={
+                  <span className="submenu-title-wrapper">
+                    <Icon
+                      type="setting"
+                      theme="filled"
+                      style={{ fontSize: 26 }}
+                    />
+                  </span>
+                }
+              >
+                <Menu.Item
+                  key="setting:1"
+                  onClick={() => {
+                    this.props.history.push({
+                      pathname: `/${role}/profile`
+                    });
+                  }}
+                >
+                  {" "}
+                  Profile{" "}
+                  <Icon
+                    style={{ float: "right", marginTop: "12px" }}
+                    type="user"
+                  />
+                </Menu.Item>
+                <Menu.Item key="setting:2" onClick={this.showDeleteConfirm}>
+                  {" "}
+                  Sign Out{" "}
+                  <Icon
+                    style={{ float: "right", marginTop: "12px" }}
+                    type="logout"
+                  />
+                </Menu.Item>
+              </SubMenu>
+            </Menu>
+          </Header>
+          <Content style={{ margin: "24px 16px 0" }}>
+            <Switch>
+              {routes.map((prop, key) => {
+                if (prop.layout === "/trainer") {
+                  return (
+                    <Route
+                      exact
+                      path={prop.layout + prop.path}
+                      component={prop.component}
+                      key={key}
+                    />
+                  );
+                }
+              })}
+            </Switch>
+          </Content>
+          <Footer style={{ textAlign: "center" }}>©2019 TotoSci Devs</Footer>
+        </Layout>
+      </Layout>
     );
   }
 }
 
-Dashboard.propTypes = {
-  classes: PropTypes.object.isRequired
-};
-
-export default withGlobalContext(withStyles(dashboardStyle)(Dashboard));
+export default withGlobalContext(withRouter(Slider));

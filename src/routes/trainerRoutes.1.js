@@ -31,16 +31,23 @@ const dashboardRoutes = [
   {
     path: "/instructors",
     name: "Instructors",
-    sub: "All Instructors",
-    icon: "team",
 
+    icon: SupervisedUserCircle,
     component: Instructors,
+    layout: "/trainer"
+  },
+  {
+    path: "/instructors/single",
+    name: "Instructors : Single",
+
+    type: "nested",
+    component: Single,
     layout: "/trainer"
   },
 
   {
     path: "/instructors/Add",
-    name: "Add Instructor",
+    name: "Instructors : Add",
 
     component: AddInstructor,
     layout: "/trainer",
@@ -51,16 +58,24 @@ const dashboardRoutes = [
   {
     path: "/classes",
     name: "Classes",
-    sub: "All Classes",
-    icon: "profile",
+
+    icon: LibraryBooks,
     component: Classes,
     layout: "/trainer"
   },
   {
     path: "/classes/add",
-    name: "Add Class",
+    name: "Classes : Add",
 
     component: AddClasses,
+    layout: "/trainer",
+    type: "nested"
+  },
+  {
+    path: "/Classes/single",
+    name: "Classe : Single",
+
+    component: SingleClass,
     layout: "/trainer",
     type: "nested"
   },

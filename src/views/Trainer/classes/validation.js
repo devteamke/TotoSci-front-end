@@ -4,17 +4,27 @@ export default function validate(fieldName, value) {
   var constraints = {
     name: {
       presence: {
-        message: "^School Name is required!"
+        message: "^Class Name is required!"
       }
     },
-    county: {
+    course: {
       presence: {
-        message: "^County Name is required!"
+        message: "^Course is required!"
       }
     },
-    sub_county: {
+    start_time: {
       presence: {
-        message: "^Sub County Name is required!"
+        message: "^Start Time is required!"
+      }
+    },
+    day: {
+      presence: {
+        message: "^Day of week  is required!"
+      }
+    },
+    duration: {
+      presence: {
+        message: "^Duration is required!"
       }
     }
   };

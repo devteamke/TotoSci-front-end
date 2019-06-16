@@ -9,8 +9,8 @@ import Snackbar from "../../../components/dcomponents/Snackbar/Snackbar.jsx";
 import GridItem from "../../../components/dcomponents/Grid/GridItem.jsx";
 import GridContainer from "../../../components/dcomponents/Grid/GridContainer.jsx";
 import CustomInput from "../../../components/dcomponents/CustomInput/CustomInput.jsx";
-import Button from "../../../components/dcomponents/CustomButtons/Button.jsx";
-import Card from "../../../components/dcomponents/Card/Card.jsx";
+
+//import Card from "../../../components/dcomponents/Card/Card.jsx";
 import CardHeader from "../../../components/dcomponents/Card/CardHeader.jsx";
 import CardAvatar from "../../../components/dcomponents/Card/CardAvatar.jsx";
 import CardBody from "../../../components/dcomponents/Card/CardBody.jsx";
@@ -25,8 +25,9 @@ import {
   MDBTableBody,
   MDBIcon
 } from "mdbreact";
+import validate from "./validation";
 import avatar from "../../../assets/img/faces/marc.jpg";
-import Select from "@material-ui/core/Select";
+//import Select from "@material-ui/core/Select";
 import globals from "../../../constants/Globals";
 // @material-ui/icons
 import AddAlert from "@material-ui/icons/AddAlert";
@@ -34,8 +35,27 @@ import { withGlobalContext } from "../../../context/Provider";
 //Form components
 
 import "./register.css";
-
-import validate from "./validation";
+//ant design
+import {
+  Form,
+  Input,
+  Tooltip,
+  Icon,
+  Cascader,
+  Select,
+  Row,
+  Col,
+  Checkbox,
+  Button,
+  AutoComplete,
+  Card,
+  Radio,
+  Spin
+} from "antd";
+const { Option } = Select;
+const AutoCompleteOption = AutoComplete.Option;
+const antIcon = <Icon type="loading" style={{ fontSize: 24 }} spin />;
+const antIconLarge = <Icon type="loading" style={{ fontSize: 40 }} spin />;
 const styles = {
   cardCategoryWhite: {
     color: "rgba(255,255,255,.62)",
@@ -59,21 +79,8 @@ class AddUser extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      //form fields
-      fname: "",
-      fnameError: null,
-      lname: "",
-      lnameError: null,
-
-      //parent
-      pfname: "",
-      pfnameError: null,
-      plname: "",
-      plnameError: null,
-      email: "",
-      emailError: null,
-      residence: "",
-      residenceError: "",
+      confirmDirty: false,
+      autoCompleteResult: [],
 
       school: "",
       schools: [],
@@ -130,167 +137,101 @@ class AddUser extends React.Component {
     });
   };
 
-  handleSubmit = () => {
-    let state = this.state;
-    const fnameError = validate(
-      "fname",
-      state.fname === "" ? null : state.fname
-    );
-    const lnameError = validate(
-      "lname",
-      state.lname === "" ? null : state.lname
-    );
-    //parent valudation
+  handleSubmit = e => {
+    const state = this.state;
+    e.preventDefault();
 
-    let pfnameError = validate(
-      "fname",
-      state.pfname === "" ? null : state.pfname
-    );
-    let plnameError = validate(
-      "lname",
-      state.plname === "" ? null : state.plname
-    );
-    let emailError = validate("email", state.email === "" ? null : state.email);
-    let phoneError = validate(
-      "phone",
-      state.phone_number === "" ? null : state.phone_number
-    );
-
-    //other validation
-    const schoolError = validate(
-      "school",
-      state.school === "" ? null : state.school
-    );
-    if (state.existingSelected || state.isSponsored) {
-      pfnameError = null;
-      plnameError = null;
-      emailError = null;
-      phoneError = null;
-    }
-
-    this.setState(
-      {
-        fnameError: fnameError,
-        lnameError: lnameError,
-        //parent
-        pfnameError: pfnameError,
-        plnameError: plnameError,
-        emailError: emailError,
-        phone_numberError: phoneError,
-        //Other info
-        schoolError: schoolError
-      },
-      () => {
-        if (
-          !emailError &&
-          !fnameError &&
-          !lnameError &&
-          !pfnameError &&
-          !plnameError &&
-          !phoneError &&
-          !schoolError
-        ) {
-          // alert('Details are valid!'+globals.BASE_URL)
-          let data = {
-            studentFname: state.fname,
-            studentLname: state.lname,
-            school: state.school,
-            isSponsored: state.isSponsored
-          };
-          if (!state.isSponsored) {
-            if (!state.isExisting) {
-              data = {
-                ...data,
-                parentFname: state.pfname,
-                parentLname: state.plname,
-                email: state.email,
-                phone_number: { main: state.phone_number },
-                existingParent: false
-              };
-            } else {
-              data = { ...data, existingParent: state.selected._id };
-            }
+    this.props.form.validateFieldsAndScroll((err, values) => {
+      if (!err) {
+        console.log("Received values of form: ", values);
+        this.setState({ registering: true });
+        let data = {
+          studentFname: values.fname,
+          studentLname: values.lname,
+          school: values.school[0],
+          isSponsored: state.isSponsored
+        };
+        if (!state.isSponsored) {
+          if (!state.isExisting) {
+            data = {
+              ...data,
+              parentFname: values.pfname,
+              parentLname: values.plname,
+              email: values.email,
+              phone_number: { main: values.phone },
+              existingParent: false
+            };
+          } else {
+            data = { ...data, existingParent: state.selected._id };
           }
-          console.log(data);
-          this.setState({ registering: true, serverRes: null });
-          const AddAsync = async () =>
-            await (await fetch(
-              `${globals.BASE_URL}/api/${this.props.global.user.role}/new_student`,
-              {
-                method: "post",
-                mode: "cors", // no-cors, cors, *same-origin
-                cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
-                credentials: "same-origin", // include, *same-origin, omit
-                headers: {
-                  "Content-Type": "application/json",
-                  Authorization: this.props.global.token
-                  // "Content-Type": "application/x-www-form-urlencoded",
-                },
-                redirect: "follow", // manual, *follow, error
-                referrer: "no-referrer", // no-referrer, *client
-                body: JSON.stringify(data)
-              }
-            )).json();
-
-          AddAsync()
-            .then(data => {
-              this._snack({
-                type: data.success ? "success" : "warning",
-                msg: data.message
-              });
-              //this.setState({currentPlace:data.results})
-              if (data.success) {
-                this.setState({
-                  registering: false,
-                  serverRes: data.message,
-                  //form fields
-                  fname: "",
-                  fnameError: null,
-                  lname: "",
-                  lnameError: null,
-                  //parent
-                  pfname: "",
-                  pfnameError: null,
-                  plname: "",
-                  plnameError: null,
-                  email: "",
-                  emailError: null,
-                  residence: "",
-                  residenceError: "",
-                  selected: null,
-                  existingSelected: false,
-                  searchStr: "",
-                  //Sponsored
-                  isSponsored: true,
-
-                  school: "",
-                  registering: false
-                });
-              } else {
-                this.setState({
-                  registering: false,
-
-                  serverRes: data.message
-                });
-              }
-            })
-            .catch(error => {
-              console.log(error);
-              if (error == "TypeError: Failed to fetch") {
-                //   alert('Server is offline')
-              } else if (error.message == "Network request failed") {
-                // alert('No internet connection')
-                this.setState({
-                  serverRes: "Network request failed"
-                });
-              }
-              this._snack({ type: "warning", msg: error.toString() });
-              this.setState({ registering: false });
-              console.log(error);
-            });
         }
+        console.log(data);
+        this.setState({ registering: true });
+        const AddAsync = async () =>
+          await (await fetch(
+            `${globals.BASE_URL}/api/${this.props.global.user.role}/new_student`,
+            {
+              method: "post",
+              mode: "cors", // no-cors, cors, *same-origin
+              cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
+              credentials: "same-origin", // include, *same-origin, omit
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: this.props.global.token
+                // "Content-Type": "application/x-www-form-urlencoded",
+              },
+              redirect: "follow", // manual, *follow, error
+              referrer: "no-referrer", // no-referrer, *client
+              body: JSON.stringify(data)
+            }
+          )).json();
+
+        AddAsync()
+          .then(data => {
+            this._snack({
+              type: data.success ? "success" : "warning",
+              msg: data.message
+            });
+
+            //this.setState({currentPlace:data.results})
+            if (data.success) {
+              this.props.form.resetFields();
+              this.setState({
+                registering: false,
+
+                selected: null,
+                existingSelected: false,
+                searchStr: "",
+                //Sponsored
+                isSponsored: true,
+
+                school: "",
+                registering: false
+              });
+            } else {
+              this.setState({
+                registering: false,
+
+                serverRes: data.message
+              });
+            }
+          })
+          .catch(error => {
+            console.log(error);
+            if (error == "TypeError: Failed to fetch") {
+              //   alert('Server is offline')
+            } else if (error.message == "Network request failed") {
+              // alert('No internet connection')
+              this.setState({
+                serverRes: "Network request failed"
+              });
+            }
+            this._snack({ type: "warning", msg: error.toString() });
+            this.setState({ registering: false });
+            console.log(error);
+          });
       }
-    );
+    });
   };
 
   _handleSearch = () => {
@@ -364,8 +305,12 @@ class AddUser extends React.Component {
       .then(data => {
         //this.setState({currentPlace:data.results})
         if (data.success) {
+          let schools = data.schools.map(each => {
+            return { value: each._id, label: unKebab(each.name) };
+          });
+          console.log("mapped schools", schools);
           this.setState({
-            schools: data.schools,
+            schools: schools,
             loading: false
           });
         } else {
@@ -387,16 +332,21 @@ class AddUser extends React.Component {
       });
   };
 
-  handleOptionChange = () => {
+  onChange = e => {
+    console.log("radio checked", e.target.value);
     this.setState({
-      isExisting: !this.state.isExisting
-    });
-  };
-  handleTypeChange = () => {
-    this.setState({
+      value: e.target.value,
       isSponsored: !this.state.isSponsored
     });
   };
+  onChange2 = e => {
+    console.log("radio checked", e.target.value);
+    this.setState({
+      value: e.target.value,
+      isExisting: !this.state.isExisting
+    });
+  };
+
   _handleSelect = obj => {
     this.setState({ selected: obj, existingSelected: true });
   };
@@ -404,31 +354,120 @@ class AddUser extends React.Component {
     this._snack();
     this._fetchSchools();
   };
+  //ant design
+  handleParentChange = value => {
+    if (value.length == "5d0231026accc00c57f14281".length) {
+      return;
+    }
+    let autoCompleteResult;
+    if (!value) {
+      autoCompleteResult = [];
+    } else {
+      this.setState({
+        searching: true,
+        searchStr: value,
+        existingSelected: false,
+        selected: null
+      });
+      const SearchAsync = async () =>
+        await (await fetch(
+          `${globals.BASE_URL}/api/${this.props.global.user.role}/search_parent`,
+          {
+            method: "post",
+            mode: "cors", // no-cors, cors, *same-origin
+            cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
+            credentials: "same-origin", // include, *same-origin, omit
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: this.props.global.token
+              // "Content-Type": "application/x-www-form-urlencoded",
+            },
+            redirect: "follow", // manual, *follow, error
+            referrer: "no-referrer", // no-referrer, *client
+            body: JSON.stringify({ query: value })
+          }
+        )).json();
+
+      SearchAsync()
+        .then(data => {
+          //this.setState({currentPlace:data.results})
+          if (data.success) {
+            autoCompleteResult = data.parents;
+            this.setState({
+              autoCompleteResult,
+              searching: false,
+              plength: data.parents.length
+            });
+          } else {
+          }
+        })
+        .catch(error => {
+          console.log(error);
+          if (error == "TypeError: Failed to fetch") {
+            //   alert('Server is offline')
+          } else if (error.message == "Network request failed") {
+            // alert('No internet connection')
+            this.setState({
+              serverRes: "Network request failed"
+            });
+          }
+          this._snack({ type: "warning", msg: error.toString() });
+          this.setState({ searching: false });
+          console.log(error);
+        });
+    }
+  };
 
   render() {
     const { classes } = this.props;
     const state = this.state;
+    const { getFieldDecorator } = this.props.form;
+    const { autoCompleteResult } = this.state;
+    const formItemLayout = {
+      labelCol: {
+        xs: { span: 24 },
+        sm: { span: 8 }
+      },
+      wrapperCol: {
+        xs: { span: 24 },
+        sm: { span: 16 }
+      }
+    };
+    const tailFormItemLayout = {
+      wrapperCol: {
+        xs: {
+          span: 24,
+          offset: 0
+        },
+        sm: {
+          span: 16,
+          offset: 8
+        }
+      }
+    };
+    const prefixSelector = getFieldDecorator("prefix", {
+      initialValue: "254"
+    })(
+      <Select style={{ width: 90 }}>
+        <Option value="254">+254</Option>
+      </Select>
+    );
 
-    let items = null;
-    if (state.schools.length > 0) {
-      console.log("schools", this.state.schools);
-      items = state.schools.map(each => {
-        let school = unKebab(each.name);
-
-        return <MenuItem value={each._id}>{school}</MenuItem>;
-      });
-    }
+    const parentOptions = autoCompleteResult.map(parent => (
+      <AutoCompleteOption
+        key={parent._id}
+        onClick={() => {
+          this.setState({ existingSelected: true, selected: parent });
+        }}
+      >
+        {capitalize(parent.fname) + " " + capitalize(parent.lname)}
+      </AutoCompleteOption>
+    ));
 
     if (state.loading) {
       return (
         <div style={center}>
-          <div
-            className="spinner-grow text-info"
-            role="status"
-            style={{ marginBottom: "15px" }}
-          >
-            <span className="sr-only">Loading...</span>
-          </div>
+          <Spin indicator={antIconLarge} />
         </div>
       );
     }
@@ -444,230 +483,179 @@ class AddUser extends React.Component {
           close
         />
         <GridContainer>
-          <GridItem xs={12} sm={12} md={11}>
-            <div
-              style={{
-                width: "15rem",
-                marginTop: "3px",
-                float: "left"
-              }}
-            >
-              <MDBBtn
-                size=""
-                style={{ display: "inline-block" }}
-                onClick={() => {
-                  this.props.history.push({
-                    pathname: `/${this.props.global.user.role}/students`,
-                    data: ""
-                  });
-                }}
-              >
-                Back
-              </MDBBtn>
-            </div>
-          </GridItem>
-          <GridItem xs={12} sm={12} md={11}>
-            <Card>
-              <CardHeader color="info">
-                <h4 className={classes.cardTitleWhite}>
-                  Register a new student
-                </h4>
-                <p className={classes.cardCategoryWhite}>Fill in their info</p>
-              </CardHeader>
-              <CardBody>
-                <GridContainer>
-                  <GridItem xs={12} sm={12} md={11}>
-                    <h5>Student Details</h5>
-                  </GridItem>
-                  <GridItem xs={12} sm={12} md={6}>
-                    <MDBInput
-                      label={"First Name"}
-                      group
-                      value={state.fname}
-                      onChange={event => {
-                        this.setState({ fname: event.target.value });
-                      }}
-                      onBlur={() =>
-                        this.setState({
-                          fnameError: validate(
-                            "fname",
-                            state.fname == "" ? null : state.fname
-                          )
-                        })
-                      }
-                      error="Whoops!"
-                      success="right"
-                    />
-                    <p
-                      style={{
-                        color: "red",
-                        fontSize: "0.8rem",
-                        textAlign: "center"
-                      }}
+          <GridItem xs={12} sm={12} md={9}>
+            <Card title="Register a new student" style={{ width: "100%" }}>
+              <GridItem xs={12} sm={12} md={12}>
+                <h5>Student Details</h5>
+              </GridItem>
+              <GridItem xs={12} sm={12} md={12}>
+                <Form {...formItemLayout} onSubmit={this.handleSubmit}>
+                  <Form.Item label="First Name">
+                    {getFieldDecorator("fname", {
+                      rules: [
+                        {
+                          required: true,
+                          message: "Please input student's last name!"
+                        }
+                      ]
+                    })(<Input />)}
+                  </Form.Item>
+                  <Form.Item label="Last Name">
+                    {getFieldDecorator("lname", {
+                      rules: [
+                        {
+                          required: true,
+                          message: "Please input student's last  name!"
+                        }
+                      ]
+                    })(<Input />)}
+                  </Form.Item>
+                  <Form.Item>
+                    <Radio.Group
+                      style={{ float: "right" }}
+                      onChange={this.onChange}
+                      value={this.state.isSponsored}
                     >
-                      {state.fnameError}
-                    </p>
-                  </GridItem>
-                  <GridItem xs={12} sm={12} md={6}>
-                    <MDBInput
-                      label={"Last Name"}
-                      group
-                      value={state.lname}
-                      onChange={event => {
-                        sch;
-                        this.setState({ lname: event.target.value });
-                      }}
-                      type="text"
-                      onBlur={() =>
-                        this.setState({
-                          lnameError: validate(
-                            "lname",
-                            state.lname == "" ? null : state.lname
-                          )
-                        })
-                      }
-                      error="Whoops!"
-                      success="right"
-                    />
-                    <p
-                      style={{
-                        color: "red",
-                        fontSize: "0.8rem",
-                        textAlign: "center"
-                      }}
-                    >
-                      {state.lnameError}
-                    </p>
-                  </GridItem>
-                  <GridItem xs={12} sm={12} md={12}>
-                    <p>
-                      <b>Type</b>
-                    </p>
-                  </GridItem>
-                  <GridItem xs={12} sm={12} md={12}>
-                    <div style={{ marginLeft: "1.3rem" }}>
-                      <label>
-                        <input
-                          type="radio"
-                          name="sponsor"
-                          value="option1"
-                          checked={state.isSponsored}
-                          onChange={this.handleTypeChange}
-                          className="form-check-input"
-                        />
-                        Sponsored
-                      </label>
-                      <label style={{ marginLeft: "3rem" }}>
-                        <input
-                          type="radio"
-                          name="sponsor"
-                          value="option1"
-                          checked={!state.isSponsored}
-                          onChange={this.handleTypeChange}
-                          className="form-check-input"
-                        />
-                        Self-Sponsored
-                      </label>
-                    </div>
-                  </GridItem>
+                      <Radio value={true}>Sponsored</Radio>
+                      <Radio value={false}>Self Sponsored(parent)</Radio>
+                    </Radio.Group>
+                  </Form.Item>
                   {!state.isSponsored ? (
                     <>
                       <GridItem xs={12} sm={12} md={12}>
-                        <h5>Parent details</h5>
+                        <h5>Parent Details</h5>
                       </GridItem>
-                      <GridItem xs={12} sm={12} md={12}>
-                        <div style={{ marginLeft: "1.3rem" }}>
-                          <label>
-                            <input
-                              type="radio"
-                              name="react-tips"
-                              value="option1"
-                              checked={state.isExisting}
-                              onChange={this.handleOptionChange}
-                              className="form-check-input"
-                            />
-                            Existing parent
-                          </label>
-                          <label style={{ marginLeft: "3rem" }}>
-                            <input
-                              type="radio"
-                              name="react-tips"
-                              value="option1"
-                              checked={!state.isExisting}
-                              onChange={this.handleOptionChange}
-                              className="form-check-input"
-                            />
-                            New Parent
-                          </label>
-                        </div>
-                      </GridItem>
+                      <Form.Item>
+                        <Radio.Group
+                          style={{ float: "right", marginRight: "45.5px" }}
+                          onChange={this.onChange2}
+                          value={this.state.isExisting}
+                        >
+                          <Radio value={true}>Existing Parent</Radio>
+                          <Radio value={false}>New Parent</Radio>
+                        </Radio.Group>
+                      </Form.Item>
+                      {!state.isExisting ? (
+                        <>
+                          <Form.Item label="First Name">
+                            {getFieldDecorator("pfname", {
+                              rules: [
+                                {
+                                  required: true,
+                                  message: "Please input parent's first name!"
+                                }
+                              ]
+                            })(<Input />)}
+                          </Form.Item>
+                          <Form.Item label="Last Name">
+                            {getFieldDecorator("plname", {
+                              rules: [
+                                {
+                                  required: true,
+                                  message: "Please input parent's last  name!"
+                                }
+                              ]
+                            })(<Input />)}
+                          </Form.Item>
 
-                      {state.isExisting ? (
-                        <span style={{ marginBottom: "24px" }}>
-                          <GridItem xs={12} sm={12} md={12}>
+                          <Form.Item label="E-mail">
+                            {getFieldDecorator("email", {
+                              rules: [
+                                {
+                                  type: "email",
+                                  message: "The input is not valid E-mail!"
+                                },
+                                {
+                                  required: true,
+                                  message: "Please input your E-mail!"
+                                }
+                              ]
+                            })(<Input />)}
+                          </Form.Item>
+
+                          <Form.Item label="Phone Number">
+                            {getFieldDecorator("phone", {
+                              rules: [
+                                {
+                                  required: true,
+                                  message: "Please input your phone number!"
+                                }
+                              ]
+                            })(
+                              <Input
+                                addonBefore={prefixSelector}
+                                style={{ width: "100%" }}
+                              />
+                            )}
+                          </Form.Item>
+                        </>
+                      ) : (
+                        <>
+                          <Form.Item label="Search Parent">
+                            {getFieldDecorator("psearch", {
+                              rules: [
+                                {
+                                  required: true,
+                                  message: "Please search and select parent!"
+                                }
+                              ]
+                            })(
+                              <AutoComplete
+                                dataSource={parentOptions}
+                                onChange={this.handleParentChange}
+                                placeholder="parent"
+                              >
+                                <Input />
+                              </AutoComplete>
+                            )}
+                          </Form.Item>
+                          {state.searching ? (
+                            <div className="text-center">
+                              <div
+                                className="spinner-grow text-info"
+                                role="status"
+                                style={{
+                                  marginBottom: "15px",
+                                  marginLeft: "9rem",
+                                  marginTop: "1.1rem"
+                                }}
+                              >
+                                <span className="sr-only">Loading...</span>
+                              </div>
+                            </div>
+                          ) : state.searchStr && state.plength == 0 ? (
                             <div
+                              className="text-center"
                               style={{
-                                width: "18rem",
-                                float: "left",
-                                marginBottom: "-24px"
+                                marginRight: "1rem",
+                                marginTop: "-1.5rem"
                               }}
                             >
-                              {state.existingSelected ? (
-                                <MDBIcon
-                                  size="2x"
-                                  className="red-text pr-3"
-                                  style={{ marginLeft: "6rem" }}
-                                  onClick={() =>
-                                    this.setState({
-                                      selected: null,
-                                      existingSelected: false,
-                                      searchStr: ""
-                                    })
-                                  }
-                                  icon="user-times"
-                                />
-                              ) : (
-                                <MDBInput
-                                  responsive
-                                  label={"Search existing parent by name"}
-                                  group
-                                  value={state.searchStr}
-                                  onChange={event => {
-                                    this.setState(
-                                      { searchStr: event.target.value },
-                                      () => this._handleSearch()
-                                    );
-                                  }}
-                                  type="email"
-                                />
-                              )}
+                              <p style={{ marginTop: 50 }}>
+                                {" "}
+                                No parent found matching "{state.searchStr}"
+                              </p>{" "}
                             </div>
-                            <br />
-                            <div
-                              style={{ width: "1rem", marginBottom: "30px" }}
-                            >
-                              {state.searching ? (
-                                <div className="text-center">
-                                  <div
-                                    className="spinner-grow text-info"
-                                    role="status"
-                                    style={{
-                                      marginBottom: "15px",
-                                      marginLeft: "9rem",
-                                      marginTop: "1.1rem"
-                                    }}
-                                  >
-                                    <span className="sr-only">Loading...</span>
-                                  </div>
-                                </div>
-                              ) : null}
+                          ) : null}
 
-                              {state.existingSelected ? (
-                                <MDBTable borderless hover small>
+                          <>
+                            {state.existingSelected ? (
+                              <Form.Item>
+                                <MDBTable
+                                  borderless
+                                  hover
+                                  small
+                                  style={{
+                                    width: "27%",
+                                    float: "right",
+                                    marginRight: "1rem",
+                                    marginTop: "-1.5rem"
+                                  }}
+                                >
                                   <MDBTableBody>
                                     <tr>
                                       <td style={{ width: "50%" }}>
-                                        <b style={{ fontSize: "1.25em" }}>
+                                        <b style={{ fontSize: "1.1em" }}>
                                           First Name
                                         </b>
                                       </td>
@@ -678,7 +666,7 @@ class AddUser extends React.Component {
                                     </tr>
                                     <tr>
                                       <td style={{ width: "50%" }}>
-                                        <b style={{ fontSize: "1.25em" }}>
+                                        <b style={{ fontSize: "1.1em" }}>
                                           Last Name
                                         </b>
                                       </td>
@@ -689,7 +677,7 @@ class AddUser extends React.Component {
                                     </tr>
                                     <tr>
                                       <td style={{ width: "50%" }}>
-                                        <b style={{ fontSize: "1.25em" }}>
+                                        <b style={{ fontSize: "1.1em" }}>
                                           Email
                                         </b>
                                       </td>
@@ -700,7 +688,7 @@ class AddUser extends React.Component {
                                     </tr>
                                     <tr>
                                       <td style={{ width: "50%" }}>
-                                        <b style={{ fontSize: "1.25em" }}>
+                                        <b style={{ fontSize: "1.1em" }}>
                                           Phone_number
                                         </b>
                                       </td>
@@ -715,245 +703,36 @@ class AddUser extends React.Component {
                                     </tr>
                                   </MDBTableBody>
                                 </MDBTable>
-                              ) : (
-                                <>
-                                  {state.searchStr !== "" &&
-                                  !this.state.searching ? (
-                                    <>
-                                      {state.parentList.length > 0 ? (
-                                        <MDBListGroup
-                                          style={{ width: "18rem" }}
-                                        >
-                                          {state.parentList.map(parent => {
-                                            return (
-                                              <MDBListGroupItem
-                                                className="item"
-                                                onClick={() =>
-                                                  this._handleSelect(parent)
-                                                }
-                                              >
-                                                {capitalize(parent.fname)}{" "}
-                                                {capitalize(parent.lname)}
-                                              </MDBListGroupItem>
-                                            );
-                                          })}
-                                        </MDBListGroup>
-                                      ) : (
-                                        <div
-                                          className="text-center"
-                                          style={{
-                                            height: 50,
-                                            width: "270px",
-                                            paddingLeft: "7rem"
-                                          }}
-                                        >
-                                          <p style={{ marginTop: 50 }}>
-                                            {" "}
-                                            No parent found matching "
-                                            {state.searchStr}"
-                                          </p>{" "}
-                                        </div>
-                                      )}
-                                    </>
-                                  ) : null}
-                                </>
-                              )}
-                            </div>
-                          </GridItem>
-                        </span>
-                      ) : (
-                        <>
-                          <GridItem xs={12} sm={12} md={6}>
-                            <MDBInput
-                              label={"First Name"}
-                              group
-                              value={state.pfname}
-                              onChange={event => {
-                                this.setState({ pfname: event.target.value });
-                              }}
-                              onBlur={() =>
-                                this.setState({
-                                  pfnameError: validate(
-                                    "fname",
-                                    state.pfname == "" ? null : state.pfname
-                                  )
-                                })
-                              }
-                              error="Whoops!"
-                              success="right"
-                            />
-                            <p
-                              style={{
-                                color: "red",
-                                fontSize: "0.8rem",
-                                textAlign: "center"
-                              }}
-                            >
-                              {state.pfnameError}
-                            </p>
-                          </GridItem>
-                          <GridItem xs={12} sm={12} md={6}>
-                            <MDBInput
-                              label={"Last Name"}
-                              group
-                              value={state.plname}
-                              onChange={event => {
-                                this.setState({ plname: event.target.value });
-                              }}
-                              type="text"
-                              onBlur={() =>
-                                this.setState({
-                                  plnameError: validate(
-                                    "lname",
-                                    state.plname == "" ? null : state.plname
-                                  )
-                                })
-                              }
-                              error="Whoops!"
-                              success="right"
-                            />
-                            <p
-                              style={{
-                                color: "red",
-                                fontSize: "0.8rem",
-                                textAlign: "center"
-                              }}
-                            >
-                              {state.plnameError}
-                            </p>
-                          </GridItem>
-
-                          <GridItem xs={12} sm={12} md={12}>
-                            <MDBInput
-                              label={"Email Address"}
-                              group
-                              value={state.email}
-                              onChange={event => {
-                                this.setState({ email: event.target.value });
-                              }}
-                              onBlur={() =>
-                                this.setState({
-                                  emailError: validate(
-                                    "email",
-                                    state.email == "" ? null : state.email
-                                  )
-                                })
-                              }
-                              error="Whoops!"
-                              success="right"
-                            />
-                            <p
-                              style={{
-                                color: "red",
-                                fontSize: "0.8rem",
-                                textAlign: "center"
-                              }}
-                            >
-                              {state.emailError}
-                            </p>
-                          </GridItem>
-                          <GridItem xs={12} sm={12} md={6}>
-                            <MDBInput
-                              label={"Phone Number"}
-                              group
-                              value={state.phone_number}
-                              onChange={event => {
-                                this.setState({
-                                  phone_number: event.target.value,
-                                  phone_numberError: validate(
-                                    "phone",
-                                    event.target.value == ""
-                                      ? null
-                                      : event.target.value
-                                  )
-                                });
-                              }}
-                              onBlur={() =>
-                                this.setState({
-                                  phone_numberError: validate(
-                                    "phone",
-                                    state.phone_number == ""
-                                      ? null
-                                      : state.phone_number
-                                  )
-                                })
-                              }
-                              error="Whoops!"
-                              success="right"
-                            />
-                            <p
-                              style={{
-                                color: "red",
-                                fontSize: "0.8rem",
-                                textAlign: "center"
-                              }}
-                            >
-                              {state.phone_numberError}
-                            </p>
-                          </GridItem>
+                              </Form.Item>
+                            ) : null}
+                          </>
                         </>
                       )}
-                      <br />
-                      <br />
-                      <br />
                     </>
                   ) : null}
-                  <GridItem xs={12} sm={12} md={12} className="mt-5">
-                    <h5>Other details</h5>
-                  </GridItem>
 
-                  <GridItem xs={12} sm={12} md={6}>
-                    <FormControl style={{ width: "100%" }}>
-                      <InputLabel htmlFor="">
-                        Learning Venue or School
-                      </InputLabel>
-                      <Select
-                        value={state.school}
-                        onChange={this.handleChange}
-                        inputProps={{
-                          name: "school",
-                          id: ""
-                        }}
-                        style={{ width: "100%" }}
-                      >
-                        <MenuItem value="">
-                          <em>-</em>
-                        </MenuItem>
-                        {items}
-                      </Select>
-                    </FormControl>
-                    <p
-                      style={{
-                        color: "red",
-                        fontSize: "0.8rem",
-                        textAlign: "center"
-                      }}
-                    >
-                      {state.schoolError}
-                    </p>
-                  </GridItem>
-                </GridContainer>
-                <br />
-                <GridContainer>
-                  <GridItem xs={12} sm={12} md={12}>
-                    <div className="text-center">
-                      {state.registering ? (
-                        <div
-                          className="spinner-grow text-info"
-                          role="status"
-                          style={{ marginBottom: "15px" }}
-                        >
-                          <span className="sr-only">Loading...</span>
-                        </div>
-                      ) : (
-                        <MDBBtn onClick={this.handleSubmit}>
-                          Register student
-                        </MDBBtn>
-                      )}
-                    </div>
-                  </GridItem>
-                </GridContainer>
-              </CardBody>
+                  <Form.Item label="Learning Venue/ School">
+                    {getFieldDecorator("school", {
+                      rules: [
+                        {
+                          type: "array",
+                          required: true,
+                          message: "Please select school/venue!"
+                        }
+                      ]
+                    })(<Cascader options={state.schools} />)}
+                  </Form.Item>
+                  <div className="text-center">
+                    {state.registering ? (
+                      <Spin indicator={antIcon} />
+                    ) : (
+                      <Button type="primary" htmlType="submit">
+                        Register
+                      </Button>
+                    )}
+                  </div>
+                </Form>
+              </GridItem>
             </Card>
           </GridItem>
 
@@ -991,4 +770,6 @@ const center = {
   transform: "translate(-50%, -50%)"
 };
 
-export default withGlobalContext(withStyles(styles)(AddUser));
+export default Form.create({ name: "register" })(
+  withGlobalContext(withStyles(styles)(AddUser))
+);

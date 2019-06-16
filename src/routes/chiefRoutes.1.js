@@ -41,53 +41,77 @@ const dashboardRoutes = [
   {
     path: "/students",
     name: "Students",
-    sub: "All Students",
-    icon: "read",
+
+    icon: School,
     component: Students,
     layout: "/chief-trainer"
   },
   {
     path: "/students/register",
-    name: "Add Student",
+    name: "Students : Register",
 
     component: Register,
     layout: "/chief-trainer",
     type: "nested"
   },
+  {
+    path: "/students/single",
+    name: "Students: Single",
 
+    icon: SupervisedUserCircle,
+    type: "nested",
+    component: SingleStudent,
+    layout: "/chief-trainer"
+  },
   //Personell routes
   {
     path: "/users",
     name: "Personnel",
-    sub: "All Personnel",
-    icon: "team",
+
+    icon: SupervisedUserCircle,
     component: Users,
     layout: "/chief-trainer"
   },
   {
     path: "/users/add",
-    name: "Add Personnel",
+    name: "Personnel : Add",
 
     component: AddUser,
     layout: "/chief-trainer",
     type: "nested"
   },
+  {
+    path: "/users/single",
+    name: "Users : Single",
 
+    icon: SupervisedUserCircle,
+    type: "nested",
+    component: Single,
+    layout: "/chief-trainer"
+  },
   //Courses routes
 
   {
     path: "/courses",
     name: "Courses",
-    sub: "All Courses",
-    icon: "unordered-list",
+
+    icon: ListAlt,
     component: Courses,
     layout: "/chief-trainer"
   },
   {
     path: "/courses/add",
-    name: "Add Course",
+    name: "Courses : Add",
 
     component: AddCourse,
+    layout: "/chief-trainer",
+    type: "nested"
+  },
+  {
+    path: "/courses/single",
+    name: "Courses : Single",
+
+    component: SingleCourse,
     layout: "/chief-trainer",
     type: "nested"
   },
@@ -96,20 +120,27 @@ const dashboardRoutes = [
   {
     path: "/schools",
     name: "Schools",
-    sub: "All Schools",
-    icon: "appstore",
+
+    icon: AccountBalance,
     component: Schools,
     layout: "/chief-trainer"
   },
   {
     path: "/schools/add",
-    name: "Add School",
+    name: "School : Add",
 
     component: AddSchool,
     layout: "/chief-trainer",
     type: "nested"
   },
+  {
+    path: "/Schools/single",
+    name: "School : Single",
 
+    component: SingleSchool,
+    layout: "/chief-trainer",
+    type: "nested"
+  },
   {
     path: "/profile",
     name: "My Profile",

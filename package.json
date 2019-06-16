@@ -5,6 +5,7 @@
   "dependencies": {
     "@material-ui/core": "3.9.2",
     "@material-ui/icons": "3.0.2",
+    "antd": "^3.19.3",
     "chartist": "^0.10.1",
     "classnames": "2.2.6",
     "history": "4.7.2",
@@ -23,6 +24,7 @@
     "react-loaders": "^3.0.1",
     "react-router-dom": "^4.3.1",
     "react-scripts": "3.0.1",
+    "react-select": "^3.0.4",
     "react-swipeable-views": "0.13.1",
     "validate.js": "^0.12.0"
   },

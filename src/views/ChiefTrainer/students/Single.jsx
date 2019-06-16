@@ -225,7 +225,7 @@ class Single extends React.Component {
         schoolError: schoolError
       },
       () => {
-        console.log(fnameError, lnameError, schoolError, student.school);
+        console.log(fnameError, lnameError, schoolError);
         if (!fnameError && !lnameError && !schoolError) {
           console.log("No error");
           if (!this.state.savingInfo) {
@@ -547,7 +547,7 @@ class Single extends React.Component {
                     </p>
                   </GridItem>
 
-                  <GridItem xs={12} sm={12} md={8}>
+                  <GridItem xs={12} sm={12} md={6}>
                     <FormControl style={{ width: "100%" }}>
                       <InputLabel htmlFor="">
                         Learning Venue or School
