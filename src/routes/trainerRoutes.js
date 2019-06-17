@@ -13,7 +13,7 @@ import Single from "../views/Trainer/instructors/Single";
 import Profile from "../views/profile/Profile.jsx";
 
 import Classes from "../views/Trainer/classes/Classes";
-import SingleClass from "../views/Trainer/classes/Single";
+import SingleClass from "../views/Trainer/classes/SingleClass";
 import AddClasses from "../views/Trainer/classes/Add";
 
 const dashboardRoutes = [
@@ -65,6 +65,14 @@ const dashboardRoutes = [
     type: "nested"
   },
 
+  {
+    path: "/classes/Single",
+    name: "Single Class",
+
+    component: SingleClass,
+    layout: "/trainer",
+    type: "nested"
+  },
   {
     path: "/profile",
     name: "My Profile",

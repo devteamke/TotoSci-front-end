@@ -53,7 +53,7 @@ class Slider extends React.Component {
   showDeleteConfirm = () => {
     confirm({
       title: "Are you sure you want to logout?",
-      content: "Some descriptions",
+
       okText: "Yes",
       okType: "danger",
       cancelText: "No",

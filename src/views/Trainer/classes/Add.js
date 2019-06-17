@@ -69,7 +69,11 @@ class Add extends React.Component {
     super(props);
     this.state = {
       loading: true,
-
+      day: "",
+      duration: "",
+      start_time: "",
+      name: "",
+      course: "",
       //other
       adding: false,
       open: false,
@@ -116,18 +120,16 @@ class Add extends React.Component {
       if (!err) {
         console.log("Received values of form: ", values);
         console.log("Time", moment(values.start_time).format("HH:mm"));
-        return;
+
         this.setState({ adding: true });
         let data = {
-          name: values.name,
-          description: values.description,
-          charge: values.charge
+          ...values
         };
         console.log(data);
         this.setState({ serverRes: null });
         const AddAsync = async () =>
           await (await fetch(
-            `${globals.BASE_URL}/api/${this.props.global.user.role}/new_course`,
+            `${globals.BASE_URL}/api/${this.props.global.user.role}/new_class`,
             {
               method: "post",
               mode: "cors", // no-cors, cors, *same-origin

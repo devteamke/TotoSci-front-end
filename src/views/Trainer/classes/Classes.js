@@ -1,4 +1,5 @@
 import React from "react";
+import moment from "moment";
 // @material-ui/core components
 import withStyles from "@material-ui/core/styles/withStyles";
 // core components
@@ -74,7 +75,7 @@ class AllStudents extends React.Component {
       loading: true,
       mainLoad: true,
       loaded: false,
-      users: [],
+      _classes: [],
       page: 1,
       limit: 10,
 
@@ -93,7 +94,7 @@ class AllStudents extends React.Component {
     };
     this.myRef = React.createRef();
   }
-  _fetchUsers = () => {
+  _fetchClasses = () => {
     let state = this.state;
     let data = {
       limit: state.limit,
@@ -102,7 +103,7 @@ class AllStudents extends React.Component {
     };
     const FetchAsync = async () =>
       await (await fetch(
-        `${globals.BASE_URL}/api/${this.props.global.user.role}/all_instructors`,
+        `${globals.BASE_URL}/api/${this.props.global.user.role}/all_classes`,
         {
           method: "post",
           mode: "cors", // no-cors, cors, *same-origin
@@ -125,13 +126,14 @@ class AllStudents extends React.Component {
         if (data.success) {
           console.log("[users]", data);
           this.setState({
-            users: data.result.docs,
+            _classes: data.result.docs,
             page: data.result.page,
             totalPages: data.result.totalPages,
             totalDocs: data.result.totalDocs,
             hasNext: data.result.hasNextPage,
             hasPrev: data.result.hasPrevPage
           });
+          console.log("Stat", state._classes);
         } else {
           this._snack({ type: "warning", msg: data.message });
         }
@@ -175,7 +177,7 @@ class AllStudents extends React.Component {
         loaded: false
       },
       () => {
-        this._fetchUsers();
+        this._fetchClasses();
       }
     );
   };
@@ -190,7 +192,7 @@ class AllStudents extends React.Component {
         loaded: false
       },
       () => {
-        this._fetchUsers();
+        this._fetchClasses();
       }
     );
   };
@@ -202,7 +204,7 @@ class AllStudents extends React.Component {
         loaded: false
       },
       () => {
-        this._fetchUsers();
+        this._fetchClasses();
       }
     );
   };
@@ -342,7 +344,7 @@ class AllStudents extends React.Component {
   };
 
   componentDidMount = () => {
-    this._fetchUsers();
+    this._fetchClasses();
     this._snack();
   };
 
@@ -411,26 +413,26 @@ class AllStudents extends React.Component {
                 </GridContainer>
               ) : (
                 <>
-                  {state.users.length > 0 ? (
+                  {state._classes.length > 0 ? (
                     <MDBTable hover responsive small striped bordered>
                       <MDBTableHead>
                         <tr>
                           <th>No.</th>
-                          <th>First Name</th>
-                          <th>Last Name</th>
-                          <th>Email </th>
-                          <th> Phone Number</th>
-                          <th>County</th>
-                          <th>Sub County</th>
+                          <th>Class Name</th>
+                          <th>Course</th>
+                          <th>Day </th>
+                          <th> Start Time</th>
+                          <th>Duration</th>
+
                           <th
                             style={{ textAlign: "center", width: "100px" }}
                           ></th>
                         </tr>
                       </MDBTableHead>
                       <MDBTableBody>
-                        {state.users.map((instructor, i) => (
+                        {state._classes.map((clas, i) => (
                           <tr
-                            key={instructor._id}
+                            key={clas._id}
                             // onClick={() => {
                             //   this.props.history.push({
                             //     pathname: `/${this.props.global.user.role}/instructors/single`,
@@ -439,17 +441,23 @@ class AllStudents extends React.Component {
                             // }}
                             style={{ cursor: "pointer" }}
                           >
-                            <td>{i + 1}</td>{" "}
-                            <td>{capitalize(instructor.fname)}</td>
-                            <td>{capitalize(instructor.lname)}</td>
-                            <td>{instructor.email}</td>
-                            <td>
-                              {instructor.phone_number
-                                ? instructor.phone_number.main
-                                : ""}
+                            <td>{i + 1}</td>
+                            <td
+                              onClick={() => {
+                                console.log("open class");
+                                this.props.history.push({
+                                  pathname: "/trainer/classes/single",
+                                  data: clas
+                                });
+                              }}
+                            >
+                              {capitalize(clas.name)}
                             </td>
-                            <td>{capitalize(instructor.county)}</td>
-                            <td>{capitalize(instructor.sub_county)}</td>
+                            <td>{capitalize(clas.courseName[0].name)}</td>
+                            <td>{capitalize(clas.day)}</td>
+                            <td> {moment(clas.start_time).format("HH:mm")} </td>
+                            <td>{clas.duration}</td>
+
                             <td
                               onClick={() => {
                                 instructor = {
@@ -483,7 +491,7 @@ class AllStudents extends React.Component {
                   )}
                 </>
               )}
-              {state.loaded && state.users.length > 0 ? (
+              {state.loaded && state._classes.length > 0 ? (
                 <div className="text-center">
                   {state.hasPrev ? (
                     <Button
@@ -508,7 +516,8 @@ class AllStudents extends React.Component {
                   ) : null}
 
                   <p style={{ color: "grey" }}>
-                    (Showing {state.users.length} of {state.totalDocs} records){" "}
+                    (Showing {state._classes.length} of {state.totalDocs}{" "}
+                    records){" "}
                   </p>
                 </div>
               ) : null}

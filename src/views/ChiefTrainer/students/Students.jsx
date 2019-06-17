@@ -32,6 +32,8 @@ import {
   Select,
   Spin
 } from "antd";
+//Drawer
+import CustomDrawer from "./Drawer";
 const antIcon = <Icon type="loading" style={{ fontSize: 24 }} spin />;
 const antIconLarge = <Icon type="loading" style={{ fontSize: 40 }} spin />;
 const styles = {
@@ -77,6 +79,9 @@ class AllStudents extends React.Component {
       users: [],
       page: 1,
       limit: 10,
+      //drawer
+      dvisible: false,
+      currentInfo: null,
 
       //modal
       visible: false,
@@ -241,111 +246,34 @@ class AllStudents extends React.Component {
     this.setState({ visible: false });
   };
 
-  handleSave = () => {
-    const form = this.formRef;
-    const state = this.state;
-    form.validateFields((err, values) => {
-      if (err) {
-        return;
-      }
-
-      console.log("Received values of form: ", values);
-
-      let data = {
-        _id: student._id,
-        fname: values.fname,
-        lname: values.lname,
-        school: values.school
-      };
-      this.setState({ updating: true });
-      const SaveAsync = async () =>
-        await (await fetch(
-          `${globals.BASE_URL}/api/${this.props.global.user.role}/student_save_info`,
-          {
-            method: "PATCH",
-            mode: "cors", // no-cors, cors, *same-origin
-            cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
-            credentials: "same-origin", // include, *same-origin, omit
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: this.props.global.token,
-              "Access-Control-Allow-Origin": `${globals.BASE_URL}`
-              // "Content-Type": "application/x-www-form-urlencoded",
-            },
-            redirect: "follow", // manual, *follow, error
-            referrer: "no-referrer", // no-referrer, *client
-            body: JSON.stringify(data)
-          }
-        )).json();
-
-      SaveAsync()
-        .then(data => {
-          //this.setState({currentPlace:data.results})
-          this.setState({
-            open: true,
-            updating: false,
-            serverRes: data.message,
-            resType: data.success ? "success" : "warning"
-          });
-          setTimeout(
-            function() {
-              this.setState({ open: false, updating: false });
-            }.bind(this),
-            9000
-          );
-
-          if (data.success) {
-            console.log("[newStudent]", data.student);
-
-            this.setState(prevState => {
-              let users = [...prevState.users];
-              users[student.index] = data.student;
-              return {
-                visible: false,
-                users: users
-              };
-            });
-          } else {
-          }
-        })
-        .catch(error => {
-          console.log(error);
-          if (error == "TypeError: Failed to fetch") {
-            //   alert('Server is offline')
-            this.setState({
-              serverRes: "Failed to contact server!"
-            });
-          } else if (error.message == "Network request failed") {
-            // alert('No internet connection')
-            this.setState({
-              serverRes: "Network request failed"
-            });
-          }
-
-          this.setState({
-            open: true,
-            savingInfo: false,
-            resType: data.success ? "success" : "warning"
-          });
-          setTimeout(
-            function() {
-              this.setState({ open: false });
-            }.bind(this),
-            9000
-          );
-        });
-    });
-  };
-  saveFormRef = formRef => {
-    this.formRef = formRef;
-    console.log("save ref", formRef);
-  };
-
   componentDidMount = () => {
     this._fetchUsers();
     this._snack();
   };
+  showDrawer = () => {
+    const state = this.state;
+    console.log("open drawer");
 
+    this.setState({
+      dvisible: true
+    });
+  };
+  onClose = () => {
+    this.setState({
+      dvisible: false
+    });
+  };
+  updateIndex = ({ i, obj }) => {
+    this.setState(prevState => {
+      let users = [...prevState.users];
+      users[i] = { ...obj, addedBy: users[i].addedBy, i };
+      console.log("new user", users[i]);
+      return {
+        users: users,
+        currentInfo: users[i]
+      };
+    });
+  };
   render = () => {
     const { classes } = this.props;
     const state = this.state;
@@ -371,14 +299,14 @@ class AllStudents extends React.Component {
           closeNotification={() => this.setState({ open: false })}
           close
         />
-        <CollectionCreateForm
-          updating={this.state.updating}
-          _snack={this._snack}
-          ref={this.saveFormRef}
-          visible={this.state.visible}
-          onCancel={this.handleCancel}
-          onSave={this.handleSave}
+        <CustomDrawer
+          visible={this.state.dvisible}
+          onClose={this.onClose}
+          info={this.state.currentInfo}
+          infoCopy={this.state.currentInfo}
+          onUpdateIndex={this.updateIndex}
         />
+
         <GridContainer>
           <GridItem xs={12} sm={12} md={12}>
             <Card title="All Students" style={{ width: "100%" }}>
@@ -452,12 +380,10 @@ class AllStudents extends React.Component {
                             <td>{unKebab(user.school[0].name)}</td>
                             <td
                               onClick={() => {
-                                student = {
-                                  ...user,
-                                  school: user.school[0]._id,
-                                  index: i
-                                };
-                                this.showModal();
+                                let currentInfo = { ...user, i };
+                                this.setState({ currentInfo }, () => {
+                                  this.showDrawer();
+                                });
                               }}
                               style={{
                                 textAlign: "center",
@@ -519,195 +445,10 @@ class AllStudents extends React.Component {
     );
   };
 }
-let student = {};
 
 export default withGlobalContext(withStyles(styles)(AllStudents));
 
 const { Option } = Select;
-
-const CollectionCreateForm = Form.create({ name: "form_in_modal" })(
-  withGlobalContext(
-    // eslint-disable-next-line
-    class extends React.Component {
-      state = { loading: true, edit: false };
-
-      _fetchSchools = () => {
-        const FetchAsync = async () =>
-          await (await fetch(
-            `${globals.BASE_URL}/api/${this.props.global.user.role}/fetch_schools`,
-            {
-              method: "post",
-              mode: "cors", // no-cors, cors, *same-origin
-              cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
-              credentials: "same-origin", // include, *same-origin, omit
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: this.props.global.token
-                // "Content-Type": "application/x-www-form-urlencoded",
-              },
-              redirect: "follow", // manual, *follow, error
-              referrer: "no-referrer", // no-referrer, *client
-              body: JSON.stringify({ data: "hello server" })
-            }
-          )).json();
-
-        FetchAsync()
-          .then(data => {
-            //this.setState({currentPlace:data.results})
-            if (data.success) {
-              let schools = data.schools.map(each => {
-                return { value: each._id, label: unKebab(each.name).join(" ") };
-              });
-              console.log("mapped schools", schools);
-              this.setState({
-                schools: schools,
-                loading: false
-              });
-            } else {
-            }
-          })
-          .catch(error => {
-            console.log(error);
-            if (error == "TypeError: Failed to fetch") {
-              //   alert('Server is offline')
-            } else if (error.message == "Network request failed") {
-              // alert('No internet connection')
-              this.setState({
-                serverRes: "Network request failed"
-              });
-            }
-            this.props._snack({ type: "warning", msg: error.toString() });
-
-            console.log(error);
-          });
-      };
-      handleChange = value => {
-        console.log(`selected ${value}`);
-      };
-      componentDidMount = () => {
-        this._fetchSchools();
-      };
-      render() {
-        const state = this.state;
-        const { visible, onCancel, onSave, form } = this.props;
-        const { getFieldDecorator } = form;
-        if (state.loading) {
-          return <p>loading</p>;
-        }
-        return (
-          <Modal
-            visible={visible}
-            title="Students details"
-            okText="Change"
-            onCancel={onCancel}
-            onOk={onSave}
-            header={[<p>Header</p>]}
-            footer={[
-              <div className="text-center">
-                {this.props.updating ? (
-                  <div
-                    className="spinner-grow text-info"
-                    role="status"
-                    style={{ marginBottom: "15px" }}
-                  >
-                    <span className="sr-only">Loading...</span>
-                  </div>
-                ) : (
-                  <>
-                    {!state.edit ? (
-                      <Button
-                        type="danger"
-                        form="myForm"
-                        key="submit"
-                        htmlType="submit"
-                        onClick={() => this.setState({ edit: true })}
-                      >
-                        Edit
-                      </Button>
-                    ) : (
-                      <>
-                        <Button
-                          form="myForm"
-                          key="submit"
-                          htmlType="submit"
-                          onClick={() => {
-                            this.setState({ edit: false });
-                            onCancel();
-                          }}
-                        >
-                          Cancel
-                        </Button>
-                        <Button
-                          type="primary"
-                          htmlType="submit"
-                          onClick={onSave}
-                        >
-                          Save Changes
-                        </Button>
-                      </>
-                    )}
-                  </>
-                )}
-              </div>
-            ]}
-          >
-            <Form layout="vertical">
-              <Form.Item label="First Name">
-                {getFieldDecorator("fname", {
-                  initialValue: student.fname,
-                  rules: [
-                    {
-                      required: true,
-                      message: "Please input first name!"
-                    }
-                  ]
-                })(<Input disabled={!state.edit} />)}
-              </Form.Item>
-              <Form.Item label="Last Name">
-                {getFieldDecorator("lname", {
-                  initialValue: student.lname,
-                  rules: [
-                    {
-                      required: true,
-                      message: "Please input last name!"
-                    }
-                  ]
-                })(<Input disabled={!state.edit} />)}
-              </Form.Item>
-
-              <Form.Item label="Learning Venue/ School">
-                {getFieldDecorator("school", {
-                  initialValue: student.school,
-                  rules: [
-                    {
-                      type: "string",
-                      required: true,
-                      message: "Please select school/venue!"
-                    }
-                  ]
-                })(
-                  <Select
-                    style={{ width: "100%" }}
-                    onChange={this.handleChange}
-                    disabled={!state.edit}
-                  >
-                    {state.schools.map(each => {
-                      return (
-                        <Option key={each.value} value={each.value}>
-                          {each.label}
-                        </Option>
-                      );
-                    })}
-                  </Select>
-                )}
-              </Form.Item>
-            </Form>
-          </Modal>
-        );
-      }
-    }
-  )
-);
 
 const center = {
   position: "absolute",

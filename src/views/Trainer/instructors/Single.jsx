@@ -72,7 +72,7 @@ class Single extends React.Component {
     super(props);
     let user = this.props.location.data;
     if (!user) {
-      this.props.history.push(`/${this.props.global.user.role}/instructors`);
+      this.props.history.push(`/${this.props.global.user.role}/classes`);
       return;
     }
     user = parseUser(user);

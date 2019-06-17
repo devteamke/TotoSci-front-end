@@ -32,6 +32,7 @@ import {
   Select,
   Spin
 } from "antd";
+import CustomDrawer from "./Drawer";
 const antIcon = <Icon type="loading" style={{ fontSize: 24 }} spin />;
 const antIconLarge = <Icon type="loading" style={{ fontSize: 40 }} spin />;
 const styles = {
@@ -77,7 +78,9 @@ class AllStudents extends React.Component {
       users: [],
       page: 1,
       limit: 10,
-
+      //drawer
+      dvisible: false,
+      currentInfo: null,
       //modal
       visible: false,
       //skip:0,
@@ -93,6 +96,33 @@ class AllStudents extends React.Component {
     };
     this.myRef = React.createRef();
   }
+  handleCancel = () => {
+    this.setState({ visible: false });
+  };
+  showDrawer = () => {
+    const state = this.state;
+    console.log("open drawer");
+
+    this.setState({
+      dvisible: true
+    });
+  };
+  onClose = () => {
+    this.setState({
+      dvisible: false
+    });
+  };
+  updateIndex = ({ i, obj }) => {
+    this.setState(prevState => {
+      let users = [...prevState.users];
+      users[i] = { ...obj, addedBy: users[i].addedBy, i };
+      console.log("new user", users[i]);
+      return {
+        users: users,
+        currentInfo: users[i]
+      };
+    });
+  };
   _fetchUsers = () => {
     let state = this.state;
     let data = {
@@ -371,6 +401,14 @@ class AllStudents extends React.Component {
           closeNotification={() => this.setState({ open: false })}
           close
         />
+        <CustomDrawer
+          visible={this.state.dvisible}
+          onClose={this.onClose}
+          info={this.state.currentInfo}
+          infoCopy={this.state.currentInfo}
+          onUpdateIndex={this.updateIndex}
+        />
+
         <CollectionCreateForm
           updating={this.state.updating}
           _snack={this._snack}
@@ -441,12 +479,10 @@ class AllStudents extends React.Component {
                             <td>{capitalize(school.sub_county)}</td>
                             <td
                               onClick={() => {
-                                school = {
-                                  ...school,
-
-                                  index: i
-                                };
-                                this.showModal();
+                                let currentInfo = { ...school, i };
+                                this.setState({ currentInfo }, () => {
+                                  this.showDrawer();
+                                });
                               }}
                               style={{
                                 textAlign: "center",
