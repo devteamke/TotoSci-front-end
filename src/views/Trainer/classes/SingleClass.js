@@ -47,7 +47,7 @@ import moment from "moment";
 
 const format = "HH:mm";
 const { Step } = Steps;
-
+const { Column, ColumnGroup } = Table;
 const { Option } = Select;
 const { TextArea } = Input;
 const antIcon = <Icon type="loading" style={{ fontSize: 24 }} spin />;
@@ -83,16 +83,25 @@ class Add extends React.Component {
     this.state = {
       _class,
       loading: true,
-      selectedRowKeys: 0,
+      selectedRowKeys: [],
+      currentDisplay: "Student List",
       //Class
       students: [],
-      //modal
+      instructors: [],
+      //attendance
+      loadinga: true,
+      attendance: [],
+      columnsA: [],
+      //student modal
       selectedKeysModal: [],
       modalStudents: [],
       //mark modal
       markModal: false,
       step1: true,
       currentStep: 0,
+      //Instructor modal
+      selectedKeysI: [],
+      modalInstrucors: [],
       //other
       adding: false,
       open: false,
@@ -134,7 +143,6 @@ class Add extends React.Component {
     });
     this._fetchStudents();
   };
-
   handleStudentOk = e => {
     const state = this.state;
     console.log(e);
@@ -144,7 +152,6 @@ class Add extends React.Component {
     console.log("selectedStudents", state.selectedRowsModal);
     this._addSelectedStudents();
   };
-
   handleStudentCancel = e => {
     console.log(e);
 
@@ -168,19 +175,44 @@ class Add extends React.Component {
     console.log("selectedStudents", state.selectedRowsModal);
     this._addSelectedStudents();
   };
-
   handleMarkCancel = e => {
     console.log(e);
 
     this.setState({
-      markModal: false
+      markModal: false,
+      currentStep: 0
     });
   };
+  //Assign Modals
+  showAssignModal = () => {
+    this.setState({
+      assignModal: true,
+      loadingInstructors: true
+    });
+    this._fetchInstructors();
+  };
+  handleAssignOk = e => {
+    const state = this.state;
+    console.log(e);
+    this.setState({
+      assigningInstructors: true
+    });
+    console.log("selectedStudents", state.selectedRowsModal);
+    this._addSelectedInstructors();
+  };
+  handleAssignCancel = e => {
+    console.log(e);
+
+    console.log();
+    this.setState({
+      assignModal: false
+    });
+  };
+
   handleChange = event => {
     console.log("value", event.target.value);
     this.setState({ [event.target.name]: event.target.value });
   };
-
   handleSubmit = e => {
     e.preventDefault();
     let state = this.state;
@@ -259,7 +291,6 @@ class Add extends React.Component {
       }
     });
   };
-
   _addSelectedStudents = () => {
     const FetchAsync = async () =>
       await (await fetch(
@@ -322,10 +353,10 @@ class Add extends React.Component {
         console.log(error);
       });
   };
-  _fetchCourses = () => {
+  _addSelectedInstructors = () => {
     const FetchAsync = async () =>
       await (await fetch(
-        `${globals.BASE_URL}/api/${this.props.global.user.role}/fetch_courses`,
+        `${globals.BASE_URL}/api/${this.props.global.user.role}/add_instructors_to_class`,
         {
           method: "post",
           mode: "cors", // no-cors, cors, *same-origin
@@ -338,17 +369,32 @@ class Add extends React.Component {
           },
           redirect: "follow", // manual, *follow, error
           referrer: "no-referrer", // no-referrer, *client
-          body: JSON.stringify({ data: "hello server" })
+          body: JSON.stringify({
+            instructors: this.state.selectedRowsI,
+            class_id: this.state._class._id
+          })
         }
       )).json();
 
     FetchAsync()
       .then(data => {
         if (data.success) {
-          console.log("[Courses]", data.courses);
+          this._snack({
+            type: data.success ? "success" : "warning",
+            msg: data.message
+          });
+          console.log("[new data]", data);
+          let _class = {
+            ...this.state._class,
+            instructors: data.newClass.instructors
+          };
           this.setState({
-            courses: data.courses,
-            loading: false
+            selectedRowsI: [],
+            assignModal: false,
+            assigningInstructors: false,
+            _class,
+            instructors: data.instructors,
+            reloadingI: true
           });
         } else {
         }
@@ -363,6 +409,68 @@ class Add extends React.Component {
             serverRes: "Network request failed"
           });
         }
+        this.setState({ addingStudents: false });
+        this._snack({ type: "warning", msg: error.toString() });
+
+        console.log(error);
+      });
+  };
+  markAttendance = () => {
+    this.setState({ savingAttendance: true });
+    const FetchAsync = async () =>
+      await (await fetch(
+        `${globals.BASE_URL}/api/${this.props.global.user.role}/mark_attendance`,
+        {
+          method: "post",
+          mode: "cors", // no-cors, cors, *same-origin
+          cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
+          credentials: "same-origin", // include, *same-origin, omit
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: this.props.global.token
+            // "Content-Type": "application/x-www-form-urlencoded",
+          },
+          redirect: "follow", // manual, *follow, error
+          referrer: "no-referrer", // no-referrer, *client
+          body: JSON.stringify({
+            students: this.state.selectedRowsAtt,
+            _class: this.state._class,
+            values: this.state.values
+          })
+        }
+      )).json();
+
+    FetchAsync()
+      .then(data => {
+        if (data.success) {
+          this._snack({
+            type: data.success ? "success" : "warning",
+            msg: data.message
+          });
+          console.log("[new data]", data);
+
+          this.setState({
+            currentStep: 0,
+            markModal: false,
+            rowSelectionAtt: [],
+            savingAttendance: false,
+            step1: true
+          });
+          this._fetchAttendance();
+        } else {
+        }
+      })
+      .catch(error => {
+        console.log(error);
+        if (error == "TypeError: Failed to fetch") {
+          //   alert('Server is offline')
+        } else if (error.message == "Network request failed") {
+          // alert('No internet connection')
+          this.setState({
+            serverRes: "Network request failed"
+          });
+        }
+        this.setState({ addingStudents: false });
         this._snack({ type: "warning", msg: error.toString() });
 
         console.log(error);
@@ -371,7 +479,6 @@ class Add extends React.Component {
   onChange = (time, timeString) => {
     console.log(time, timeString);
   };
-
   _fetchStudents = (inClass = false) => {
     const FetchAsync = async () =>
       await (await fetch(
@@ -424,7 +531,120 @@ class Add extends React.Component {
         console.log(error);
       });
   };
+  _fetchInstructors = (inClass = false) => {
+    const FetchAsync = async () =>
+      await (await fetch(
+        `${globals.BASE_URL}/api/${this.props.global.user.role}/fetch_${
+          inClass ? "class_" : ""
+        }instructors`,
+        {
+          method: "post",
+          mode: "cors", // no-cors, cors, *same-origin
+          cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
+          credentials: "same-origin", // include, *same-origin, omit
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: this.props.global.token
+            // "Content-Type": "application/x-www-form-urlencoded",
+          },
+          redirect: "follow", // manual, *follow, error
+          referrer: "no-referrer", // no-referrer, *client
+          body: JSON.stringify({ _class: this.state._class })
+        }
+      )).json();
 
+    FetchAsync()
+      .then(data => {
+        if (data.success) {
+          if (!inClass) {
+            this.setState({
+              modalInstrucors: data.instructors,
+              loadingInstructors: false
+            });
+          } else {
+            this.setState({ instructors: data.instructors });
+          }
+        } else {
+        }
+      })
+      .catch(error => {
+        console.log(error);
+        if (error == "TypeError: Failed to fetch") {
+          //   alert('Server is offline')
+        } else if (error.message == "Network request failed") {
+          // alert('No internet connection')
+          this.setState({
+            serverRes: "Network request failed"
+          });
+        }
+        this._snack({ type: "warning", msg: error.toString() });
+
+        console.log(error);
+      });
+  };
+  _fetchAttendance = () => {
+    this.setState({ loadinga: true });
+    const FetchAsync = async () =>
+      await (await fetch(
+        `${globals.BASE_URL}/api/${this.props.global.user.role}/fetch_attendance`,
+        {
+          method: "post",
+          mode: "cors", // no-cors, cors, *same-origin
+          cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
+          credentials: "same-origin", // include, *same-origin, omit
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: this.props.global.token
+            // "Content-Type": "application/x-www-form-urlencoded",
+          },
+          redirect: "follow", // manual, *follow, error
+          referrer: "no-referrer", // no-referrer, *client
+          body: JSON.stringify({ _class: this.state._class })
+        }
+      )).json();
+
+    FetchAsync()
+      .then(data => {
+        if (data.success) {
+          if (data.attendance.length > 0) {
+            this.setState({
+              attendance: data.attendance,
+              loadinga: false,
+              columnsA: data.columnsA
+            });
+          } else {
+            this.setState({ loadinga: false, attendance: data.attendance });
+          }
+
+          // if (!inClass) {
+          //   // this.setState({
+          //   //   modalStudents: data.students,
+          //   //   loadingStudents: false
+          //   // });
+          // } else {
+          //   // this.setState({
+          //   //   students: data.students,
+          //   //   loading: false
+          //   // });
+          // }
+        } else {
+        }
+      })
+      .catch(error => {
+        console.log(error);
+        if (error == "TypeError: Failed to fetch") {
+          //   alert('Server is offline')
+        } else if (error.message == "Network request failed") {
+          // alert('No internet connection')
+          this.setState({
+            serverRes: "Network request failed"
+          });
+        }
+        this._snack({ type: "warning", msg: error.toString() });
+
+        console.log(error);
+      });
+  };
   onChange = (time, timeString) => {
     console.log(time, timeString);
   };
@@ -502,39 +722,60 @@ class Add extends React.Component {
         });
     }).catch(() => console.log("Oops errors!"));
   };
-  rowSelection = {
-    onChange: (selectedRowKeys, selectedRows) => {
-      console.log(
-        `selectedRowKeys: ${selectedRowKeys}`,
-        "selectedRows: ",
-        selectedRows
-      );
-      this.setState({ selectedRowKeys, selectedRows });
-    },
-    getCheckboxProps: record => ({
-      disabled: record.name === "Disabled User", // Column configuration not to be checked
-      name: record.name
-    })
+  onSelectChange = (selectedRowKeys, selectedRows) => {
+    console.log(
+      `selectedRowKeys: ${selectedRowKeys}`,
+      "selectedRows: ",
+      selectedRows
+    );
+    this.setState({ selectedRowKeys, selectedRows });
   };
-  rowSelectionModal = {
-    onChange: (selectedRowKeys, selectedRows) => {
-      console.log(
-        `selectedRowKeys: ${selectedRowKeys}`,
-        "selectedRows: ",
-        selectedRows
-      );
-      this.setState({
-        selectedKeysModal: selectedRowKeys,
-        selectedRowsModal: selectedRows
-      });
-    },
-    getCheckboxProps: record => ({
-      disabled: record.name === "Disabled User", // Column configuration not to be checked
-      name: record.name
-    })
+  onSelectChangeAtt = (selectedRowKeys, selectedRows) => {
+    console.log(
+      `selectedRowKeys: ${selectedRowKeys}`,
+      "selectedRows: ",
+      selectedRows
+    );
+    this.setState({
+      selectedRowKeysAtt: selectedRowKeys,
+      selectedRowsAtt: selectedRows
+    });
+  };
+  onSelectModalChange = (selectedRowKeys, selectedRows) => {
+    console.log(
+      `selectedRowKeys: ${selectedRowKeys}`,
+      "selectedRows: ",
+      selectedRows
+    );
+    this.setState({
+      selectedKeysModal: selectedRowKeys,
+      selectedRowsModal: selectedRows
+    });
+  };
+  onSelectIChange = (selectedRowKeys, selectedRows) => {
+    console.log(
+      `selectedRowKeys: ${selectedRowKeys}`,
+      "selectedRows: ",
+      selectedRows
+    );
+    this.setState({
+      selectedKeysI: selectedRowKeys,
+      selectedRowsI: selectedRows
+    });
+  };
+  handleSubmit = e => {
+    e.preventDefault();
+    let state = this.state;
+    this.props.form.validateFieldsAndScroll((err, values) => {
+      if (!err) {
+        console.log("Received values of form: ", values);
+        this.setState({ step1: false, currentStep: 1, values });
+      }
+    });
   };
   componentDidMount = () => {
     this._fetchStudents(true);
+    this._fetchInstructors(true);
   };
 
   render() {
@@ -544,9 +785,34 @@ class Add extends React.Component {
 
     const { classes } = this.props;
     const state = this.state;
-    const { getFieldDecorator } = this.props.form;
+
     console.log("class details", state._class);
     const hasSelected = state.selectedRowKeys.length > 0;
+    const {
+      selectedRowKeys,
+      selectedKeysModal,
+      selectedKeysI,
+      selectedRowKeysAtt
+    } = this.state;
+
+    const rowSelection = {
+      selectedRowKeys,
+      onChange: this.onSelectChange
+    };
+    const rowSelectionModal = {
+      selectedKeysModal,
+      onChange: this.onSelectModalChange
+    };
+    const rowSelectionI = {
+      selectedKeysI,
+      onChange: this.onSelectIChange
+    };
+    const rowSelectionAtt = {
+      selectedRowKeysAtt,
+      onChange: this.onSelectChangeAtt
+    };
+    //Form stuff
+    const { getFieldDecorator } = this.props.form;
 
     const formItemLayout = {
       labelCol: {
@@ -588,6 +854,7 @@ class Add extends React.Component {
           <Icon type="plus" />
           Add Students
         </Menu.Item>
+
         <Menu.Item
           onClick={() => {
             this.showMarkModal();
@@ -595,6 +862,32 @@ class Add extends React.Component {
         >
           <Icon type="check" />
           Mark Attendance
+        </Menu.Item>
+        <Menu.Item
+          onClick={() => {
+            this.showAssignModal();
+          }}
+        >
+          Assign Instructor
+        </Menu.Item>
+      </Menu>
+    );
+    const cmenu = (
+      <Menu>
+        <Menu.Item
+          onClick={() => {
+            this.setState({ currentDisplay: "Student List" });
+          }}
+        >
+          Student List
+        </Menu.Item>
+        <Menu.Item
+          onClick={() => {
+            this.setState({ currentDisplay: "Attendance" });
+            this._fetchAttendance();
+          }}
+        >
+          Attendance
         </Menu.Item>
       </Menu>
     );
@@ -646,9 +939,53 @@ class Add extends React.Component {
             </div>
           ) : (
             <Table
-              rowSelection={this.rowSelectionModal}
+              size="small"
+              rowSelection={rowSelectionModal}
               columns={columnsModal}
               dataSource={state.modalStudents}
+            />
+          )}
+        </Modal>
+        {/*Instructor select modal*/}
+
+        <Modal
+          title="Assign Instructors"
+          visible={this.state.assignModal}
+          onOk={this.handleAssignOk}
+          onCancel={this.handleAssignCancel}
+          footer={[
+            <>
+              <Button
+                form="myForm"
+                key="submit"
+                htmlType="submit"
+                onClick={this.handleAssignCancel}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="primary"
+                htmlType="submit"
+                onClick={this.handleAssignOk}
+                loading={state.assigningInstructors}
+                disabled={!(state.selectedKeysI.length > 0)}
+              >
+                Assign instructor(s)
+              </Button>
+            </>
+          ]}
+        >
+          {this.state.loadingInstructors ? (
+            <div className="text-center">
+              {" "}
+              <Spin indicator={antIcon} />{" "}
+            </div>
+          ) : (
+            <Table
+              size="small"
+              rowSelection={rowSelectionI}
+              columns={columnsI}
+              dataSource={state.modalInstrucors}
             />
           )}
         </Modal>
@@ -659,18 +996,77 @@ class Add extends React.Component {
           visible={this.state.markModal}
           onOk={this.handleMarkOk}
           onCancel={this.handleMarkCancel}
-          footer={[
-            <>
-              <Button
-                form="myForm"
-                key="submit"
-                htmlType="submit"
-                onClick={this.handleMarkCancel}
-              >
-                Cancel
-              </Button>
+          footer={null}
+        >
+          <Steps size="small" current={state.currentStep}>
+            <Step title={"Lesson"} description="Fill in lesson details. " />
+            <Step title={"Attendance"} description="Mark attendance." />
+          </Steps>
 
-              {!state.step1 ? (
+          <>
+            {this.state.step1 ? (
+              <Form layout="vertical" onSubmit={this.handleSubmit}>
+                <Form.Item label="Week">
+                  {getFieldDecorator("week", {
+                    rules: [{ required: true, message: "Please select week!" }]
+                  })(
+                    <Select style={{ width: "100%" }}>
+                      <Option value="week-1">Week 1</Option>
+                      <Option value="week-2">Week 2</Option>
+                      <Option value="week-3">Week 3</Option>
+                      <Option value="week-4">Week 4</Option>
+                      <Option value="week-5">Week 5</Option>
+                      <Option value="week-6">Week 6</Option>
+                      <Option value="week-7">Week 7</Option>
+                      <Option value="week-8">Week 8</Option>
+                    </Select>
+                  )}
+                </Form.Item>
+
+                <Form.Item label="Remarks">
+                  {getFieldDecorator("remarks", {
+                    rules: [
+                      {
+                        required: true,
+                        message: "Please input your remark!"
+                      }
+                    ]
+                  })(
+                    <TextArea
+                      placeholder="..."
+                      autosize={{ minRows: 3, maxRows: 6 }}
+                    />
+                  )}
+                </Form.Item>
+                <Divider />
+                <Form.Item>
+                  <Button
+                    form="myForm"
+                    key="submit"
+                    htmlType="submit"
+                    onClick={this.handleMarkCancel}
+                  >
+                    Cancel
+                  </Button>
+
+                  <Button
+                    type="primary"
+                    htmlType="submit"
+                    onClick={this.handleSubmit}
+                  >
+                    Next
+                  </Button>
+                </Form.Item>
+              </Form>
+            ) : (
+              <div>
+                <Divider orientation="left">Student List</Divider>
+                <Table
+                  size="small"
+                  rowSelection={rowSelectionAtt}
+                  columns={columnsAtt}
+                  dataSource={this.state.students}
+                />
                 <Button
                   type="primary"
                   htmlType="submit"
@@ -680,33 +1076,53 @@ class Add extends React.Component {
                 >
                   Back
                 </Button>
-              ) : null}
-              <Button
-                type="primary"
-                htmlType="submit"
-                onClick={() => {
-                  this.setState({ step1: false, currentStep: 1 });
-                }}
-              >
-                Next
-              </Button>
-            </>
-          ]}
-        >
-          <Steps size="small" current={state.currentStep}>
-            <Step title={"Lesson"} description="Fill in lesson details. " />
-            <Step title={"Attendance"} description="Mark attendance." />
-          </Steps>
-          ,<>{this.state.step1 ? <p>step1</p> : <p>step2</p>}</>
+                <Button
+                  type="primary"
+                  htmlType="submit"
+                  loading={state.savingAttendance}
+                  onClick={this.markAttendance}
+                >
+                  Save
+                </Button>
+              </div>
+            )}
+          </>
         </Modal>
+        {/*normal page content*/}
         <GridContainer>
-          <GridItem xs={12} sm={12} md={9}>
+          <GridItem xs={12} sm={12} md={12}>
             <Card
-              title="Class details"
+              title={
+                <span>
+                  <Icon
+                    style={{
+                      float: "left",
+                      marginTop: "1px",
+                      fontSize: "28px"
+                    }}
+                    onClick={() => {
+                      this.props.history.goBack();
+                    }}
+                    type="left-square"
+                  />
+
+                  <h5 style={{ display: "inline", marginLeft: "12px" }}>
+                    Class details
+                  </h5>
+                </span>
+              }
               extra={
                 <Dropdown overlay={menu}>
                   <span>
-                    Actions <Icon type="down" />
+                    Actions{" "}
+                    <Icon
+                      style={{
+                        float: "right",
+                        marginTop: "6px",
+                        marginLeft: "6px"
+                      }}
+                      type="down"
+                    />
                   </span>
                 </Dropdown>
               }
@@ -720,8 +1136,8 @@ class Add extends React.Component {
                 <Descriptions.Item label="Course">
                   {capitalize(state._class.courseName[0].name)}
                 </Descriptions.Item>
-              </Descriptions>
-              <Descriptions title="">
+                {/* </Descriptions>
+              <Descriptions title="">*/}
                 <Descriptions.Item label="Day">
                   {capitalize(state._class.day)}
                 </Descriptions.Item>
@@ -729,43 +1145,134 @@ class Add extends React.Component {
                 <Descriptions.Item label="Start Time">
                   {moment(state._class.start_time).format("HH:mm")}
                 </Descriptions.Item>
-              </Descriptions>
-              <Descriptions title="">
+                {/*    </Descriptions>
+              <Descriptions title=""> */}
                 <Descriptions.Item label="Duration">
-                  {state._class.duration}
+                  {state._class.duration} hours
                 </Descriptions.Item>
 
                 <Descriptions.Item label="Students">
                   {state._class.students.length}
                 </Descriptions.Item>
-              </Descriptions>
-              <Descriptions title="">
+                {/*    </Descriptions>
+              <Descriptions title=""> */}
                 <Descriptions.Item label="Instructors">
                   {state._class.instructors.length}
+                  <>
+                    {state.instructors.map(each => {
+                      return (
+                        <>
+                          {" "}
+                          <p>
+                            {capitalize(each.fname)} {capitalize(each.lname)}{" "}
+                            <Icon type="delete" />{" "}
+                          </p>{" "}
+                        </>
+                      );
+                    })}
+                  </>
                 </Descriptions.Item>
               </Descriptions>
               {/*table*/}
               <div style={{ marginBottom: 16 }}>
-                <span style={{ marginHorizontal: 8 }}>
+                <span style={{ marginRight: 8 }}>
                   {hasSelected
                     ? `Selected ${state.selectedRowKeys.length} students`
                     : ""}
                 </span>
-
-                <Button
-                  type="primary"
-                  onClick={this.showRemoveConfirm}
-                  disabled={!(state.selectedRowKeys.length > 0)}
-                >
-                  Remove
-                </Button>
+                {state.currentDisplay == "Student List" ? (
+                  <Button
+                    type="primary"
+                    onClick={this.showRemoveConfirm}
+                    disabled={!(state.selectedRowKeys.length > 0)}
+                  >
+                    Remove
+                  </Button>
+                ) : null}
               </div>
-              <Divider orientation="left">Student List</Divider>
-              <Table
-                rowSelection={this.rowSelection}
-                columns={columns}
-                dataSource={this.state.students}
-              />
+              <Divider orientation="left">
+                {" "}
+                <span>
+                  <Dropdown overlay={cmenu}>
+                    <span>
+                      {state.currentDisplay}
+                      <Icon
+                        style={{
+                          fontSize: "14px",
+                          marginTop: "6px",
+                          marginLeft: "4px"
+                        }}
+                        type="down"
+                      />
+                    </span>
+                  </Dropdown>
+                </span>
+              </Divider>
+              {state.currentDisplay == "Student List" ? (
+                <Table
+                  size="middle"
+                  rowSelection={rowSelection}
+                  columns={columns}
+                  dataSource={this.state.students}
+                />
+              ) : (
+                <>
+                  {this.state.loadinga ? (
+                    <div className="text-center">
+                      <div style={{ marginTop: 30 }}>
+                        <Spin indicator={antIconLarge} />
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      {state.columnsA.length > 0 ? (
+                        <Table
+                          size="small"
+                          dataSource={state.attendance}
+                          scroll={{ x: 1400 }}
+                        >
+                          <Column
+                            title="Name"
+                            dataIndex="name"
+                            key="name"
+                            fixed="left"
+                            width={100}
+                          />
+
+                          {state.columnsA.map(a => {
+                            return (
+                              <Column
+                                title={a.title}
+                                dataIndex={a.dataIndex}
+                                key={a.dataIndex}
+                                render={bools => (
+                                  <span>
+                                    {bools ? (
+                                      <Icon
+                                        type="check"
+                                        style={{ color: "green" }}
+                                      />
+                                    ) : (
+                                      <Icon
+                                        type="close"
+                                        style={{ color: "red" }}
+                                      />
+                                    )}
+                                  </span>
+                                )}
+                              />
+                            );
+                          })}
+                        </Table>
+                      ) : (
+                        <div className="text-center">
+                          <p>No attendance yet</p>
+                        </div>
+                      )}
+                    </>
+                  )}
+                </>
+              )}
             </Card>
           </GridItem>
 
@@ -806,8 +1313,17 @@ export default Form.create({ name: "register" })(
   withGlobalContext(withStyles(styles)(Add))
 );
 
-//Delete
 const columns = [
+  {
+    title: "First Name",
+    dataIndex: "fname"
+  },
+  {
+    title: "Last Name",
+    dataIndex: "lname"
+  }
+];
+const columnsAtt = [
   {
     title: "First Name",
     dataIndex: "fname"
@@ -827,7 +1343,57 @@ const columnsModal = [
     dataIndex: "lname"
   }
 ];
+const columnsI = [
+  {
+    title: "First Name",
+    dataIndex: "fname"
+  },
+  {
+    title: "Last Name",
+    dataIndex: "lname"
+  }
+];
 //form functions
 const hasErrors = fieldsError => {
   return Object.keys(fieldsError).some(field => fieldsError[field]);
 };
+// let columnsA = [
+//   { title: "Lesson 0", dataIndex: "0" ,  render: ('0') => (},
+//   { title: "Lesson 1", dataIndex: "1" },
+//   { title: "Lesson 2", dataIndex: "2" },
+//   { title: "Lesson 3", dataIndex: "3" },
+//   { title: "Lesson 4", dataIndex: "4" },
+//   { title: "Name", dataIndex: "name" }
+// ];
+// let attendance = [
+//   {
+//     "0": false,
+//     "1": false,
+//     "2": false,
+//     "3": false,
+//     "4": false,
+//     key: 0,
+
+//     name: "Ian  Ian "
+//   },
+//   {
+//     "0": true,
+//     "1": true,
+//     "2": false,
+//     "3": true,
+//     "4": true,
+//     key: 1,
+
+//     name: "IanBro IanBro"
+//   },
+//   {
+//     "0": true,
+//     "1": true,
+//     "2": true,
+//     "3": false,
+//     "4": true,
+//     key: 2,
+
+//     name: "AnotherSis AnotherSis"
+//   }
+// ];

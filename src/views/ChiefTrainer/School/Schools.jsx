@@ -474,7 +474,7 @@ class AllStudents extends React.Component {
                             // }}
                             style={{ cursor: "pointer" }}
                           >
-                            <td>{i + 1}</td> <td>{capitalize(school.name)}</td>
+                            <td>{i + 1}</td> <td>{unKebab(school.name)}</td>
                             <td>{capitalize(school.county)}</td>
                             <td>{capitalize(school.sub_county)}</td>
                             <td

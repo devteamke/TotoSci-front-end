@@ -32,6 +32,7 @@ import {
   Select,
   Spin
 } from "antd";
+import CustomDrawer from "./Drawer";
 const antIcon = <Icon type="loading" style={{ fontSize: 24 }} spin />;
 const antIconLarge = <Icon type="loading" style={{ fontSize: 40 }} spin />;
 const styles = {
@@ -77,6 +78,8 @@ class AllStudents extends React.Component {
       users: [],
       page: 1,
       limit: 10,
+      dvisible: false,
+      currentInfo: null,
 
       //modal
       visible: false,
@@ -341,6 +344,30 @@ class AllStudents extends React.Component {
     console.log("save ref", formRef);
   };
 
+  showDrawer = () => {
+    const state = this.state;
+    //  console.log("open drawer");
+
+    this.setState({
+      dvisible: true
+    });
+  };
+  onClose = () => {
+    this.setState({
+      dvisible: false
+    });
+  };
+  updateIndex = ({ i, obj }) => {
+    this.setState(prevState => {
+      let users = [...prevState.users];
+      users[i] = { ...obj, addedBy: users[i].addedBy, i };
+      console.log("new user", users[i]);
+      return {
+        users: users,
+        currentInfo: users[i]
+      };
+    });
+  };
   componentDidMount = () => {
     this._fetchUsers();
     this._snack();
@@ -379,6 +406,14 @@ class AllStudents extends React.Component {
           onCancel={this.handleCancel}
           onSave={this.handleSave}
         />
+        <CustomDrawer
+          visible={this.state.dvisible}
+          onClose={this.onClose}
+          info={this.state.currentInfo}
+          infoCopy={this.state.currentInfo}
+          onUpdateIndex={this.updateIndex}
+        />
+
         <GridContainer>
           <GridItem xs={12} sm={12} md={12}>
             <Card title="All Personnel" style={{ width: "100%" }}>
@@ -444,12 +479,10 @@ class AllStudents extends React.Component {
                             <td>{capitalize(user.role)}</td>
                             <td
                               onClick={() => {
-                                personnel = {
-                                  ...user,
-
-                                  index: i
-                                };
-                                this.showModal();
+                                let current = { ...user, i };
+                                this.setState({ currentInfo: current }, () => {
+                                  this.showDrawer();
+                                });
                               }}
                               style={{
                                 textAlign: "center",

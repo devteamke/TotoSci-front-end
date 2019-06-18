@@ -98,6 +98,7 @@ class AllStudents extends React.Component {
     };
     this.myRef = React.createRef();
   }
+  
   _fetchUsers = () => {
     let state = this.state;
     let data = {
@@ -250,6 +251,7 @@ class AllStudents extends React.Component {
     this._fetchUsers();
     this._snack();
   };
+  
   showDrawer = () => {
     const state = this.state;
     console.log("open drawer");
@@ -380,9 +382,10 @@ class AllStudents extends React.Component {
                             <td>{unKebab(user.school[0].name)}</td>
                             <td
                               onClick={() => {
-                                let currentInfo = { ...user, i };
-                                this.setState({ currentInfo }, () => {
-                                  this.showDrawer();
+                             
+                                let current = { ...user, i };
+                                this.setState({ currentInfo:current }, () => {
+                                     this.showDrawer();
                                 });
                               }}
                               style={{

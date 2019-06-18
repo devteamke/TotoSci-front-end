@@ -28,12 +28,13 @@ let copy;
 class CustomDrawer extends React.Component {
   constructor(props) {
     super(props);
-    console.log("constructor called", props.info);
+    // console.log("constructor called", props.info);
 
     this.state = {
       editing: false,
       loading: true,
-      infoCopy: null
+      infoCopy: null,
+      schools: []
     };
   }
   _handleEdit = () => {
@@ -42,12 +43,13 @@ class CustomDrawer extends React.Component {
     } else {
       let infoCopy = {
         ...this.props.infoCopy,
-        school: this.props.infoCopy.school[0]._id
+        school: this.props.infoCopy.school[0].name
       };
       this.setState({ infoCopy, editing: true });
       copy = infoCopy;
     }
   };
+
   showDeleteConfirm = () => {
     confirm({
       title: "Are you sure you want to delete?",
@@ -85,6 +87,7 @@ class CustomDrawer extends React.Component {
         lname: values.lname,
         school: values.school
       };
+      console.log("Changed data", data);
       this.setState({ updating: true });
       const SaveAsync = async () =>
         await (await fetch(
@@ -185,9 +188,9 @@ class CustomDrawer extends React.Component {
         //this.setState({currentPlace:data.results})
         if (data.success) {
           let schools = data.schools.map(each => {
-            return { value: each._id, label: unKebab(each.name).join(" ") };
+            return { value: each._id, label: unKebab(each.name) };
           });
-          console.log("mapped schools", schools);
+          console.log("Not set", schools);
           this.setState({
             schools: schools,
             loading: false
@@ -218,13 +221,13 @@ class CustomDrawer extends React.Component {
     const state = this.state;
     const props = this.props;
     const info = props.info;
-    console.log("drawer props 1", props.visible);
+    console.log("SChools", state.schools);
 
-    console.log("info copy", state.infoCopy);
+    console.log("info copy", props.info);
     const { form } = this.props;
     const { getFieldDecorator } = form;
     if (!props.info || state.loading) {
-      return <></>;
+      return <> </>;
     }
     let menu = (
       <Menu>
@@ -240,13 +243,13 @@ class CustomDrawer extends React.Component {
       <Drawer
         width={640}
         placement="right"
+        visible={props.visible}
         closable={false}
         onClose={() => {
           this.setState({ editing: false }, () => {
             props.onClose();
           });
         }}
-        visible={props.visible}
       >
         <div style={{ display: "block", width: "100%  " }}>
           <p
@@ -302,7 +305,10 @@ class CustomDrawer extends React.Component {
             <p style={{ ...pStyle, fontWeight: 700 }}>School</p>
             <Row>
               <Col span={12}>
-                <DescriptionItem title="Name" content={info.school[0].name} />
+                <DescriptionItem
+                  title="Name"
+                  content={unKebab(info.school[0].name)}
+                />
               </Col>
             </Row>
             <Row>
@@ -341,7 +347,7 @@ class CustomDrawer extends React.Component {
               <Form layout="vertical">
                 <Form.Item label="First Name">
                   {getFieldDecorator("fname", {
-                    initialValue: state.infoCopy.fname,
+                    initialValue: unKebab(state.infoCopy.fname),
                     rules: [
                       {
                         required: true,
@@ -378,6 +384,8 @@ class CustomDrawer extends React.Component {
                       onChange={this.handleChange}
                     >
                       {state.schools.map(each => {
+                        {
+                        }
                         return <Option key={each.value}>{each.label}</Option>;
                       })}
                     </Select>

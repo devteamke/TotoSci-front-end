@@ -12,6 +12,7 @@ import {
   Select,
   Button,
   Spin,
+  Radio,
   Menu,
   Dropdown,
   Modal
@@ -28,12 +29,13 @@ let copy;
 class CustomDrawer extends React.Component {
   constructor(props) {
     super(props);
-    console.log("constructor called", props);
+    // console.log("constructor called", props.info);
 
     this.state = {
       editing: false,
       loading: true,
-      infoCopy: null
+      infoCopy: null,
+      schools: []
     };
   }
   _handleEdit = () => {
@@ -41,13 +43,14 @@ class CustomDrawer extends React.Component {
       this.setState({ editing: false });
     } else {
       let infoCopy = {
-        ...this.props.infoCopy,
-        school: this.props.infoCopy._id
+        ...this.props.infoCopy
+        //school: this.props.infoCopy.school[0].name
       };
       this.setState({ infoCopy, editing: true });
       copy = infoCopy;
     }
   };
+
   showDeleteConfirm = () => {
     confirm({
       title: "Are you sure you want to delete?",
@@ -65,31 +68,38 @@ class CustomDrawer extends React.Component {
   };
   handleSave = () => {
     const state = this.state;
+    // console.log(values);
     this.props.form.validateFields((err, values) => {
       if (err) {
+        console.log("This is err", err);
         return;
       }
       let originalData = {
-        name: unKebab(this.state.infoCopy.name),
+        fname: this.state.infoCopy.fname,
+        lname: this.state.infoCopy.lname,
         county: this.state.infoCopy.county,
         sub_county: this.state.infoCopy.sub_county
+        // role: this.infoCopy.sub_county
       };
-      // console.log("Received values of form: ", values);
+      console.log("Received values of form: ", values);
+      console.log("ReceivedOriginal: ", originalData);
 
       if (JSON.stringify(values) == JSON.stringify(originalData)) {
         return;
       }
       let data = {
         _id: state.infoCopy._id,
-        name: values.name,
+        fname: values.fname,
+        lname: values.lname,
         county: values.county,
         sub_county: values.sub_county
+        // role: values.role
       };
-      console.log("New Data", data);
+      console.log("Changed data", data);
       this.setState({ updating: true });
       const SaveAsync = async () =>
         await (await fetch(
-          `${globals.BASE_URL}/api/${this.props.global.user.role}/update_school`,
+          `${globals.BASE_URL}/api/${this.props.global.user.role}/save_profile`,
           {
             method: "PATCH",
             mode: "cors", // no-cors, cors, *same-origin
@@ -124,10 +134,10 @@ class CustomDrawer extends React.Component {
           );
 
           if (data.success) {
-            console.log("[newSSchool]", data.student);
+            console.log("[newStudent]", data.student);
             this.props.onUpdateIndex({
               i: state.infoCopy.i,
-              obj: data.school
+              obj: data.user
             });
             this.setState({ editing: false });
           } else {
@@ -161,71 +171,28 @@ class CustomDrawer extends React.Component {
         });
     });
   };
-  _fetchSchools = () => {
-    const FetchAsync = async () =>
-      await (await fetch(
-        `${globals.BASE_URL}/api/${this.props.global.user.role}/fetch_schools`,
-        {
-          method: "post",
-          mode: "cors", // no-cors, cors, *same-origin
-          cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
-          credentials: "same-origin", // include, *same-origin, omit
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: this.props.global.token
-            // "Content-Type": "application/x-www-form-urlencoded",
-          },
-          redirect: "follow", // manual, *follow, error
-          referrer: "no-referrer", // no-referrer, *client
-          body: JSON.stringify({ data: "hello server" })
-        }
-      )).json();
 
-    FetchAsync()
-      .then(data => {
-        //this.setState({currentPlace:data.results})
-        if (data.success) {
-          let schools = data.schools.map(each => {
-            return { value: each._id, label: unKebab(each.name) };
-          });
-          console.log("mapped schools", schools);
-          this.setState({
-            schools: schools,
-            loading: false
-          });
-        } else {
-        }
-      })
-      .catch(error => {
-        console.log(error);
-        if (error == "TypeError: Failed to fetch") {
-          //   alert('Server is offline')
-        } else if (error.message == "Network request failed") {
-          // alert('No internet connection')
-          this.setState({
-            serverRes: "Network request failed"
-          });
-        }
-        this.props._snack({ type: "warning", msg: error.toString() });
-
-        console.log(error);
-      });
-  };
   componentDidMount = () => {
-    this._fetchSchools();
+    //this._fetchSchools();
   };
-
+  onChange = e => {
+    console.log("radio checked", e.target.value);
+    this.setState({
+      value: e.target.value,
+      role: e.target.value
+    });
+  };
   render = () => {
     const state = this.state;
     const props = this.props;
     const info = props.info;
-    console.log("drawer props", props);
-
-    console.log("info copy", state.infoCopy);
+    console.log("SChools", state.schools);
+    // const isNotChief = info.role == "chief-trainer";
+    console.log("info copy", props.info);
     const { form } = this.props;
     const { getFieldDecorator } = form;
-    if (!props.info || state.loading) {
-      return <></>;
+    if (!props.info) {
+      return <> </>;
     }
     let menu = (
       <Menu>
@@ -241,13 +208,13 @@ class CustomDrawer extends React.Component {
       <Drawer
         width={640}
         placement="right"
+        visible={props.visible}
         closable={false}
         onClose={() => {
           this.setState({ editing: false }, () => {
             props.onClose();
           });
         }}
-        visible={props.visible}
       >
         <div style={{ display: "block", width: "100%  " }}>
           <p
@@ -258,7 +225,7 @@ class CustomDrawer extends React.Component {
               display: "inline-block"
             }}
           >
-            School Info
+            Edit User Info
           </p>
           <Dropdown style={{ float: "right" }} overlay={menu}>
             <span style={{ float: "right" }}>
@@ -270,10 +237,49 @@ class CustomDrawer extends React.Component {
           <>
             <Row>
               <Col span={12}>
-                <DescriptionItem title="Name" content={capitalize(info.name)} />{" "}
+                <DescriptionItem
+                  title="Full Name"
+                  content={
+                    capitalize(info.salutation) +
+                    " " +
+                    capitalize(info.fname) +
+                    " " +
+                    capitalize(info.lname)
+                  }
+                />{" "}
               </Col>
-              <Col span={12}></Col>
+              <Col span={12}>
+                <DescriptionItem
+                  title="Status"
+                  content={capitalize(info.status)}
+                />{" "}
+              </Col>
             </Row>
+            <Row>
+              <Col span={12}>
+                <DescriptionItem title="Role" content={capitalize(info.role)} />
+              </Col>
+            </Row>
+            <Divider />
+            <p style={{ ...pStyle, fontWeight: 700 }}>Contacts</p>
+
+            <Row>
+              <Col span={12}>
+                <DescriptionItem
+                  title="E-mail"
+                  content={capitalize(info.email)}
+                />
+              </Col>
+              <Col span={12}>
+                <DescriptionItem
+                  title="Phone Number"
+                  content={capitalize(info.phone_number.main)}
+                />
+              </Col>
+            </Row>
+            <Divider />
+            <p style={{ ...pStyle, fontWeight: 700 }}>Location</p>
+            <Row></Row>
             <Row>
               <Col span={12}>
                 <DescriptionItem
@@ -308,13 +314,26 @@ class CustomDrawer extends React.Component {
           <>
             {state.infoCopy ? (
               <Form layout="vertical">
-                <Form.Item label="Name">
-                  {getFieldDecorator("name", {
-                    initialValue: unKebab(state.infoCopy.name),
+                <Form.Item label="First Name">
+                  {getFieldDecorator("fname", {
+                    initialValue: state.infoCopy.fname,
                     rules: [
                       {
+                        type: "string",
                         required: true,
-                        message: "Please input schoolname!"
+                        message: "Please input first name!"
+                      }
+                    ]
+                  })(<Input />)}
+                </Form.Item>
+                <Form.Item label="Last Name">
+                  {getFieldDecorator("lname", {
+                    initialValue: state.infoCopy.lname,
+                    rules: [
+                      {
+                        type: "string",
+                        required: true,
+                        message: "Please input last name!"
                       }
                     ]
                   })(<Input />)}
@@ -324,13 +343,13 @@ class CustomDrawer extends React.Component {
                     initialValue: state.infoCopy.county,
                     rules: [
                       {
+                        type: "string",
                         required: true,
-                        message: "Please input county name!"
+                        message: "Please input the county!"
                       }
                     ]
                   })(<Input />)}
                 </Form.Item>
-
                 <Form.Item label="Sub County">
                   {getFieldDecorator("sub_county", {
                     initialValue: state.infoCopy.sub_county,
@@ -343,6 +362,7 @@ class CustomDrawer extends React.Component {
                     ]
                   })(<Input />)}
                 </Form.Item>
+
                 <Form.Item>
                   <div className="text-center">
                     {state.updating ? (

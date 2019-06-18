@@ -71,7 +71,7 @@ const dashboardRoutes = [
 
     component: SingleClass,
     layout: "/trainer",
-    type: "nested"
+    type: "omit"
   },
   {
     path: "/profile",

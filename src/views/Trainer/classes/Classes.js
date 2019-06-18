@@ -422,7 +422,7 @@ class AllStudents extends React.Component {
                           <th>Course</th>
                           <th>Day </th>
                           <th> Start Time</th>
-                          <th>Duration</th>
+                          <th>Duration(hours)</th>
 
                           <th
                             style={{ textAlign: "center", width: "100px" }}
