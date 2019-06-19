@@ -12,6 +12,7 @@ import {
   Select,
   Button,
   Spin,
+  Radio,
   Menu,
   Dropdown,
   Modal
@@ -42,8 +43,8 @@ class CustomDrawer extends React.Component {
       this.setState({ editing: false });
     } else {
       let infoCopy = {
-        ...this.props.infoCopy,
-        school: this.props.infoCopy.school[0].name
+        ...this.props.infoCopy
+        //school: this.props.infoCopy.school[0].name
       };
       this.setState({ infoCopy, editing: true });
       copy = infoCopy;
@@ -69,7 +70,7 @@ class CustomDrawer extends React.Component {
         act.setState({ updating: true });
         const deleteAsync = async () =>
           await (await fetch(
-            `${globals.BASE_URL}/api/${act.props.global.user.role}/delete_student`,
+            `${globals.BASE_URL}/api/${act.props.global.user.role}/delete_user`,
             {
               method: "DELETE",
               mode: "cors", // no-cors, cors, *same-origin
@@ -145,31 +146,36 @@ class CustomDrawer extends React.Component {
   };
   handleSave = () => {
     const state = this.state;
+    // console.log(values);
     this.props.form.validateFields((err, values) => {
       if (err) {
+        console.log("This is err", err);
         return;
       }
       let originalData = {
-        fname: this.state.infoCopy.fname,
-        lname: this.state.infoCopy.lname,
-        school: this.state.infoCopy.school
+        fname: this.state.infoCopy.name,
+        lname: this.state.infoCopy.charge,
+        county: this.state.infoCopy.description
+        // sub_county: this.state.infoCopy.sub_county
+        // role: this.infoCopy.sub_county
       };
-      // console.log("Received values of form: ", values);
+      console.log("Received values of form: ", values);
+      console.log("ReceivedOriginal: ", originalData);
 
       if (JSON.stringify(values) == JSON.stringify(originalData)) {
         return;
       }
       let data = {
         _id: state.infoCopy._id,
-        fname: values.fname,
-        lname: values.lname,
-        school: values.school
+        name: values.name,
+        charge: values.charge,
+        description: values.description
       };
       console.log("Changed data", data);
       this.setState({ updating: true });
       const SaveAsync = async () =>
         await (await fetch(
-          `${globals.BASE_URL}/api/${this.props.global.user.role}/student_save_info`,
+          `${globals.BASE_URL}/api/${this.props.global.user.role}/update_course`,
           {
             method: "PATCH",
             mode: "cors", // no-cors, cors, *same-origin
@@ -207,7 +213,7 @@ class CustomDrawer extends React.Component {
             console.log("[newStudent]", data.student);
             this.props.onUpdateIndex({
               i: state.infoCopy.i,
-              obj: data.student
+              obj: data.course
             });
             this.setState({ editing: false });
           } else {
@@ -241,58 +247,9 @@ class CustomDrawer extends React.Component {
         });
     });
   };
-  _fetchSchools = () => {
-    const FetchAsync = async () =>
-      await (await fetch(
-        `${globals.BASE_URL}/api/${this.props.global.user.role}/fetch_schools`,
-        {
-          method: "post",
-          mode: "cors", // no-cors, cors, *same-origin
-          cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
-          credentials: "same-origin", // include, *same-origin, omit
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: this.props.global.token
-            // "Content-Type": "application/x-www-form-urlencoded",
-          },
-          redirect: "follow", // manual, *follow, error
-          referrer: "no-referrer", // no-referrer, *client
-          body: JSON.stringify({ data: "hello server" })
-        }
-      )).json();
 
-    FetchAsync()
-      .then(data => {
-        //this.setState({currentPlace:data.results})
-        if (data.success) {
-          let schools = data.schools.map(each => {
-            return { value: each._id, label: unKebab(each.name) };
-          });
-          console.log("Not set", schools);
-          this.setState({
-            schools: schools,
-            loading: false
-          });
-        } else {
-        }
-      })
-      .catch(error => {
-        console.log(error);
-        if (error == "TypeError: Failed to fetch") {
-          //   alert('Server is offline')
-        } else if (error.message == "Network request failed") {
-          // alert('No internet connection')
-          this.setState({
-            serverRes: "Network request failed"
-          });
-        }
-        // this.props._snack({ type: "warning", msg: error.toString() });
-
-        console.log(error);
-      });
-  };
   componentDidMount = () => {
-    this._fetchSchools();
+    //this._fetchSchools();
   };
 
   render = () => {
@@ -300,11 +257,11 @@ class CustomDrawer extends React.Component {
     const props = this.props;
     const info = props.info;
     console.log("SChools", state.schools);
-
+    // const isNotChief = info.role == "chief-trainer";
     console.log("info copy", props.info);
     const { form } = this.props;
     const { getFieldDecorator } = form;
-    if (!props.info || state.loading) {
+    if (!props.info) {
       return <> </>;
     }
     let menu = (
@@ -338,7 +295,7 @@ class CustomDrawer extends React.Component {
               display: "inline-block"
             }}
           >
-            Student Info
+            User Info
           </p>
           <Dropdown style={{ float: "right" }} overlay={menu}>
             <span style={{ float: "right" }}>
@@ -368,42 +325,34 @@ class CustomDrawer extends React.Component {
               <Col span={12}>
                 <DescriptionItem
                   title="County"
-                  content={capitalize(info.school[0].county)}
+                  content={capitalize(info.county)}
                 />
               </Col>
               <Col span={12}>
                 <DescriptionItem
                   title="Sub County"
-                  content={capitalize(info.school[0].sub_county)}
+                  content={capitalize(info.sub_county)}
                 />
               </Col>
             </Row>
-
+            <Row>
+              <Col span={12}>
+                <DescriptionItem title="Role" content={capitalize(info.role)} />
+              </Col>
+            </Row>
             <Divider />
-            <p style={{ ...pStyle, fontWeight: 700 }}>School</p>
+            <p style={{ ...pStyle, fontWeight: 700 }}>Contact Details</p>
             <Row>
               <Col span={12}>
-                <DescriptionItem
-                  title="Name"
-                  content={unKebab(info.school[0].name)}
-                />
-              </Col>
-            </Row>
-            <Row>
-              <Col span={12}>
-                <DescriptionItem
-                  title="County"
-                  content={capitalize(info.school[0].county)}
-                />
+                <DescriptionItem title="E-mail" content={info.email} />{" "}
               </Col>
               <Col span={12}>
                 <DescriptionItem
-                  title="Sub County"
-                  content={capitalize(info.school[0].sub_county)}
-                />
+                  title="Phone Number"
+                  content={capitalize(info.phone_number.main)}
+                />{" "}
               </Col>
             </Row>
-
             <Divider />
             <p style={{ ...pStyle, fontWeight: 700 }}>Added By</p>
             <Row>
@@ -416,6 +365,12 @@ class CustomDrawer extends React.Component {
                     capitalize(info.addedBy[0].lname)
                   }
                 />
+              </Col>
+              <Col span={12}>
+                <DescriptionItem
+                  title="Email"
+                  content={info.addedBy[0].email}
+                />{" "}
               </Col>
             </Row>
           </>

@@ -436,6 +436,7 @@ class AllStudents extends React.Component {
           infoCopy={this.state.currentInfo}
           onUpdateIndex={this.updateIndex}
           onRemoveIndex={this.removeIndex}
+          loading={this.state.mainLoad}
         />
         <GridContainer>
           <GridItem xs={12} sm={12} md={12}>

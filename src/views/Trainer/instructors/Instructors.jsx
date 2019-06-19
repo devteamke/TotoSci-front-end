@@ -32,6 +32,7 @@ import {
   Select,
   Spin
 } from "antd";
+import CustomDrawer from "./Drawer";
 const antIcon = <Icon type="loading" style={{ fontSize: 24 }} spin />;
 const antIconLarge = <Icon type="loading" style={{ fontSize: 40 }} spin />;
 const styles = {
@@ -77,7 +78,8 @@ class AllStudents extends React.Component {
       users: [],
       page: 1,
       limit: 10,
-
+      dvisible: false,
+      currentInfo: null,
       //modal
       visible: false,
       //skip:0,
@@ -231,10 +233,18 @@ class AllStudents extends React.Component {
     }
   };
   //Ant Modal
+  showDrawer = () => {
+    const state = this.state;
+    //  console.log("open drawer");
 
-  showModal = () => {
-    console.log("show Modal");
-    this.setState({ visible: true });
+    this.setState({
+      dvisible: true
+    });
+  };
+  onClose = () => {
+    this.setState({
+      dvisible: false
+    });
   };
 
   handleCancel = () => {
@@ -340,7 +350,36 @@ class AllStudents extends React.Component {
     this.formRef = formRef;
     console.log("save ref", formRef);
   };
-
+  updateIndex = ({ i, obj }) => {
+    this.setState(prevState => {
+      let users = [...prevState.users];
+      users[i] = { ...obj, addedBy: users[i].addedBy, i };
+      console.log("new user", users[i]);
+      return {
+        users: users,
+        currentInfo: users[i]
+      };
+    });
+  };
+  removeIndex = (i, data) => {
+    this.setState(prevState => {
+      let courses = [...prevState.users];
+      console.log("Before Deleting", courses);
+      courses.splice(i, 1);
+      let total = prevState.totalDocs;
+      total--;
+      console.log("After Deleting", total);
+      return {
+        users: courses,
+        totalDocs: total
+      };
+    });
+    this.onClose();
+    this._snack({
+      type: data.success ? "success" : "warning",
+      msg: data.message
+    });
+  };
   componentDidMount = () => {
     this._fetchUsers();
     this._snack();
@@ -378,6 +417,14 @@ class AllStudents extends React.Component {
           visible={this.state.visible}
           onCancel={this.handleCancel}
           onSave={this.handleSave}
+        />
+        <CustomDrawer
+          visible={this.state.dvisible}
+          onClose={this.onClose}
+          info={this.state.currentInfo}
+          infoCopy={this.state.currentInfo}
+          onUpdateIndex={this.updateIndex}
+          onRemoveIndex={this.removeIndex}
         />
         <GridContainer>
           <GridItem xs={12} sm={12} md={12}>
@@ -452,12 +499,10 @@ class AllStudents extends React.Component {
                             <td>{capitalize(instructor.sub_county)}</td>
                             <td
                               onClick={() => {
-                                instructor = {
-                                  ...instructor,
-
-                                  index: i
-                                };
-                                this.showModal();
+                                let current = { ...instructor, i };
+                                this.setState({ currentInfo: current }, () => {
+                                  this.showDrawer();
+                                });
                               }}
                               style={{
                                 textAlign: "center",

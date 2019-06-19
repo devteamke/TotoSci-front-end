@@ -368,6 +368,25 @@ class AllStudents extends React.Component {
       };
     });
   };
+  removeIndex = (i, data) => {
+    this.setState(prevState => {
+      let courses = [...prevState.users];
+      console.log("Before Deleting", courses);
+      courses.splice(i, 1);
+      let total = prevState.totalDocs;
+      total--;
+      console.log("After Deleting", total);
+      return {
+        users: courses,
+        totalDocs: total
+      };
+    });
+    this.onClose();
+    this._snack({
+      type: data.success ? "success" : "warning",
+      msg: data.message
+    });
+  };
   componentDidMount = () => {
     this._fetchUsers();
     this._snack();
@@ -412,6 +431,7 @@ class AllStudents extends React.Component {
           info={this.state.currentInfo}
           infoCopy={this.state.currentInfo}
           onUpdateIndex={this.updateIndex}
+          onRemoveIndex={this.removeIndex} 
         />
 
         <GridContainer>

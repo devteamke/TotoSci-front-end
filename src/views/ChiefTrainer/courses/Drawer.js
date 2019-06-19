@@ -109,6 +109,7 @@ class CustomDrawer extends React.Component {
 
             if (data.success) {
               console.log("[Course removed]", data);
+
               act.props.onRemoveIndex(info.i, data);
             } else {
             }

@@ -49,6 +49,11 @@ class CustomDrawer extends React.Component {
     }
   };
   showDeleteConfirm = () => {
+    let info = this.props.infoCopy;
+
+    console.log(info);
+    const act = this;
+    const state = this.state;
     confirm({
       title: "Are you sure you want to delete?",
 
@@ -56,8 +61,81 @@ class CustomDrawer extends React.Component {
       okType: "danger",
       cancelText: "No",
       onOk() {
-        console.log("delete");
+        console.log("Info  On delete", info.i);
+        let data = { _id: info._id };
+
+        act.setState({ updating: true });
+        const deleteAsync = async () =>
+          await (await fetch(
+            `${globals.BASE_URL}/api/${act.props.global.user.role}/delete_school`,
+            {
+              method: "DELETE",
+              mode: "cors", // no-cors, cors, *same-origin
+              cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
+              credentials: "same-origin", // include, *same-origin, omit
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: act.props.global.token,
+                "Access-Control-Allow-Origin": `${globals.BASE_URL}`
+                // "Content-Type": "application/x-www-form-urlencoded",
+              },
+              redirect: "follow", // manual, *follow, error
+              referrer: "no-referrer", // no-referrer, *client
+              body: JSON.stringify(data)
+            }
+          )).json();
+
+        deleteAsync()
+          .then(data => {
+            //this.setState({currentPlace:data.results})
+            act.setState({
+              open: true,
+              updating: false,
+              serverRes: data.message,
+              resType: data.success ? "success" : "warning"
+            });
+            setTimeout(
+              function() {
+                act.setState({ open: false, updating: false });
+              }.bind(act),
+              9000
+            );
+
+            if (data.success) {
+              console.log("[Course removed]", data);
+
+              act.props.onRemoveIndex(info.i, data);
+            } else {
+            }
+          })
+          .catch(error => {
+            console.log("Got error", error);
+            if (error == "TypeError: Failed to fetch") {
+              //   alert('Server is offline')
+              this.setState({
+                serverRes: "Failed to contact server!"
+              });
+            } else if (error.message == "Network request failed") {
+              // alert('No internet connection')
+              this.setState({
+                serverRes: "Network request failed"
+              });
+            }
+
+            act.setState({
+              open: true,
+              savingInfo: false,
+              resType: data.success ? "success" : "warning"
+            });
+            setTimeout(
+              function() {
+                act.setState({ open: false });
+              }.bind(act),
+              9000
+            );
+          });
       },
+
       onCancel() {
         console.log("Cancel");
       }
