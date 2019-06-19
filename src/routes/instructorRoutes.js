@@ -6,10 +6,9 @@ import Person from "@material-ui/icons/Person";
 
 // core components/views for Admin layout
 import DashboardPage from "../views/Dashboard/Dashboard.jsx";
+import Classes from "../views/Instructor/classes/Classes";
+import SingleClass from "../views/Instructor/classes/SingleClass";
 
-import AddUser from "../views/Instructor/addUser/AddUser.js";
-import Users from "../views/Instructor/users/Users.jsx";
-import Single from "../views/Instructor/users/Single";
 import Profile from "../views/profile/Profile.jsx";
 
 const dashboardRoutes = [
@@ -17,34 +16,27 @@ const dashboardRoutes = [
     path: "/dashboard",
     name: "Dashboard",
 
-    icon: Dashboard,
+    icon: "dashboard",
     component: DashboardPage,
     layout: "/instructor"
   },
+  //Classes routes
   {
-    path: "/addUsers",
-    name: "Add Users",
-
-    icon: Add,
-    component: AddUser,
+    path: "/classes",
+    name: "Classes",
+    sub: "All Classes",
+    icon: "profile",
+    component: Classes,
     layout: "/instructor"
   },
-  {
-    path: "/users",
-    name: "Users",
 
-    icon: SupervisedUserCircle,
-    component: Users,
-    layout: "/instructor"
-  },
   {
-    path: "/users/single",
-    name: "Users : Single",
+    path: "/classes/Single",
+    name: "Single Class",
 
-    icon: SupervisedUserCircle,
-    type: "nested",
-    component: Single,
-    layout: "/instructor"
+    component: SingleClass,
+    layout: "/instructor",
+    type: "omit"
   },
 
   {

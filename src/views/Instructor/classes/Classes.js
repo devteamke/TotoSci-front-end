@@ -1,4 +1,5 @@
 import React from "react";
+import moment from "moment";
 // @material-ui/core components
 import withStyles from "@material-ui/core/styles/withStyles";
 // core components
@@ -20,7 +21,6 @@ import {
   MDBIcon,
   MDBInput
 } from "mdbreact";
-import CustomDrawer from "./Drawer";
 import { withGlobalContext } from "../../../context/Provider";
 import {
   Icon,
@@ -33,7 +33,6 @@ import {
   Select,
   Spin
 } from "antd";
-
 const antIcon = <Icon type="loading" style={{ fontSize: 24 }} spin />;
 const antIconLarge = <Icon type="loading" style={{ fontSize: 40 }} spin />;
 const styles = {
@@ -74,9 +73,9 @@ class AllStudents extends React.Component {
     this.state = {
       serverRes: "",
       loading: true,
+      mainLoad: true,
       loaded: false,
-      mainLoad: false,
-      users: [],
+      _classes: [],
       page: 1,
       limit: 10,
 
@@ -84,11 +83,6 @@ class AllStudents extends React.Component {
       visible: false,
       //skip:0,
       //snack
-      //Drawer
-
-      dvisible: false,
-      currentInfo: null,
-
       open: false,
       place: "bc",
       resType: "warning",
@@ -100,7 +94,7 @@ class AllStudents extends React.Component {
     };
     this.myRef = React.createRef();
   }
-  _fetchUsers = () => {
+  _fetchClasses = () => {
     let state = this.state;
     let data = {
       limit: state.limit,
@@ -109,7 +103,7 @@ class AllStudents extends React.Component {
     };
     const FetchAsync = async () =>
       await (await fetch(
-        `${globals.BASE_URL}/api/${this.props.global.user.role}/all_courses`,
+        `${globals.BASE_URL}/api/${this.props.global.user.role}/all_classes`,
         {
           method: "post",
           mode: "cors", // no-cors, cors, *same-origin
@@ -130,9 +124,9 @@ class AllStudents extends React.Component {
       .then(data => {
         //this.setState({currentPlace:data.results})
         if (data.success) {
-          console.log("[users]", data);
+          console.log("[classes]", data);
           this.setState({
-            users: data.result.docs,
+            _classes: data.result.docs,
             page: data.result.page,
             totalPages: data.result.totalPages,
             totalDocs: data.result.totalDocs,
@@ -149,7 +143,6 @@ class AllStudents extends React.Component {
         });
       })
       .catch(error => {
-        console.log(error);
         if (error == "TypeError: Failed to fetch") {
           this.setState({
             serverRes: "Failed to contact server!"
@@ -161,7 +154,6 @@ class AllStudents extends React.Component {
           });
         }
 
-        console.log(error);
         this.setState({
           open: true,
           resType: data.success ? "success" : "warning"
@@ -182,7 +174,7 @@ class AllStudents extends React.Component {
         loaded: false
       },
       () => {
-        this._fetchUsers();
+        this._fetchClasses();
       }
     );
   };
@@ -197,7 +189,7 @@ class AllStudents extends React.Component {
         loaded: false
       },
       () => {
-        this._fetchUsers();
+        this._fetchClasses();
       }
     );
   };
@@ -209,7 +201,7 @@ class AllStudents extends React.Component {
         loaded: false
       },
       () => {
-        this._fetchUsers();
+        this._fetchClasses();
       }
     );
   };
@@ -259,15 +251,15 @@ class AllStudents extends React.Component {
       console.log("Received values of form: ", values);
 
       let data = {
-        _id: course._id,
+        _id: instructor._id,
         fname: values.fname,
         lname: values.lname,
-        school: values.school
+        instructor: values.instructor
       };
       this.setState({ updating: true });
       const SaveAsync = async () =>
         await (await fetch(
-          `${globals.BASE_URL}/api/${this.props.global.user.role}/course_save_info`,
+          `${globals.BASE_URL}/api/${this.props.global.user.role}/instructor_save_info`,
           {
             method: "PATCH",
             mode: "cors", // no-cors, cors, *same-origin
@@ -302,11 +294,11 @@ class AllStudents extends React.Component {
           );
 
           if (data.success) {
-            console.log("[newCourse]", data.course);
+            console.log("[newClass]", data.instructor);
 
             this.setState(prevState => {
               let users = [...prevState.users];
-              users[course.index] = data.course;
+              users[instructor.index] = data.instructor;
               return {
                 visible: false,
                 users: users
@@ -347,51 +339,9 @@ class AllStudents extends React.Component {
     this.formRef = formRef;
     console.log("save ref", formRef);
   };
-  showDrawer = () => {
-    const state = this.state;
-    //  console.log("open drawer");
 
-    this.setState({
-      dvisible: true
-    });
-  };
-  onClose = () => {
-    this.setState({
-      dvisible: false
-    });
-  };
-  updateIndex = ({ i, obj }) => {
-    this.setState(prevState => {
-      let users = [...prevState.users];
-      users[i] = { ...obj, addedBy: users[i].addedBy, i };
-      console.log("new user", users[i]);
-      return {
-        users: users,
-        currentInfo: users[i]
-      };
-    });
-  };
-  removeIndex = (i, data) => {
-    this.setState(prevState => {
-      let courses = [...prevState.users];
-      console.log("Before Deleting", courses);
-      courses.splice(i, 1);
-      let total = prevState.totalDocs;
-      total--;
-      console.log("After Deleting", total);
-      return {
-        users: courses,
-        totalDocs: total
-      };
-    });
-    this.onClose();
-    this._snack({
-      type: data.success ? "success" : "warning",
-      msg: data.message
-    });
-  };
   componentDidMount = () => {
-    this._fetchUsers();
+    this._fetchClasses();
     this._snack();
   };
 
@@ -428,18 +378,9 @@ class AllStudents extends React.Component {
           onCancel={this.handleCancel}
           onSave={this.handleSave}
         />
-        <CustomDrawer
-          visible={this.state.dvisible}
-          onClose={this.onClose}
-          users={this.state.users}
-          info={this.state.currentInfo}
-          infoCopy={this.state.currentInfo}
-          onUpdateIndex={this.updateIndex}
-          onRemoveIndex={this.removeIndex}
-        />
         <GridContainer>
           <GridItem xs={12} sm={12} md={12}>
-            <Card title="All Courses" style={{ width: "100%" }}>
+            <Card title="All Classes" style={{ width: "100%" }}>
               <GridContainer>
                 <GridItem xs={12} sm={12} md={12}>
                   <div style={{ width: "15rem", float: "right" }}>
@@ -469,40 +410,101 @@ class AllStudents extends React.Component {
                 </GridContainer>
               ) : (
                 <>
-                  {state.users.length > 0 ? (
+                  {state._classes.length > 0 ? (
                     <MDBTable hover responsive small striped bordered>
                       <MDBTableHead>
                         <tr>
                           <th>No.</th>
-                          <th>Name</th>
-                          <th>Charge</th>
-                          <th>Description</th>
+                          <th>Class Name</th>
+                          <th>Course</th>
+                          <th>Day </th>
+                          <th> Start Time</th>
+                          <th>Duration(hours)</th>
+
                           <th
                             style={{ textAlign: "center", width: "100px" }}
                           ></th>
                         </tr>
                       </MDBTableHead>
+
                       <MDBTableBody>
-                        {state.users.map((course, i) => (
+                        {state._classes.map((clas, i) => (
                           <tr
-                            key={course._id}
+                            key={clas._id}
                             // onClick={() => {
                             //   this.props.history.push({
-                            //     pathname: `/${this.props.global.user.role}/courses/single`,
+                            //     pathname: `/${this.props.global.user.role}/instructors/single`,
                             //     data: user
                             //   });
                             // }}
                             style={{ cursor: "pointer" }}
                           >
-                            <td>{i + 1}</td> <td>{capitalize(course.name)}</td>
-                            <td>{course.charge}</td>
-                            <td>{capitalize(course.description)}</td>
+                            {" "}
+                            {console.log("[class]", i, " ", clas)}
+                            <td>{i + 1}</td>
                             <td
                               onClick={() => {
-                                let current = { ...course, i };
-                                this.setState({ currentInfo: current }, () => {
-                                  this.showDrawer();
+                                this.props.history.push({
+                                  pathname: "/instructor/classes/single",
+                                  data: clas
                                 });
+                              }}
+                            >
+                              {capitalize(clas.name)}
+                            </td>
+                            <td
+                              onClick={() => {
+                                this.props.history.push({
+                                  pathname: "/instructor/classes/single",
+                                  data: clas
+                                });
+                              }}
+                            >
+                              {capitalize(
+                                clas.courseName.length > 0
+                                  ? clas.courseName[0].name
+                                  : null
+                              )}
+                            </td>
+                            <td
+                              onClick={() => {
+                                this.props.history.push({
+                                  pathname: "/instructor/classes/single",
+                                  data: clas
+                                });
+                              }}
+                            >
+                              {capitalize(clas.day)}
+                            </td>
+                            <td
+                              onClick={() => {
+                                this.props.history.push({
+                                  pathname: "/instructor/classes/single",
+                                  data: clas
+                                });
+                              }}
+                            >
+                              {" "}
+                              {moment(clas.start_time).format("HH:mm")}{" "}
+                            </td>
+                            <td
+                              onClick={() => {
+                                this.props.history.push({
+                                  pathname: "/instructor/classes/single",
+                                  data: clas
+                                });
+                              }}
+                            >
+                              {clas.duration}
+                            </td>
+                            <td
+                              onClick={() => {
+                                instructor = {
+                                  ...instructor,
+
+                                  index: i
+                                };
+                                this.showModal();
                               }}
                               style={{
                                 textAlign: "center",
@@ -522,13 +524,13 @@ class AllStudents extends React.Component {
                         {" "}
                         {state.query
                           ? `No records found matching \" ${state.query}\"`
-                          : "No courses yet"}
+                          : "No instructors yet"}
                       </p>{" "}
                     </div>
                   )}
                 </>
               )}
-              {state.loaded && state.users.length > 0 ? (
+              {state.loaded && state._classes.length > 0 ? (
                 <div className="text-center">
                   {state.hasPrev ? (
                     <Button
@@ -553,7 +555,8 @@ class AllStudents extends React.Component {
                   ) : null}
 
                   <p style={{ color: "grey" }}>
-                    (Showing {state.users.length} of {state.totalDocs} records){" "}
+                    (Showing {state._classes.length} of {state.totalDocs}{" "}
+                    records){" "}
                   </p>
                 </div>
               ) : null}
@@ -564,7 +567,7 @@ class AllStudents extends React.Component {
     );
   };
 }
-let course = {};
+let instructor = {};
 
 export default withGlobalContext(withStyles(styles)(AllStudents));
 
@@ -574,63 +577,10 @@ const CollectionCreateForm = Form.create({ name: "form_in_modal" })(
   withGlobalContext(
     // eslint-disable-next-line
     class extends React.Component {
-      state = { loading: true, edit: false };
-      _fetchSchools = () => {
-        const FetchAsync = async () =>
-          await (await fetch(
-            `${globals.BASE_URL}/api/${this.props.global.user.role}/fetch_schools`,
-            {
-              method: "post",
-              mode: "cors", // no-cors, cors, *same-origin
-              cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
-              credentials: "same-origin", // include, *same-origin, omit
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: this.props.global.token
-                // "Content-Type": "application/x-www-form-urlencoded",
-              },
-              redirect: "follow", // manual, *follow, error
-              referrer: "no-referrer", // no-referrer, *client
-              body: JSON.stringify({ data: "hello server" })
-            }
-          )).json();
+      state = { loading: false, edit: false };
 
-        FetchAsync()
-          .then(data => {
-            //this.setState({currentPlace:data.results})
-            if (data.success) {
-              let schools = data.schools.map(each => {
-                return { value: each._id, label: unKebab(each.name).join(" ") };
-              });
-              console.log("mapped schools", schools);
-              this.setState({
-                schools: schools,
-                loading: false
-              });
-            } else {
-            }
-          })
-          .catch(error => {
-            console.log(error);
-            if (error == "TypeError: Failed to fetch") {
-              //   alert('Server is offline')
-            } else if (error.message == "Network request failed") {
-              // alert('No internet connection')
-              this.setState({
-                serverRes: "Network request failed"
-              });
-            }
-            this.props._snack({ type: "warning", msg: error.toString() });
-
-            console.log(error);
-          });
-      };
-      handleChange = value => {
-        console.log(`selected ${value}`);
-      };
-      componentDidMount = () => {
-        this._fetchSchools();
-      };
+      handleChange = value => {};
+      componentDidMount = () => {};
       render() {
         const state = this.state;
         const { visible, onCancel, onSave, form } = this.props;
@@ -641,7 +591,7 @@ const CollectionCreateForm = Form.create({ name: "form_in_modal" })(
         return (
           <Modal
             visible={visible}
-            title="Course details"
+            title="Class details"
             okText="Change"
             onCancel={onCancel}
             onOk={onSave}
@@ -697,7 +647,7 @@ const CollectionCreateForm = Form.create({ name: "form_in_modal" })(
             <Form layout="vertical">
               <Form.Item label="First Name">
                 {getFieldDecorator("fname", {
-                  initialValue: course.fname,
+                  initialValue: instructor.fname,
                   rules: [
                     {
                       required: true,
@@ -708,7 +658,7 @@ const CollectionCreateForm = Form.create({ name: "form_in_modal" })(
               </Form.Item>
               <Form.Item label="Last Name">
                 {getFieldDecorator("lname", {
-                  initialValue: course.lname,
+                  initialValue: instructor.lname,
                   rules: [
                     {
                       required: true,
@@ -716,32 +666,6 @@ const CollectionCreateForm = Form.create({ name: "form_in_modal" })(
                     }
                   ]
                 })(<Input />)}
-              </Form.Item>
-
-              <Form.Item label="Learning Venue/ School">
-                {getFieldDecorator("school", {
-                  initialValue: course.school,
-                  rules: [
-                    {
-                      type: "string",
-                      required: true,
-                      message: "Please select school/venue!"
-                    }
-                  ]
-                })(
-                  <Select
-                    style={{ width: "100%" }}
-                    onChange={this.handleChange}
-                  >
-                    {state.schools.map(each => {
-                      return (
-                        <Option key={each.value} value={each.value}>
-                          {each.label}
-                        </Option>
-                      );
-                    })}
-                  </Select>
-                )}
               </Form.Item>
             </Form>
           </Modal>

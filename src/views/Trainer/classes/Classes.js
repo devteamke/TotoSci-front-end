@@ -124,7 +124,7 @@ class AllStudents extends React.Component {
       .then(data => {
         //this.setState({currentPlace:data.results})
         if (data.success) {
-          console.log("[users]", data);
+          console.log("[classes]", data);
           this.setState({
             _classes: data.result.docs,
             page: data.result.page,
@@ -133,7 +133,6 @@ class AllStudents extends React.Component {
             hasNext: data.result.hasNextPage,
             hasPrev: data.result.hasPrevPage
           });
-          console.log("Stat", state._classes);
         } else {
           this._snack({ type: "warning", msg: data.message });
         }
@@ -144,7 +143,6 @@ class AllStudents extends React.Component {
         });
       })
       .catch(error => {
-        console.log(error);
         if (error == "TypeError: Failed to fetch") {
           this.setState({
             serverRes: "Failed to contact server!"
@@ -156,7 +154,6 @@ class AllStudents extends React.Component {
           });
         }
 
-        console.log(error);
         this.setState({
           open: true,
           resType: data.success ? "success" : "warning"
@@ -429,6 +426,7 @@ class AllStudents extends React.Component {
                           ></th>
                         </tr>
                       </MDBTableHead>
+
                       <MDBTableBody>
                         {state._classes.map((clas, i) => (
                           <tr
@@ -441,10 +439,11 @@ class AllStudents extends React.Component {
                             // }}
                             style={{ cursor: "pointer" }}
                           >
+                            {" "}
+                            {console.log("[class]", i, " ", clas)}
                             <td>{i + 1}</td>
                             <td
                               onClick={() => {
-                                console.log("open class");
                                 this.props.history.push({
                                   pathname: "/trainer/classes/single",
                                   data: clas
@@ -453,11 +452,51 @@ class AllStudents extends React.Component {
                             >
                               {capitalize(clas.name)}
                             </td>
-                            <td>{capitalize(clas.courseName[0].name)}</td>
-                            <td>{capitalize(clas.day)}</td>
-                            <td> {moment(clas.start_time).format("HH:mm")} </td>
-                            <td>{clas.duration}</td>
-
+                            <td
+                              onClick={() => {
+                                this.props.history.push({
+                                  pathname: "/trainer/classes/single",
+                                  data: clas
+                                });
+                              }}
+                            >
+                              {capitalize(
+                                clas.courseName.length > 0
+                                  ? clas.courseName[0].name
+                                  : null
+                              )}
+                            </td>
+                            <td
+                              onClick={() => {
+                                this.props.history.push({
+                                  pathname: "/trainer/classes/single",
+                                  data: clas
+                                });
+                              }}
+                            >
+                              {capitalize(clas.day)}
+                            </td>
+                            <td
+                              onClick={() => {
+                                this.props.history.push({
+                                  pathname: "/trainer/classes/single",
+                                  data: clas
+                                });
+                              }}
+                            >
+                              {" "}
+                              {moment(clas.start_time).format("HH:mm")}{" "}
+                            </td>
+                            <td
+                              onClick={() => {
+                                this.props.history.push({
+                                  pathname: "/trainer/classes/single",
+                                  data: clas
+                                });
+                              }}
+                            >
+                              {clas.duration}
+                            </td>
                             <td
                               onClick={() => {
                                 instructor = {
@@ -540,9 +579,7 @@ const CollectionCreateForm = Form.create({ name: "form_in_modal" })(
     class extends React.Component {
       state = { loading: false, edit: false };
 
-      handleChange = value => {
-        console.log(`selected ${value}`);
-      };
+      handleChange = value => {};
       componentDidMount = () => {};
       render() {
         const state = this.state;

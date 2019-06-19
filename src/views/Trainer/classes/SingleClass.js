@@ -85,6 +85,9 @@ class Add extends React.Component {
       loading: true,
       selectedRowKeys: [],
       currentDisplay: "Student List",
+      //Show instructors
+      showInstructors: false,
+      isHovered: [],
       //Class
       students: [],
       instructors: [],
@@ -722,6 +725,82 @@ class Add extends React.Component {
         });
     }).catch(() => console.log("Oops errors!"));
   };
+  handleRemove = () => {
+    return new Promise((resolve, reject) => {
+      const FetchAsync = async () =>
+        await (await fetch(
+          `${globals.BASE_URL}/api/${this.props.global.user.role}/remove_instructor`,
+          {
+            method: "post",
+            mode: "cors", // no-cors, cors, *same-origin
+            cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
+            credentials: "same-origin", // include, *same-origin, omit
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: this.props.global.token
+              // "Content-Type": "application/x-www-form-urlencoded",
+            },
+            redirect: "follow", // manual, *follow, error
+            referrer: "no-referrer", // no-referrer, *client
+            body: JSON.stringify({
+              instructor: this.state.ins,
+              class_id: this.state._class._id
+            })
+          }
+        )).json();
+
+      FetchAsync()
+        .then(data => {
+          this._snack({
+            type: data.success ? "success" : "warning",
+            msg: data.message
+          });
+          if (data.success) {
+            // console.log("[new data]", data);
+            let _class = {
+              ...this.state._class,
+              instructors: data.newClass.instructors
+            };
+            this.setState({
+              _class,
+              instructors: data.instructors,
+              ins: null
+              // reloading: true,
+              // selectedRowKeys: []
+            });
+
+            resolve();
+          } else {
+            reject();
+          }
+        })
+        .catch(error => {
+          console.log(error);
+          if (error == "TypeError: Failed to fetch") {
+            //   alert('Server is offline')
+          } else if (error.message == "Network request failed") {
+            // alert('No internet connection')
+            this.setState({
+              serverRes: "Network request failed"
+            });
+          }
+          this._snack({ type: "warning", msg: error.toString() });
+
+          console.log(error);
+          reject();
+        });
+    }).catch(() => console.log("Oops errors!"));
+  };
+  removeInstructor = ins => {
+    this.setState({ ins });
+    confirm({
+      title: `Are you sure you want to remove this instructor(${capitalize(
+        ins.fname
+      )} ${capitalize(ins.lname)})?`,
+      onOk: this.handleRemove,
+      onCancel() {}
+    });
+  };
   onSelectChange = (selectedRowKeys, selectedRows) => {
     console.log(
       `selectedRowKeys: ${selectedRowKeys}`,
@@ -786,7 +865,7 @@ class Add extends React.Component {
     const { classes } = this.props;
     const state = this.state;
 
-    console.log("class details", state._class);
+    console.log("isHovered", state.isHovered);
     const hasSelected = state.selectedRowKeys.length > 0;
     const {
       selectedRowKeys,
@@ -1134,7 +1213,11 @@ class Add extends React.Component {
                 </Descriptions.Item>
 
                 <Descriptions.Item label="Course">
-                  {capitalize(state._class.courseName[0].name)}
+                  {capitalize(
+                    state._class.courseName.length > 0
+                      ? state._class.courseName[0].name
+                      : null
+                  )}
                 </Descriptions.Item>
                 {/* </Descriptions>
               <Descriptions title="">*/}
@@ -1157,20 +1240,78 @@ class Add extends React.Component {
                 {/*    </Descriptions>
               <Descriptions title=""> */}
                 <Descriptions.Item label="Instructors">
-                  {state._class.instructors.length}
-                  <>
-                    {state.instructors.map(each => {
-                      return (
-                        <>
-                          {" "}
-                          <p>
-                            {capitalize(each.fname)} {capitalize(each.lname)}{" "}
-                            <Icon type="delete" />{" "}
-                          </p>{" "}
-                        </>
-                      );
-                    })}
-                  </>
+                  <p>
+                    {" "}
+                    {state._class.instructors.length}{" "}
+                    {state.instructors.length > 0 ? (
+                      <Button
+                        style={{
+                          float: "right",
+                          marginLeft: "10px",
+                          marginRight: "86px"
+                        }}
+                        size="small"
+                        onClick={() => {
+                          this.setState({
+                            showInstructors: !state.showInstructors
+                          });
+                        }}
+                      >
+                        <Icon
+                          style={{ fontSize: 11, float: "right" }}
+                          type={state.showInstructors ? "minus" : "plus"}
+                        />
+                      </Button>
+                    ) : null}
+                  </p>
+                  {state.showInstructors ? (
+                    <>
+                      {state.instructors.map((each, i) => {
+                        return (
+                          <>
+                            {" "}
+                            <p
+                              style={{ marginBottom: "-3px", width: 130 }}
+                              onMouseEnter={() => {
+                                this.setState(prevState => {
+                                  console.log(i);
+                                  let isHovered = [...prevState.isHovered];
+                                  isHovered[i] = true;
+
+                                  return {
+                                    ...prevState,
+                                    isHovered: isHovered
+                                  };
+                                });
+                              }}
+                              onMouseLeave={() => {
+                                this.setState(prevState => {
+                                  let isHovered = [...prevState.isHovered];
+                                  isHovered[i] = false;
+
+                                  return {
+                                    ...prevState,
+                                    isHovered: isHovered
+                                  };
+                                });
+                              }}
+                            >
+                              {capitalize(each.fname)} {capitalize(each.lname)}{" "}
+                              {state.isHovered[i] ? (
+                                <Icon
+                                  style={{ float: "right" }}
+                                  onClick={() => {
+                                    this.removeInstructor(each);
+                                  }}
+                                  type="delete"
+                                />
+                              ) : null}{" "}
+                            </p>{" "}
+                          </>
+                        );
+                      })}
+                    </>
+                  ) : null}
                 </Descriptions.Item>
               </Descriptions>
               {/*table*/}

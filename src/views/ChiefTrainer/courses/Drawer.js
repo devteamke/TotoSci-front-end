@@ -15,6 +15,7 @@ import {
   Radio,
   Menu,
   Dropdown,
+  InputNumber,
   Modal
 } from "antd";
 
@@ -24,6 +25,7 @@ const { Option } = Select;
 const antIcon = <Icon type="loading" style={{ fontSize: 24 }} spin />;
 const antIconLarge = <Icon type="loading" style={{ fontSize: 40 }} spin />;
 const confirm = Modal.confirm;
+const { TextArea } = Input;
 let count = 0;
 let copy;
 class CustomDrawer extends React.Component {
@@ -34,6 +36,7 @@ class CustomDrawer extends React.Component {
     this.state = {
       editing: false,
       loading: true,
+      deleting: false,
       infoCopy: null,
       schools: []
     };
@@ -50,8 +53,13 @@ class CustomDrawer extends React.Component {
       copy = infoCopy;
     }
   };
-
+  //const pro=this.props;
   showDeleteConfirm = () => {
+    let info = this.props.infoCopy;
+
+    console.log(info);
+    const act = this;
+    const state = this.state;
     confirm({
       title: "Are you sure you want to delete?",
 
@@ -59,8 +67,80 @@ class CustomDrawer extends React.Component {
       okType: "danger",
       cancelText: "No",
       onOk() {
-        console.log("delete");
+        console.log("Info  On delete", info.i);
+        let data = { _id: info._id };
+
+        act.setState({ updating: true });
+        const deleteAsync = async () =>
+          await (await fetch(
+            `${globals.BASE_URL}/api/${act.props.global.user.role}/delete_course`,
+            {
+              method: "DELETE",
+              mode: "cors", // no-cors, cors, *same-origin
+              cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
+              credentials: "same-origin", // include, *same-origin, omit
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: act.props.global.token,
+                "Access-Control-Allow-Origin": `${globals.BASE_URL}`
+                // "Content-Type": "application/x-www-form-urlencoded",
+              },
+              redirect: "follow", // manual, *follow, error
+              referrer: "no-referrer", // no-referrer, *client
+              body: JSON.stringify(data)
+            }
+          )).json();
+
+        deleteAsync()
+          .then(data => {
+            //this.setState({currentPlace:data.results})
+            act.setState({
+              open: true,
+              updating: false,
+              serverRes: data.message,
+              resType: data.success ? "success" : "warning"
+            });
+            setTimeout(
+              function() {
+                act.setState({ open: false, updating: false });
+              }.bind(act),
+              9000
+            );
+
+            if (data.success) {
+              console.log("[Course removed]", data);
+              act.props.onRemoveIndex(info.i, data);
+            } else {
+            }
+          })
+          .catch(error => {
+            console.log("Got error", error);
+            if (error == "TypeError: Failed to fetch") {
+              //   alert('Server is offline')
+              this.setState({
+                serverRes: "Failed to contact server!"
+              });
+            } else if (error.message == "Network request failed") {
+              // alert('No internet connection')
+              this.setState({
+                serverRes: "Network request failed"
+              });
+            }
+
+            act.setState({
+              open: true,
+              savingInfo: false,
+              resType: data.success ? "success" : "warning"
+            });
+            setTimeout(
+              function() {
+                act.setState({ open: false });
+              }.bind(act),
+              9000
+            );
+          });
       },
+
       onCancel() {
         console.log("Cancel");
       }
@@ -75,10 +155,10 @@ class CustomDrawer extends React.Component {
         return;
       }
       let originalData = {
-        fname: this.state.infoCopy.fname,
-        lname: this.state.infoCopy.lname,
-        county: this.state.infoCopy.county,
-        sub_county: this.state.infoCopy.sub_county
+        fname: this.state.infoCopy.name,
+        lname: this.state.infoCopy.charge,
+        county: this.state.infoCopy.description
+        // sub_county: this.state.infoCopy.sub_county
         // role: this.infoCopy.sub_county
       };
       console.log("Received values of form: ", values);
@@ -89,17 +169,15 @@ class CustomDrawer extends React.Component {
       }
       let data = {
         _id: state.infoCopy._id,
-        fname: values.fname,
-        lname: values.lname,
-        county: values.county,
-        sub_county: values.sub_county
-        // role: values.role
+        name: values.name,
+        charge: values.charge,
+        description: values.description
       };
       console.log("Changed data", data);
       this.setState({ updating: true });
       const SaveAsync = async () =>
         await (await fetch(
-          `${globals.BASE_URL}/api/${this.props.global.user.role}/save_profile`,
+          `${globals.BASE_URL}/api/${this.props.global.user.role}/update_course`,
           {
             method: "PATCH",
             mode: "cors", // no-cors, cors, *same-origin
@@ -137,7 +215,7 @@ class CustomDrawer extends React.Component {
             console.log("[newStudent]", data.student);
             this.props.onUpdateIndex({
               i: state.infoCopy.i,
-              obj: data.user
+              obj: data.course
             });
             this.setState({ editing: false });
           } else {
@@ -175,13 +253,7 @@ class CustomDrawer extends React.Component {
   componentDidMount = () => {
     //this._fetchSchools();
   };
-  onChange = e => {
-    console.log("radio checked", e.target.value);
-    this.setState({
-      value: e.target.value,
-      role: e.target.value
-    });
-  };
+
   render = () => {
     const state = this.state;
     const props = this.props;
@@ -225,7 +297,7 @@ class CustomDrawer extends React.Component {
               display: "inline-block"
             }}
           >
-            Edit User Info
+            Course Details
           </p>
           <Dropdown style={{ float: "right" }} overlay={menu}>
             <span style={{ float: "right" }}>
@@ -237,61 +309,19 @@ class CustomDrawer extends React.Component {
           <>
             <Row>
               <Col span={12}>
-                <DescriptionItem
-                  title="Full Name"
-                  content={
-                    capitalize(info.salutation) +
-                    " " +
-                    capitalize(info.fname) +
-                    " " +
-                    capitalize(info.lname)
-                  }
-                />{" "}
+                <DescriptionItem title="Name" content={capitalize(info.name)} />{" "}
               </Col>
               <Col span={12}>
-                <DescriptionItem
-                  title="Status"
-                  content={capitalize(info.status)}
-                />{" "}
+                <DescriptionItem title="Charge" content={info.charge} />{" "}
               </Col>
             </Row>
-            <Row>
-              <Col span={12}>
-                <DescriptionItem title="Role" content={capitalize(info.role)} />
-              </Col>
-            </Row>
+
             <Divider />
-            <p style={{ ...pStyle, fontWeight: 700 }}>Contacts</p>
+            <p style={{ ...pStyle, fontWeight: 700 }}>Description</p>
 
             <Row>
               <Col span={12}>
-                <DescriptionItem
-                  title="E-mail"
-                  content={capitalize(info.email)}
-                />
-              </Col>
-              <Col span={12}>
-                <DescriptionItem
-                  title="Phone Number"
-                  content={capitalize(info.phone_number.main)}
-                />
-              </Col>
-            </Row>
-            <Divider />
-            <p style={{ ...pStyle, fontWeight: 700 }}>Location</p>
-            <Row></Row>
-            <Row>
-              <Col span={12}>
-                <DescriptionItem
-                  title="County"
-                  content={capitalize(info.county)}
-                />
-              </Col>
-              <Col span={12}>
-                <DescriptionItem
-                  title="Sub County"
-                  content={capitalize(info.sub_county)}
-                />
+                <DescriptionItem content={info.description} />
               </Col>
             </Row>
 
@@ -308,59 +338,68 @@ class CustomDrawer extends React.Component {
                   }
                 />
               </Col>
+              <Col span={12}>
+                <DescriptionItem
+                  title="Email"
+                  content={capitalize(info.addedBy[0].email)}
+                />
+              </Col>
+            </Row>
+            <Row>
+              <Col span={12}>
+                <DescriptionItem
+                  title="Role"
+                  content={capitalize(info.addedBy[0].role)}
+                />
+              </Col>
             </Row>
           </>
         ) : (
           <>
             {state.infoCopy ? (
               <Form layout="vertical">
-                <Form.Item label="First Name">
-                  {getFieldDecorator("fname", {
-                    initialValue: state.infoCopy.fname,
+                <Form.Item label="Name">
+                  {getFieldDecorator("name", {
+                    initialValue: state.infoCopy.name,
                     rules: [
                       {
                         type: "string",
                         required: true,
-                        message: "Please input first name!"
+                        message: "Please input Course name!"
                       }
                     ]
                   })(<Input />)}
                 </Form.Item>
-                <Form.Item label="Last Name">
-                  {getFieldDecorator("lname", {
-                    initialValue: state.infoCopy.lname,
+                <Form.Item label="Charge">
+                  {getFieldDecorator("charge", {
+                    initialValue: state.infoCopy.charge,
                     rules: [
                       {
-                        type: "string",
+                        type: "number"
+                      },
+                      {
                         required: true,
-                        message: "Please input last name!"
+                        message: "Please input session charge!"
                       }
                     ]
-                  })(<Input />)}
+                  })(<InputNumber />)}
                 </Form.Item>
-                <Form.Item label="County">
-                  {getFieldDecorator("county", {
-                    initialValue: state.infoCopy.county,
+                <Form.Item label="Description">
+                  {getFieldDecorator("description", {
+                    initialValue: state.infoCopy.description,
                     rules: [
                       {
                         type: "string",
                         required: true,
-                        message: "Please input the county!"
+                        message: "Please input course description!"
                       }
                     ]
-                  })(<Input />)}
-                </Form.Item>
-                <Form.Item label="Sub County">
-                  {getFieldDecorator("sub_county", {
-                    initialValue: state.infoCopy.sub_county,
-                    rules: [
-                      {
-                        type: "string",
-                        required: true,
-                        message: "Please select sub county!"
-                      }
-                    ]
-                  })(<Input />)}
+                  })(
+                    <TextArea
+                      placeholder="Describe the course here..."
+                      autosize={{ minRows: 3, maxRows: 6 }}
+                    />
+                  )}
                 </Form.Item>
 
                 <Form.Item>

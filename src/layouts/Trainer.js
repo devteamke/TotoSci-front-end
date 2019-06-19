@@ -31,7 +31,7 @@ class Slider extends React.Component {
       return main;
     });
 
-    console.log("mapped Routes", mainRoutes);
+    // console.log("mapped Routes", mainRoutes);
 
     this.state = {
       collapsed: false

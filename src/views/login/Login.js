@@ -332,4 +332,4 @@ const center = {
   transform: "translate(-50%, -50%)"
 };
 
-export default Form.create({ name: "normal_login" })(withGlobalContext(App));
+export default withGlobalContext(Form.create({ name: "normal_login" })(App));
