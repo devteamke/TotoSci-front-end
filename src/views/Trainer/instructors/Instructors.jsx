@@ -169,6 +169,61 @@ class AllStudents extends React.Component {
         );
       });
   };
+  _fetchClass = id => {
+    let data = {
+      _id: id
+    };
+    this.setState({ mainLoad: true });
+    console.log("Received", id);
+    let promise = new Promise(async (resolve, reject) => {
+      let fetchClass = await (await fetch(
+        `${globals.BASE_URL}/api/${this.props.global.user.role}/fetch_instructor_class`,
+        {
+          method: "post",
+          mode: "cors", // no-cors, cors, *same-origin
+          cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
+          credentials: "same-origin", // include, *same-origin, omit
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: this.props.global.token
+            // "Content-Type": "application/x-www-form-urlencoded",
+          },
+          redirect: "follow", // manual, *follow, error
+          referrer: "no-referrer", // no-referrer, *client
+          body: JSON.stringify(data)
+        }
+      )).json();
+      resolve(fetchClass);
+    });
+    return promise
+      .then(data => {
+        if (data.success) {
+          console.log("[Returned Classes]", data._class);
+
+          return data._class;
+        } else {
+          this._snack({ type: "warning", msg: data.message });
+        }
+        console.log(data);
+        return data;
+      })
+
+      .catch(error => {
+        console.log(error);
+        if (error == "TypeError: Failed to fetch") {
+          this.setState({
+            serverRes: "Failed to contact server!"
+          });
+        } else if (error.message == "Network request failed") {
+          // alert('No internet connection')
+          this.setState({
+            serverRes: "Network request failed"
+          });
+        }
+
+        console.log(error);
+      });
+  };
   _handlePrevious = () => {
     this.setState(
       {
@@ -354,7 +409,7 @@ class AllStudents extends React.Component {
     this.setState(prevState => {
       let users = [...prevState.users];
       users[i] = { ...obj, addedBy: users[i].addedBy, i };
-      console.log("new user", users[i]);
+      // console.log("new user", users[i]);
       return {
         users: users,
         currentInfo: users[i]
@@ -364,7 +419,7 @@ class AllStudents extends React.Component {
   removeIndex = (i, data) => {
     this.setState(prevState => {
       let courses = [...prevState.users];
-      console.log("Before Deleting", courses);
+      //console.log("Before Deleting", courses);
       courses.splice(i, 1);
       let total = prevState.totalDocs;
       total--;
@@ -410,14 +465,7 @@ class AllStudents extends React.Component {
           closeNotification={() => this.setState({ open: false })}
           close
         />
-        <CollectionCreateForm
-          updating={this.state.updating}
-          _snack={this._snack}
-          ref={this.saveFormRef}
-          visible={this.state.visible}
-          onCancel={this.handleCancel}
-          onSave={this.handleSave}
-        />
+
         <CustomDrawer
           visible={this.state.dvisible}
           onClose={this.onClose}
@@ -498,8 +546,14 @@ class AllStudents extends React.Component {
                             <td>{capitalize(instructor.county)}</td>
                             <td>{capitalize(instructor.sub_county)}</td>
                             <td
-                              onClick={() => {
-                                let current = { ...instructor, i };
+                              onClick={async () => {
+                                let gotclasses = await this._fetchClass(
+                                  instructor._id
+                                );
+                                this.setState({ mainLoad: false });
+                                console.log("[This was got]", gotclasses);
+                                let current = { ...instructor, i, gotclasses };
+                                console.log("Úpdated info", current);
                                 this.setState({ currentInfo: current }, () => {
                                   this.showDrawer();
                                 });

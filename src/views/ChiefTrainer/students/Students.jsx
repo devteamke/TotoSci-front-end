@@ -98,7 +98,7 @@ class AllStudents extends React.Component {
     };
     this.myRef = React.createRef();
   }
-  
+
   _fetchUsers = () => {
     let state = this.state;
     let data = {
@@ -325,7 +325,7 @@ class AllStudents extends React.Component {
           info={this.state.currentInfo}
           infoCopy={this.state.currentInfo}
           onUpdateIndex={this.updateIndex}
-          onRemoveIndex={this.removeIndex} 
+          onRemoveIndex={this.removeIndex}
         />
 
         <GridContainer>
@@ -398,13 +398,16 @@ class AllStudents extends React.Component {
                           >
                             <td>{i + 1}</td> <td>{capitalize(user.fname)}</td>
                             <td>{capitalize(user.lname)}</td>
-                            <td>{unKebab(user.school[0].name)}</td>
+                            <td>
+                              {user.school[0]
+                                ? unKebab(user.school[0].name)
+                                : ""}
+                            </td>
                             <td
                               onClick={() => {
-                             
                                 let current = { ...user, i };
-                                this.setState({ currentInfo:current }, () => {
-                                     this.showDrawer();
+                                this.setState({ currentInfo: current }, () => {
+                                  this.showDrawer();
                                 });
                               }}
                               style={{

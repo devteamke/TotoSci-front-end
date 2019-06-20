@@ -69,7 +69,7 @@ class CustomDrawer extends React.Component {
         act.setState({ updating: true });
         const deleteAsync = async () =>
           await (await fetch(
-            `${globals.BASE_URL}/api/${act.props.global.user.role}/delete_student`,
+            `${globals.BASE_URL}/api/${act.props.global.user.role}/remove_student`,
             {
               method: "DELETE",
               mode: "cors", // no-cors, cors, *same-origin
@@ -368,13 +368,17 @@ class CustomDrawer extends React.Component {
               <Col span={12}>
                 <DescriptionItem
                   title="County"
-                  content={capitalize(info.school[0].county)}
+                  content={
+                    info.school[0] ? capitalize(info.school[0].county) : ""
+                  }
                 />
               </Col>
               <Col span={12}>
                 <DescriptionItem
                   title="Sub County"
-                  content={capitalize(info.school[0].sub_county)}
+                  content={
+                    info.school[0] ? capitalize(info.school[0].sub_county) : ""
+                  }
                 />
               </Col>
             </Row>
@@ -385,7 +389,7 @@ class CustomDrawer extends React.Component {
               <Col span={12}>
                 <DescriptionItem
                   title="Name"
-                  content={unKebab(info.school[0].name)}
+                  content={info.school[0] ? unKebab(info.school[0].name) : ""}
                 />
               </Col>
             </Row>
@@ -393,13 +397,17 @@ class CustomDrawer extends React.Component {
               <Col span={12}>
                 <DescriptionItem
                   title="County"
-                  content={capitalize(info.school[0].county)}
+                  content={
+                    info.school[0] ? capitalize(info.school[0].county) : ""
+                  }
                 />
               </Col>
               <Col span={12}>
                 <DescriptionItem
                   title="Sub County"
-                  content={capitalize(info.school[0].sub_county)}
+                  content={
+                    info.school[0] ? capitalize(info.school[0].sub_county) : ""
+                  }
                 />
               </Col>
             </Row>

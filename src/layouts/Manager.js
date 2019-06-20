@@ -1,5 +1,5 @@
 import React from "react";
-import { Layout, Menu, Breadcrumb, Icon, Modal } from "antd";
+import { Layout, Menu, Breadcrumb, Icon, Modal, Button } from "antd";
 import { Link, withRouter } from "react-router-dom";
 import { withGlobalContext } from "../context/Provider";
 import { Switch, Route, Redirect } from "react-router-dom";
@@ -31,7 +31,7 @@ class Slider extends React.Component {
       return main;
     });
 
-    console.log("mapped Routes", mainRoutes);
+    // console.log("mapped Routes", mainRoutes);
 
     this.state = {
       collapsed: false
@@ -50,6 +50,7 @@ class Slider extends React.Component {
     });
     this.props.global.onLogout();
   };
+
   showDeleteConfirm = () => {
     confirm({
       title: "Are you sure you want to logout?",
@@ -63,6 +64,7 @@ class Slider extends React.Component {
       }
     });
   };
+
   componentDidMount = () => {
     console.log(
       "current route: ",
@@ -84,6 +86,7 @@ class Slider extends React.Component {
           onBreakpoint={broken => {
             console.log(broken);
           }}
+          style={{ boxShadow: "5px 0 5px -5px rgba(0,0,0,0.5)" }}
           onCollapse={(collapsed, type) => {
             console.log(collapsed, type);
           }}
@@ -91,7 +94,7 @@ class Slider extends React.Component {
           <div
             className="logo"
             style={{
-              height: "4.3rem",
+              height: "6.3rem",
               padding: "1.3rem",
               backgroundColor: "#fff"
             }}
@@ -100,6 +103,16 @@ class Slider extends React.Component {
               src={require("../assets/img/totosci.png")}
               style={{ height: "36px" }}
             />
+            <p
+              style={{
+                fontSize: "1.2rem",
+                fontWeight: 500,
+                textAlign: "center",
+                marginTop: "0.4rem"
+              }}
+            >
+              Management
+            </p>
           </div>
           <Menu
             theme="dark"
@@ -112,7 +125,7 @@ class Slider extends React.Component {
                 return (
                   <Menu.Item key={`${main.layout}${main.path}`}>
                     <Link to={`${main.layout}${main.path}`}>
-                      <Icon type="dashboard" />
+                      <Icon type={main.icon} />
                       <span className="nav-text">{main.name}</span>
                     </Link>
                   </Menu.Item>
@@ -161,13 +174,15 @@ class Slider extends React.Component {
             style={{
               height: "4.3rem",
               backgroundColor: "#fff",
-              padding: "1rem"
+              padding: "1rem",
+              boxShadow: "0 5px 5px -5px #afabab"
             }}
           >
             <Menu
               onClick={this.handleClick}
               selectedKeys={[this.state.current]}
               mode="horizontal"
+              style={{ borderBottom: "0" }}
             >
               <SubMenu
                 style={{ float: "right" }}
@@ -231,3 +246,9 @@ class Slider extends React.Component {
 }
 
 export default withGlobalContext(withRouter(Slider));
+const capitalize = str => {
+  if (str) {
+    str = str.charAt(0).toUpperCase() + str.slice(1);
+  }
+  return str;
+};

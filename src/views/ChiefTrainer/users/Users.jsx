@@ -428,6 +428,7 @@ class AllStudents extends React.Component {
         <CustomDrawer
           visible={this.state.dvisible}
           onClose={this.onClose}
+           _snack={this._snack}
           info={this.state.currentInfo}
           infoCopy={this.state.currentInfo}
           onUpdateIndex={this.updateIndex}

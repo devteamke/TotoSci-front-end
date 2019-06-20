@@ -60,17 +60,23 @@ class CustomDrawer extends React.Component {
     confirm({
       title: "Are you sure you want to delete?",
 
-      okText: "Yes",
+      okText: "Ok",
       okType: "danger",
       cancelText: "No",
       onOk() {
         console.log("Info  On delete", info.i);
-        let data = { _id: info._id };
-
+        let data = { role: info.role, _id: info._id };
+        if (info.role == "chief-trainer") {
+          act.props._snack({
+            type: "warning",
+            msg: "Not permitted for the operation"
+          });
+          return;
+        }
         act.setState({ updating: true });
         const deleteAsync = async () =>
           await (await fetch(
-            `${globals.BASE_URL}/api/${act.props.global.user.role}/delete_user`,
+            `${globals.BASE_URL}/api/${act.props.global.user.role}/remove_user`,
             {
               method: "DELETE",
               mode: "cors", // no-cors, cors, *same-origin
@@ -295,7 +301,7 @@ class CustomDrawer extends React.Component {
               display: "inline-block"
             }}
           >
-            Course Details
+            Edit User Info
           </p>
           <Dropdown style={{ float: "right" }} overlay={menu}>
             <span style={{ float: "right" }}>
@@ -307,29 +313,89 @@ class CustomDrawer extends React.Component {
           <>
             <Row>
               <Col span={12}>
-                <DescriptionItem title="Name" content={capitalize(info.name)} />{" "}
+                <DescriptionItem
+                  title="Full Name"
+                  content={
+                    capitalize(info.salutation) +
+                    " " +
+                    capitalize(info.fname) +
+                    " " +
+                    capitalize(info.lname)
+                  }
+                />{" "}
               </Col>
               <Col span={12}>
                 <DescriptionItem
-                  title="Charge"
-                  content={capitalize(info.charge)}
+                  title="Status"
+                  content={capitalize(info.status)}
                 />{" "}
               </Col>
             </Row>
-
+            <Row>
+              <Col span={12}>
+                <DescriptionItem title="Role" content={capitalize(info.role)} />
+              </Col>
+              <Col span={12}>
+                <DescriptionItem
+                  title="Residence"
+                  content={capitalize(info.residence)}
+                />
+              </Col>
+              {info.role == "chief-trainer" ? (
+                <>
+                  <Col span={12}>
+                    <DescriptionItem
+                      title="County"
+                      content={capitalize(info.county)}
+                    />
+                  </Col>
+                </>
+              ) : (
+                <></>
+              )}
+            </Row>
             <Divider />
-            <p style={{ ...pStyle, fontWeight: 700 }}>Details</p>
+            <p style={{ ...pStyle, fontWeight: 700 }}>Contacts</p>
 
             <Row>
               <Col span={12}>
                 <DescriptionItem
                   title="E-mail"
-                  content={capitalize(info.description)}
+                  content={capitalize(info.email)}
+                />
+              </Col>
+              <Col span={12}>
+                <DescriptionItem
+                  title="Phone Number"
+                  content={info.phone_number ? info.phone_number.main : ""}
                 />
               </Col>
             </Row>
-
             <Divider />
+            {info.role != "chief-trainer" ? (
+              <>
+                <p style={{ ...pStyle, fontWeight: 700 }}>School Details</p>
+                <Row></Row>
+                <Row>
+                  <Col span={12}>
+                    <DescriptionItem
+                      title="Name"
+                      content={capitalize(info.county)}
+                    />
+                  </Col>
+                  <Col span={12}>
+                    <DescriptionItem
+                      title="Sub County"
+                      content={capitalize(info.sub_county)}
+                    />
+                  </Col>
+                </Row>
+
+                <Divider />
+              </>
+            ) : (
+              <></>
+            )}
             <p style={{ ...pStyle, fontWeight: 700 }}>Added By</p>
             <Row>
               <Col span={12}>
@@ -354,43 +420,60 @@ class CustomDrawer extends React.Component {
           <>
             {state.infoCopy ? (
               <Form layout="vertical">
-                <Form.Item label="Name">
-                  {getFieldDecorator("name", {
-                    initialValue: state.infoCopy.name,
+                <Form.Item label="First Name">
+                  {getFieldDecorator("fname", {
+                    initialValue: state.infoCopy.fname,
                     rules: [
                       {
                         type: "string",
                         required: true,
-                        message: "Please input Course name!"
+                        message: "Please input first name!"
                       }
                     ]
                   })(<Input />)}
                 </Form.Item>
-                <Form.Item label="Charge">
-                  {getFieldDecorator("charge", {
-                    initialValue: state.infoCopy.charge,
-                    rules: [
-                      {
-                        type: "Number",
-                        required: true,
-                        message: "Please input course fee!"
-                      }
-                    ]
-                  })(<Input />)}
-                </Form.Item>
-                <Form.Item label="Description">
-                  {getFieldDecorator("county", {
-                    initialValue: state.infoCopy.description,
+                <Form.Item label="Last Name">
+                  {getFieldDecorator("lname", {
+                    initialValue: state.infoCopy.lname,
                     rules: [
                       {
                         type: "string",
                         required: true,
-                        message: "Please input course description!"
+                        message: "Please input last name!"
                       }
                     ]
                   })(<Input />)}
                 </Form.Item>
-
+                {state.infoCopy.role != "chief-trainer" ? (
+                  <>
+                    <Form.Item label="County">
+                      {getFieldDecorator("School", {
+                        initialValue: state.infoCopy.county,
+                        rules: [
+                          {
+                            type: "string",
+                            required: true,
+                            message: "Please input the county!"
+                          }
+                        ]
+                      })(<Input />)}
+                    </Form.Item>
+                    <Form.Item label="Sub County">
+                      {getFieldDecorator("sub_county", {
+                        initialValue: state.infoCopy.sub_county,
+                        rules: [
+                          {
+                            type: "string",
+                            required: true,
+                            message: "Please select sub county!"
+                          }
+                        ]
+                      })(<Input />)}
+                    </Form.Item>
+                  </>
+                ) : (
+                  <></>
+                )}
                 <Form.Item>
                   <div className="text-center">
                     {state.updating ? (

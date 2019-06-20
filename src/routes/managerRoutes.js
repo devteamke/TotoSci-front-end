@@ -18,7 +18,7 @@ const dashboardRoutes = [
     path: "/dashboard",
     name: "Dashboard",
 
-    icon: Dashboard,
+    icon: "dashboard",
     component: DashboardPage,
     layout: "/manager"
   },

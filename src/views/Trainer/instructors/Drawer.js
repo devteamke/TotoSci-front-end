@@ -70,7 +70,7 @@ class CustomDrawer extends React.Component {
         act.setState({ updating: true });
         const deleteAsync = async () =>
           await (await fetch(
-            `${globals.BASE_URL}/api/${act.props.global.user.role}/delete_user`,
+            `${globals.BASE_URL}/api/${act.props.global.user.role}/remove_instructor`,
             {
               method: "DELETE",
               mode: "cors", // no-cors, cors, *same-origin
@@ -306,7 +306,7 @@ class CustomDrawer extends React.Component {
         {!state.editing ? (
           <>
             <Row>
-              <Col span={12}>
+              <Col span={8}>
                 <DescriptionItem
                   title="Full Name"
                   content={
@@ -314,45 +314,56 @@ class CustomDrawer extends React.Component {
                   }
                 />{" "}
               </Col>
-              <Col span={12}>
+              <Col span={8}>
                 <DescriptionItem
                   title="Status"
                   content={capitalize(info.status)}
                 />{" "}
               </Col>
-            </Row>
-            <Row>
-              <Col span={12}>
-                <DescriptionItem
-                  title="County"
-                  content={capitalize(info.county)}
-                />
-              </Col>
-              <Col span={12}>
-                <DescriptionItem
-                  title="Sub County"
-                  content={capitalize(info.sub_county)}
-                />
-              </Col>
-            </Row>
-            <Row>
-              <Col span={12}>
+              <Col span={8}>
                 <DescriptionItem title="Role" content={capitalize(info.role)} />
               </Col>
             </Row>
-            <Divider />
-            <p style={{ ...pStyle, fontWeight: 700 }}>Contact Details</p>
+
             <Row>
-              <Col span={12}>
+              <Col span={10}>
                 <DescriptionItem title="E-mail" content={info.email} />{" "}
               </Col>
-              <Col span={12}>
+              <Col span={8}>
                 <DescriptionItem
                   title="Phone Number"
-                  content={capitalize(info.phone_number.main)}
+                  content={info.phone_number ? info.phone_number.main : ""}
                 />{" "}
               </Col>
             </Row>
+
+            <Divider />
+            <p style={{ ...pStyle, fontWeight: 700 }}>School Details</p>
+            {info.gotclasses.length > 0 ? (
+              <>
+                {info.gotclasses.map((_class, i) => (
+                  <Row>
+                    <Col span={1}>
+                      <DescriptionItem title={i + 1} />{" "}
+                    </Col>
+                    <Col span={11}>
+                      <DescriptionItem title="Name" content={_class.name} />{" "}
+                    </Col>
+                    <Col span={11}>
+                      <DescriptionItem
+                        title="Students "
+                        content={_class.students.length}
+                      />{" "}
+                    </Col>
+                  </Row>
+                ))}
+              </>
+            ) : (
+              <>
+                <p>Not assigned to any class</p>
+              </>
+            )}
+
             <Divider />
             <p style={{ ...pStyle, fontWeight: 700 }}>Added By</p>
             <Row>
