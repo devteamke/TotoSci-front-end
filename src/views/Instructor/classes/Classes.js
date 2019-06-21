@@ -370,14 +370,7 @@ class AllStudents extends React.Component {
           closeNotification={() => this.setState({ open: false })}
           close
         />
-        <CollectionCreateForm
-          updating={this.state.updating}
-          _snack={this._snack}
-          ref={this.saveFormRef}
-          visible={this.state.visible}
-          onCancel={this.handleCancel}
-          onSave={this.handleSave}
-        />
+
         <GridContainer>
           <GridItem xs={12} sm={12} md={12}>
             <Card title="All Classes" style={{ width: "100%" }}>
@@ -420,10 +413,6 @@ class AllStudents extends React.Component {
                           <th>Day </th>
                           <th> Start Time</th>
                           <th>Duration(hours)</th>
-
-                          <th
-                            style={{ textAlign: "center", width: "100px" }}
-                          ></th>
                         </tr>
                       </MDBTableHead>
 
@@ -497,23 +486,6 @@ class AllStudents extends React.Component {
                             >
                               {clas.duration}
                             </td>
-                            <td
-                              onClick={() => {
-                                instructor = {
-                                  ...instructor,
-
-                                  index: i
-                                };
-                                this.showModal();
-                              }}
-                              style={{
-                                textAlign: "center",
-                                width: "100px",
-                                fontsize: "1.3rem"
-                              }}
-                            >
-                              <Icon type="select" />
-                            </td>
                           </tr>
                         ))}
                       </MDBTableBody>
@@ -524,7 +496,7 @@ class AllStudents extends React.Component {
                         {" "}
                         {state.query
                           ? `No records found matching \" ${state.query}\"`
-                          : "No instructors yet"}
+                          : "You have not yet been assigned to any classes"}
                       </p>{" "}
                     </div>
                   )}
@@ -573,110 +545,9 @@ export default withGlobalContext(withStyles(styles)(AllStudents));
 
 const { Option } = Select;
 
-const CollectionCreateForm = Form.create({ name: "form_in_modal" })(
-  withGlobalContext(
-    // eslint-disable-next-line
-    class extends React.Component {
-      state = { loading: false, edit: false };
-
-      handleChange = value => {};
-      componentDidMount = () => {};
-      render() {
-        const state = this.state;
-        const { visible, onCancel, onSave, form } = this.props;
-        const { getFieldDecorator } = form;
-        if (state.loading) {
-          return <p>loading</p>;
-        }
-        return (
-          <Modal
-            visible={visible}
-            title="Class details"
-            okText="Change"
-            onCancel={onCancel}
-            onOk={onSave}
-            footer={[
-              <div className="text-center">
-                {this.props.updating ? (
-                  <div
-                    className="spinner-grow text-info"
-                    role="status"
-                    style={{ marginBottom: "15px" }}
-                  >
-                    <span className="sr-only">Loading...</span>
-                  </div>
-                ) : (
-                  <>
-                    {!state.edit ? (
-                      <Button
-                        type="danger"
-                        form="myForm"
-                        key="submit"
-                        htmlType="submit"
-                        onClick={() => this.setState({ edit: true })}
-                      >
-                        Edit
-                      </Button>
-                    ) : (
-                      <>
-                        <Button
-                          form="myForm"
-                          key="submit"
-                          htmlType="submit"
-                          onClick={() => {
-                            this.setState({ edit: false });
-                            onCancel();
-                          }}
-                        >
-                          Cancel
-                        </Button>
-                        <Button
-                          type="primary"
-                          htmlType="submit"
-                          onClick={onSave}
-                        >
-                          Save Changes
-                        </Button>
-                      </>
-                    )}
-                  </>
-                )}
-              </div>
-            ]}
-          >
-            <Form layout="vertical">
-              <Form.Item label="First Name">
-                {getFieldDecorator("fname", {
-                  initialValue: instructor.fname,
-                  rules: [
-                    {
-                      required: true,
-                      message: "Please input first name!"
-                    }
-                  ]
-                })(<Input disabled={!state.edit} />)}
-              </Form.Item>
-              <Form.Item label="Last Name">
-                {getFieldDecorator("lname", {
-                  initialValue: instructor.lname,
-                  rules: [
-                    {
-                      required: true,
-                      message: "Please input last name!"
-                    }
-                  ]
-                })(<Input />)}
-              </Form.Item>
-            </Form>
-          </Modal>
-        );
-      }
-    }
-  )
-);
 const center = {
   position: "absolute",
-  left: "50%",
+  left: "58.3%",
   top: "50%",
   "-webkit-transform": "translate(-50%, -50%)",
   transform: "translate(-50%, -50%)"

@@ -426,7 +426,7 @@ class AllStudents extends React.Component {
           info={this.state.currentInfo}
           infoCopy={this.state.currentInfo}
           onUpdateIndex={this.updateIndex}
-          onRemoveIndex={this.removeIndex} 
+          onRemoveIndex={this.removeIndex}
         />
 
         <CollectionCreateForm
@@ -753,7 +753,7 @@ const CollectionCreateForm = Form.create({ name: "form_in_modal" })(
 
 const center = {
   position: "absolute",
-  left: "50%",
+  left: "58.3%",
   top: "50%",
   "-webkit-transform": "translate(-50%, -50%)",
   transform: "translate(-50%, -50%)"

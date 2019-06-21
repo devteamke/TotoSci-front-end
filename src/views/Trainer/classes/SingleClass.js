@@ -41,7 +41,8 @@ import {
   Dropdown,
   Modal,
   Divider,
-  Steps
+  Steps,
+  List
 } from "antd";
 import moment from "moment";
 
@@ -105,6 +106,11 @@ class Add extends React.Component {
       //Instructor modal
       selectedKeysI: [],
       modalInstrucors: [],
+      //feedback
+      singleAtt: [],
+      tell: "",
+      showExisting: true,
+      currentFeedback: "",
       //other
       adding: false,
       open: false,
@@ -209,6 +215,25 @@ class Add extends React.Component {
     console.log();
     this.setState({
       assignModal: false
+    });
+  };
+  //Feed Modals
+  handleFeedOk = e => {
+    const state = this.state;
+    console.log(e);
+
+    console.log("selectedStudents", state.selectedRowsModal);
+    this._addSelectedStudents();
+  };
+  handleFeedCancel = e => {
+    console.log(e);
+    this.props.form.resetFields();
+    this.setState({
+      feedModal: false,
+      tell: "",
+      savingFeed: false,
+      currentFeedback: [],
+      showExisting: true
     });
   };
 
@@ -630,6 +655,52 @@ class Add extends React.Component {
           //   //   loading: false
           //   // });
           // }
+        } else {
+        }
+      })
+      .catch(error => {
+        console.log(error);
+        if (error == "TypeError: Failed to fetch") {
+          //   alert('Server is offline')
+        } else if (error.message == "Network request failed") {
+          // alert('No internet connection')
+          this.setState({
+            serverRes: "Network request failed"
+          });
+        }
+        this._snack({ type: "warning", msg: error.toString() });
+
+        console.log(error);
+      });
+  };
+  _fetchFeedBack = student => {
+    const FetchAsync = async () =>
+      await (await fetch(
+        `${globals.BASE_URL}/api/${this.props.global.user.role}/fetch_feed_attendance`,
+        {
+          method: "post",
+          mode: "cors", // no-cors, cors, *same-origin
+          cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
+          credentials: "same-origin", // include, *same-origin, omit
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: this.props.global.token
+            // "Content-Type": "application/x-www-form-urlencoded",
+          },
+          redirect: "follow", // manual, *follow, error
+          referrer: "no-referrer", // no-referrer, *client
+          body: JSON.stringify({ student, _class: this.state._class })
+        }
+      )).json();
+
+    FetchAsync()
+      .then(data => {
+        if (data.success) {
+          this.setState({
+            loadingFeed: false,
+            singleAtt: data.attendance,
+            currentFeedback: data.feedback
+          });
         } else {
         }
       })
@@ -1167,6 +1238,147 @@ class Add extends React.Component {
             )}
           </>
         </Modal>
+        {/*Feedback modal*/}
+        <Modal
+          title={
+            <div style={{ display: "table-cell" }}>
+              <p
+                style={{
+                  float: "left",
+                  display: "inline",
+                  marginRight: "237px"
+                }}
+              >
+                <b>Feedback</b>
+              </p>
+              {false ? (
+                <Dropdown overlay={menu}>
+                  <span>
+                    Actions{" "}
+                    <Icon
+                      style={{
+                        float: "right",
+                        marginRight: "89px",
+                        marginTop: "7px"
+                      }}
+                      type="down"
+                    />
+                  </span>
+                </Dropdown>
+              ) : null}
+            </div>
+          }
+          visible={this.state.feedModal}
+          onOk={this.handleFeedOk}
+          onCancel={this.handleFeedCancel}
+          footer={null}
+        >
+          {state.showExisting ? (
+            <>
+              <List
+                style={{ height: "350px", overflow: "auto" }}
+                loading={state.loadingFeed}
+                itemLayout="horizontal"
+                dataSource={state.currentFeedback}
+                renderItem={item => (
+                  <List.Item key={item._id}>
+                    <List.Item.Meta
+                      avatar={null}
+                      title={item.lesson}
+                      description={
+                        <p style={{ color: "black" }}>{item.remarks}</p>
+                      }
+                    />
+                    <div style={{ marginTop: "24px" }}>
+                      {item.addedBy
+                        ? capitalize(item.addedBy.fname) +
+                          " " +
+                          capitalize(item.addedBy.lname)
+                        : ""}
+                      <p
+                        style={{
+                          color: "#ad9b9b",
+                          display: "inline",
+                          marginLeft: "15px"
+                        }}
+                      >
+                        {moment(item.createdAt).fromNow()}
+                      </p>
+                    </div>
+                  </List.Item>
+                )}
+              />
+            </>
+          ) : (
+            <>
+              <Form layout="vertical" onSubmit={this.handleSubmit}>
+                <Form.Item label="Lesson">
+                  {getFieldDecorator("lesson", {
+                    rules: [
+                      { required: true, message: "Please select Lesson!" }
+                    ]
+                  })(
+                    <Select
+                      style={{ width: "100%" }}
+                      onSelect={this.getSelected}
+                    >
+                      {state.singleAtt.map((att, i) => {
+                        return (
+                          <Option key={i + 1} value={att}>
+                            Lesson {i + 1}{" "}
+                          </Option>
+                        );
+                      })}
+                    </Select>
+                  )}
+                </Form.Item>
+                <p>{state.tell}</p>
+                <Form.Item label="Remarks">
+                  {getFieldDecorator("remarks", {
+                    rules: [
+                      {
+                        required: true,
+                        message: "Please input your remark!"
+                      }
+                    ]
+                  })(
+                    <TextArea
+                      placeholder="..."
+                      autosize={{ minRows: 3, maxRows: 6 }}
+                    />
+                  )}
+                </Form.Item>
+                <Divider />
+                <Form.Item>
+                  <Button
+                    form="myForm"
+                    key="submit"
+                    htmlType="submit"
+                    onClick={() => {
+                      this.props.form.resetFields();
+                      this.setState({
+                        showExisting: true,
+                        tell: "",
+                        savingFeed: false
+                      });
+                    }}
+                  >
+                    Cancel
+                  </Button>
+
+                  <Button
+                    type="primary"
+                    htmlType="submit"
+                    onClick={this.handleSubmit}
+                    loading={state.savingFeed}
+                  >
+                    Save
+                  </Button>
+                </Form.Item>
+              </Form>
+            </>
+          )}
+        </Modal>
         {/*normal page content*/}
         <GridContainer>
           <GridItem xs={12} sm={12} md={12}>
@@ -1355,6 +1567,14 @@ class Add extends React.Component {
                   rowSelection={rowSelection}
                   columns={columns}
                   dataSource={this.state.students}
+                  onRow={record => ({
+                    onClick: () => {
+                      this._fetchFeedBack(record);
+                      this.setState({ currentStudent: record }, () => {
+                        this.setState({ feedModal: true, loadingFeed: true });
+                      });
+                    }
+                  })}
                 />
               ) : (
                 <>
@@ -1445,7 +1665,7 @@ const unKebab = string => {
 
 const center = {
   position: "absolute",
-  left: "50%",
+  left: "58.3%",
   top: "50%",
   "-webkit-transform": "translate(-50%, -50%)",
   transform: "translate(-50%, -50%)"

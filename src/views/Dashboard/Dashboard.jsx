@@ -4,7 +4,7 @@ import PropTypes from "prop-types";
 // @material-ui/core
 import Snackbar from "../../components/dcomponents/Snackbar/Snackbar.jsx";
 import withStyles from "@material-ui/core/styles/withStyles";
-import Icon from "@material-ui/core/Icon";
+
 // @material-ui/icons
 import ListAlt from "@material-ui/icons/ListAlt";
 
@@ -19,8 +19,10 @@ import globals from "../../constants/Globals";
 //Nivo charts
 import { ResponsivePie } from "@nivo/pie";
 import { ResponsiveLine } from "@nivo/line";
-import { Card, Col, Row } from "antd";
+import { Card, Col, Row, Icon, Spin } from "antd";
 import { withGlobalContext } from "../../context/Provider";
+const antIcon = <Icon type="loading" style={{ fontSize: 24 }} spin />;
+const antIconLarge = <Icon type="loading" style={{ fontSize: 40 }} spin />;
 class Dashboard extends React.Component {
   state = {
     value: 0,
@@ -154,6 +156,13 @@ class Dashboard extends React.Component {
         data: state.studentsRegistrations
       }
     ];
+    if (state.loading) {
+      return (
+        <div style={center}>
+          <Spin indicator={antIconLarge} />
+        </div>
+      );
+    }
     return (
       <div>
         <Row gutter={10}>
@@ -504,74 +513,72 @@ class Dashboard extends React.Component {
               </h5>
               <div style={{ height: "300px" }}>
                 {" "}
-                {this.state.loading ? null : (
-                  <ResponsiveLine
-                    data={datax}
-                    curve="cardinal"
-                    margin={{ top: 50, right: 110, bottom: 50, left: 60 }}
-                    xScale={{ type: "point" }}
-                    yScale={{
-                      type: "linear",
-                      stacked: true,
-                      min: "auto",
-                      max: "auto"
-                    }}
-                    axisTop={null}
-                    axisRight={null}
-                    axisBottom={{
-                      orient: "bottom",
-                      tickSize: 5,
-                      tickPadding: 5,
-                      tickRotation: 0,
-                      legend: "Months",
-                      legendOffset: 36,
-                      legendPosition: "middle"
-                    }}
-                    axisLeft={{
-                      orient: "left",
-                      tickSize: 5,
-                      tickPadding: 5,
-                      tickRotation: 0,
-                      legend: "No.",
-                      legendOffset: -40,
-                      legendPosition: "middle"
-                    }}
-                    colors={{ scheme: "category10" }}
-                    pointSize={10}
-                    pointColor={{ theme: "background" }}
-                    pointBorderWidth={2}
-                    pointBorderColor={{ from: "serieColor" }}
-                    pointLabel="y"
-                    pointLabelYOffset={-12}
-                    useMesh={true}
-                    legends={[
-                      {
-                        anchor: "bottom-right",
-                        direction: "column",
-                        justify: false,
-                        translateX: 100,
-                        translateY: 0,
-                        itemsSpacing: 0,
-                        itemDirection: "left-to-right",
-                        itemWidth: 80,
-                        itemHeight: 20,
-                        itemOpacity: 0.75,
-                        symbolSize: 12,
-                        symbolShape: "circle",
-                        symbolBorderColor: "rgba(0, 0, 0, .5)",
-                        effects: [
-                          {
-                            on: "hover",
-                            style: {
-                              itemBackground: "rgba(0, 0, 0, .03)",
-                              itemOpacity: 1
-                            }
+                <ResponsiveLine
+                  data={datax}
+                  curve="cardinal"
+                  margin={{ top: 50, right: 110, bottom: 50, left: 60 }}
+                  xScale={{ type: "point" }}
+                  yScale={{
+                    type: "linear",
+                    stacked: true,
+                    min: "auto",
+                    max: "auto"
+                  }}
+                  axisTop={null}
+                  axisRight={null}
+                  axisBottom={{
+                    orient: "bottom",
+                    tickSize: 5,
+                    tickPadding: 5,
+                    tickRotation: 0,
+                    legend: "Months",
+                    legendOffset: 36,
+                    legendPosition: "middle"
+                  }}
+                  axisLeft={{
+                    orient: "left",
+                    tickSize: 5,
+                    tickPadding: 5,
+                    tickRotation: 0,
+                    legend: "No.",
+                    legendOffset: -40,
+                    legendPosition: "middle"
+                  }}
+                  colors={{ scheme: "category10" }}
+                  pointSize={10}
+                  pointColor={{ theme: "background" }}
+                  pointBorderWidth={2}
+                  pointBorderColor={{ from: "serieColor" }}
+                  pointLabel="y"
+                  pointLabelYOffset={-12}
+                  useMesh={true}
+                  legends={[
+                    {
+                      anchor: "bottom-right",
+                      direction: "column",
+                      justify: false,
+                      translateX: 100,
+                      translateY: 0,
+                      itemsSpacing: 0,
+                      itemDirection: "left-to-right",
+                      itemWidth: 80,
+                      itemHeight: 20,
+                      itemOpacity: 0.75,
+                      symbolSize: 12,
+                      symbolShape: "circle",
+                      symbolBorderColor: "rgba(0, 0, 0, .5)",
+                      effects: [
+                        {
+                          on: "hover",
+                          style: {
+                            itemBackground: "rgba(0, 0, 0, .03)",
+                            itemOpacity: 1
                           }
-                        ]
-                      }
-                    ]}
-                  />
-                )}
+                        }
+                      ]
+                    }
+                  ]}
+                />
               </div>
             </Card>
           </Col>{" "}
@@ -669,6 +676,13 @@ Dashboard.propTypes = {
 };
 
 export default withGlobalContext(withStyles(dashboardStyle)(Dashboard));
+const center = {
+  position: "absolute",
+  left: "58.5%",
+  top: "50%",
+  "-webkit-transform": "translate(-50%, -50%)",
+  transform: "translate(-50%, -50%)"
+};
 const data = [
   {
     id: "male",

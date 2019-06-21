@@ -41,7 +41,8 @@ import {
   Dropdown,
   Modal,
   Divider,
-  Steps
+  Steps,
+  List
 } from "antd";
 import moment from "moment";
 
@@ -89,6 +90,9 @@ class Add extends React.Component {
       //feedback
       singleAtt: [],
       tell: "",
+      showExisting: true,
+      currentFeedback: "",
+
       //Show instructors
       showInstructors: false,
       isHovered: [],
@@ -144,110 +148,29 @@ class Add extends React.Component {
   };
 
   //Feed Modals
-  showFeedModal = () => {
-    this.setState({
-      feedModal: true
-    });
-  };
+
   handleFeedOk = e => {
     const state = this.state;
     console.log(e);
-    this.setState({
-      addingStudents: true
-    });
+
     console.log("selectedStudents", state.selectedRowsModal);
     this._addSelectedStudents();
   };
   handleFeedCancel = e => {
     console.log(e);
-
+    this.props.form.resetFields();
     this.setState({
       feedModal: false,
-      currentStep: 0
+      tell: "",
+      savingFeed: false,
+      currentFeedback: [],
+      showExisting: true
     });
   };
 
   handleChange = event => {
     console.log("value", event.target.value);
     this.setState({ [event.target.name]: event.target.value });
-  };
-  handleSubmit = e => {
-    e.preventDefault();
-    let state = this.state;
-    this.props.form.validateFieldsAndScroll((err, values) => {
-      if (!err) {
-        console.log("Received values of form: ", values);
-        console.log("Time", moment(values.start_time).format("HH:mm"));
-
-        this.setState({ adding: true });
-        let data = {
-          ...values
-        };
-        console.log(data);
-        this.setState({ serverRes: null });
-        const AddAsync = async () =>
-          await (await fetch(
-            `${globals.BASE_URL}/api/${this.props.global.user.role}/new_class`,
-            {
-              method: "post",
-              mode: "cors", // no-cors, cors, *same-origin
-              cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
-              credentials: "same-origin", // include, *same-origin, omit
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: this.props.global.token
-                // "Content-Type": "application/x-www-form-urlencoded",
-              },
-              redirect: "follow", // manual, *follow, error
-              referrer: "no-referrer", // no-referrer, *client
-              body: JSON.stringify(data)
-            }
-          )).json();
-
-        AddAsync()
-          .then(data => {
-            this._snack({
-              type: data.success ? "success" : "warning",
-              msg: data.message
-            });
-            //this.setState({currentPlace:data.results})
-            if (data.success) {
-              this.props.form.resetFields();
-              this.setState({
-                adding: false,
-                serverRes: data.message,
-                //form fields
-                name: "",
-                nameError: null,
-                description: "",
-                descriptionError: null,
-                charge: "",
-                chargeError: null
-              });
-            } else {
-              this.setState({
-                adding: false,
-
-                serverRes: data.message
-              });
-            }
-          })
-          .catch(error => {
-            console.log(error);
-            if (error == "TypeError: Failed to fetch") {
-              //   alert('Server is offline')
-            } else if (error.message == "Network request failed") {
-              // alert('No internet connection')
-              this.setState({
-                serverRes: "Network request failed"
-              });
-            }
-            this._snack({ type: "warning", msg: error.toString() });
-            this.setState({ adding: false });
-            console.log(error);
-          });
-      }
-    });
   };
 
   onChange = (time, timeString) => {
@@ -442,7 +365,11 @@ class Add extends React.Component {
     FetchAsync()
       .then(data => {
         if (data.success) {
-          this.setState({ loadingFeed: false, singleAtt: data.attendance });
+          this.setState({
+            loadingFeed: false,
+            singleAtt: data.attendance,
+            currentFeedback: data.feedback
+          });
         } else {
         }
       })
@@ -497,9 +424,10 @@ class Add extends React.Component {
       if (!err) {
         console.log("Received values of form: ", values);
         let data = {
-          _id: state.currentStudent._id,
+          student_id: state.currentStudent._id,
+          class_id: state._class._id,
           lesson: "Lesson " + parseInt(values.lesson),
-          remark: values.remark
+          remarks: values.remarks
         };
         this.setState({ savingFeed: true });
         const FetchAsync = async () =>
@@ -523,8 +451,19 @@ class Add extends React.Component {
 
         FetchAsync()
           .then(data => {
+            this._snack({
+              type: data.success ? "success" : "warning",
+              msg: data.message
+            });
             if (data.success) {
-              this.setState({ savingFeed: false, feedModal: false });
+              let currentFeedback = [...state.currentFeedback];
+              currentFeedback.unshift(data.savedFeed);
+              this.props.form.resetFields();
+              this.setState({
+                savingFeed: false,
+                showExisting: true,
+                currentFeedback
+              });
             } else {
             }
           })
@@ -558,7 +497,7 @@ class Add extends React.Component {
     const { classes } = this.props;
     const state = this.state;
 
-    console.log("isHovered", state.isHovered);
+    console.log("feedback", state.currentFeedback);
     const hasSelected = state.selectedRowKeys.length > 0;
     const { selectedRowKeys } = this.state;
 
@@ -600,6 +539,17 @@ class Add extends React.Component {
         </div>
       );
     }
+    const menu = (
+      <Menu>
+        <Menu.Item
+          onClick={() => {
+            this.setState({ showExisting: false });
+          }}
+        >
+          Add Feedback
+        </Menu.Item>
+      </Menu>
+    );
 
     const cmenu = (
       <Menu>
@@ -633,69 +583,146 @@ class Add extends React.Component {
           close
         />
 
-        {/*mark attendance modal*/}
+        {/*Feedback modal*/}
         <Modal
-          title="Feedback-*"
+          title={
+            <div style={{ display: "table-cell" }}>
+              <p
+                style={{
+                  float: "left",
+                  display: "inline",
+                  marginRight: "237px"
+                }}
+              >
+                <b>Feedback</b>
+              </p>
+              {state.showExisting ? (
+                <Dropdown overlay={menu}>
+                  <span>
+                    Actions{" "}
+                    <Icon
+                      style={{
+                        float: "right",
+                        marginRight: "89px",
+                        marginTop: "7px"
+                      }}
+                      type="down"
+                    />
+                  </span>
+                </Dropdown>
+              ) : null}
+            </div>
+          }
           visible={this.state.feedModal}
           onOk={this.handleFeedOk}
           onCancel={this.handleFeedCancel}
           footer={null}
         >
-          <>
-            <Form layout="vertical" onSubmit={this.handleSubmit}>
-              <Form.Item label="Lesson">
-                {getFieldDecorator("lesson", {
-                  rules: [{ required: true, message: "Please select Lesson!" }]
-                })(
-                  <Select style={{ width: "100%" }} onSelect={this.getSelected}>
-                    {state.singleAtt.map((att, i) => {
-                      return (
-                        <Option key={i + 1} value={att}>
-                          Lesson {i + 1}{" "}
-                        </Option>
-                      );
-                    })}
-                  </Select>
+          {state.showExisting ? (
+            <>
+              <List
+                style={{ height: "350px", overflow: "auto" }}
+                loading={state.loadingFeed}
+                itemLayout="horizontal"
+                dataSource={state.currentFeedback}
+                renderItem={item => (
+                  <List.Item key={item._id}>
+                    <List.Item.Meta
+                      avatar={null}
+                      title={item.lesson}
+                      description={
+                        <p style={{ color: "black" }}>{item.remarks}</p>
+                      }
+                    />
+                    <div style={{ marginTop: "24px", color: "#ad9b9b" }}>
+                      {item.addedBy
+                        ? capitalize(item.addedBy.fname) +
+                          " " +
+                          capitalize(item.addedBy.lname)
+                        : ""}
+                      <p
+                        style={{
+                          color: "#ad9b9b",
+                          display: "inline",
+                          marginLeft: "15px"
+                        }}
+                      >
+                        {moment(item.createdAt).fromNow()}
+                      </p>
+                    </div>
+                  </List.Item>
                 )}
-              </Form.Item>
-              <p>{state.tell}</p>
-              <Form.Item label="Remarks">
-                {getFieldDecorator("remarks", {
-                  rules: [
-                    {
-                      required: true,
-                      message: "Please input your remark!"
-                    }
-                  ]
-                })(
-                  <TextArea
-                    placeholder="..."
-                    autosize={{ minRows: 3, maxRows: 6 }}
-                  />
-                )}
-              </Form.Item>
-              <Divider />
-              <Form.Item>
-                <Button
-                  form="myForm"
-                  key="submit"
-                  htmlType="submit"
-                  onClick={this.handleFeedCancel}
-                >
-                  Cancel
-                </Button>
+              />
+            </>
+          ) : (
+            <>
+              <Form layout="vertical" onSubmit={this.handleSubmit}>
+                <Form.Item label="Lesson">
+                  {getFieldDecorator("lesson", {
+                    rules: [
+                      { required: true, message: "Please select Lesson!" }
+                    ]
+                  })(
+                    <Select
+                      style={{ width: "100%" }}
+                      onSelect={this.getSelected}
+                    >
+                      {state.singleAtt.map((att, i) => {
+                        return (
+                          <Option key={i + 1} value={att}>
+                            Lesson {i + 1}{" "}
+                          </Option>
+                        );
+                      })}
+                    </Select>
+                  )}
+                </Form.Item>
+                <p>{state.tell}</p>
+                <Form.Item label="Remarks">
+                  {getFieldDecorator("remarks", {
+                    rules: [
+                      {
+                        required: true,
+                        message: "Please input your remark!"
+                      }
+                    ]
+                  })(
+                    <TextArea
+                      placeholder="..."
+                      autosize={{ minRows: 3, maxRows: 6 }}
+                    />
+                  )}
+                </Form.Item>
+                <Divider />
+                <Form.Item>
+                  <Button
+                    form="myForm"
+                    key="submit"
+                    htmlType="submit"
+                    onClick={() => {
+                      this.props.form.resetFields();
+                      this.setState({
+                        showExisting: true,
+                        tell: "",
+                        savingFeed: false
+                      });
+                    }}
+                  >
+                    Cancel
+                  </Button>
 
-                <Button
-                  type="primary"
-                  htmlType="submit"
-                  onClick={this.handleSubmit}
-                  loading={state.savingFeed}
-                >
-                  Save
-                </Button>
-              </Form.Item>
-            </Form>
-          </>
+                  <Button
+                    type="primary"
+                    htmlType="submit"
+                    onClick={this.handleSubmit}
+                    loading={state.savingFeed}
+                  >
+                    Save
+                  </Button>
+                </Form.Item>
+              </Form>
+            </>
+          )}
         </Modal>
         {/*normal page content*/}
         <GridContainer>
@@ -829,7 +856,7 @@ class Add extends React.Component {
                     onClick: () => {
                       this._fetchFeedBack(record);
                       this.setState({ currentStudent: record }, () => {
-                        this.setState({ feedModal: true });
+                        this.setState({ feedModal: true, loadingFeed: true });
                       });
                     }
                   })}
@@ -926,7 +953,7 @@ const unKebab = string => {
 
 const center = {
   position: "absolute",
-  left: "50%",
+  left: "58.3%",
   top: "50%",
   "-webkit-transform": "translate(-50%, -50%)",
   transform: "translate(-50%, -50%)"
