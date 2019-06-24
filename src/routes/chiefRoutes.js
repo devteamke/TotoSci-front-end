@@ -9,6 +9,7 @@ import AccountBalance from "@material-ui/icons/AccountBalance";
 
 // core components/views for Admin layout
 import DashboardPage from "../views/Dashboard/Dashboard.jsx";
+import Notifications from "../views/Notifications/Notifications.jsx";
 
 import AddUser from "../views/ChiefTrainer/users/AddUser.js";
 import Users from "../views/ChiefTrainer/users/Users.jsx";
@@ -25,7 +26,8 @@ import Courses from "../views/ChiefTrainer/courses/Courses";
 import SingleCourse from "../views/ChiefTrainer/courses/Single";
 import AddCourse from "../views/ChiefTrainer/courses/Add";
 
-import Single from "../views/ChiefTrainer/users/Single";
+import Compose from "../views/ChiefTrainer/Feedback/Compose";
+
 import Profile from "../views/profile/Profile.jsx";
 
 const dashboardRoutes = [
@@ -109,7 +111,24 @@ const dashboardRoutes = [
     layout: "/chief-trainer",
     type: "nested"
   },
+  //Feedback
+  {
+    path: "/feedback",
+    name: "Feedback",
+    sub: "All Feedback",
+    icon: "mail",
+    component: Schools,
+    layout: "/chief-trainer"
+  },
+  {
+    path: "/feedback/compose",
+    name: "Compose",
 
+    component: Compose,
+    layout: "/chief-trainer",
+    type: "nested"
+  },
+  //Profile
   {
     path: "/profile",
     name: "My Profile",
@@ -117,6 +136,16 @@ const dashboardRoutes = [
     type: "hidden",
     icon: Person,
     component: Profile,
+    layout: "/chief-trainer"
+  },
+  //Notifications
+  {
+    path: "/notifications",
+    name: "My Notifications",
+
+    type: "hidden",
+
+    component: Notifications,
     layout: "/chief-trainer"
   }
 ];

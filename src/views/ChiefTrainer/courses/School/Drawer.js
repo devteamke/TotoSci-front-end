@@ -19,7 +19,6 @@ import {
 
 import { withGlobalContext } from "../../../context/Provider";
 import globals from "../../../constants/Globals";
-import moment from "moment";
 const { Option } = Select;
 const antIcon = <Icon type="loading" style={{ fontSize: 24 }} spin />;
 const antIconLarge = <Icon type="loading" style={{ fontSize: 40 }} spin />;
@@ -29,13 +28,12 @@ let copy;
 class CustomDrawer extends React.Component {
   constructor(props) {
     super(props);
-    // console.log("constructor called", props.info);
+    console.log("constructor called", props);
 
     this.state = {
       editing: false,
       loading: true,
-      infoCopy: null,
-      schools: []
+      infoCopy: null
     };
   }
   _handleEdit = () => {
@@ -44,13 +42,12 @@ class CustomDrawer extends React.Component {
     } else {
       let infoCopy = {
         ...this.props.infoCopy,
-        school: this.props.infoCopy.school[0].name
+        school: this.props.infoCopy._id
       };
       this.setState({ infoCopy, editing: true });
       copy = infoCopy;
     }
   };
-
   showDeleteConfirm = () => {
     let info = this.props.infoCopy;
 
@@ -70,7 +67,7 @@ class CustomDrawer extends React.Component {
         act.setState({ updating: true });
         const deleteAsync = async () =>
           await (await fetch(
-            `${globals.BASE_URL}/api/${act.props.global.user.role}/remove_student`,
+            `${globals.BASE_URL}/api/${act.props.global.user.role}/delete_school`,
             {
               method: "DELETE",
               mode: "cors", // no-cors, cors, *same-origin
@@ -151,9 +148,9 @@ class CustomDrawer extends React.Component {
         return;
       }
       let originalData = {
-        fname: this.state.infoCopy.fname,
-        lname: this.state.infoCopy.lname,
-        school: this.state.infoCopy.school
+        name: unKebab(this.state.infoCopy.name),
+        county: this.state.infoCopy.county,
+        sub_county: this.state.infoCopy.sub_county
       };
       // console.log("Received values of form: ", values);
 
@@ -162,15 +159,15 @@ class CustomDrawer extends React.Component {
       }
       let data = {
         _id: state.infoCopy._id,
-        fname: values.fname,
-        lname: values.lname,
-        school: values.school
+        name: values.name,
+        county: values.county,
+        sub_county: values.sub_county
       };
-      console.log("Changed data", data);
+      console.log("New Data", data);
       this.setState({ updating: true });
       const SaveAsync = async () =>
         await (await fetch(
-          `${globals.BASE_URL}/api/${this.props.global.user.role}/student_save_info`,
+          `${globals.BASE_URL}/api/${this.props.global.user.role}/update_school`,
           {
             method: "PATCH",
             mode: "cors", // no-cors, cors, *same-origin
@@ -205,10 +202,10 @@ class CustomDrawer extends React.Component {
           );
 
           if (data.success) {
-            console.log("[newStudent]", data.student);
+            console.log("[newSSchool]", data.student);
             this.props.onUpdateIndex({
               i: state.infoCopy.i,
-              obj: data.student
+              obj: data.school
             });
             this.setState({ editing: false });
           } else {
@@ -269,7 +266,7 @@ class CustomDrawer extends React.Component {
           let schools = data.schools.map(each => {
             return { value: each._id, label: unKebab(each.name) };
           });
-          console.log("Not set", schools);
+          console.log("mapped schools", schools);
           this.setState({
             schools: schools,
             loading: false
@@ -287,7 +284,7 @@ class CustomDrawer extends React.Component {
             serverRes: "Network request failed"
           });
         }
-        // this.props._snack({ type: "warning", msg: error.toString() });
+        this.props._snack({ type: "warning", msg: error.toString() });
 
         console.log(error);
       });
@@ -300,13 +297,13 @@ class CustomDrawer extends React.Component {
     const state = this.state;
     const props = this.props;
     const info = props.info;
-    console.log("SChools", state.schools);
+    console.log("drawer props", props);
 
-    console.log("info copy", props.info);
+    console.log("info copy", state.infoCopy);
     const { form } = this.props;
     const { getFieldDecorator } = form;
     if (!props.info || state.loading) {
-      return <> </>;
+      return <></>;
     }
     let menu = (
       <Menu>
@@ -322,13 +319,13 @@ class CustomDrawer extends React.Component {
       <Drawer
         width={640}
         placement="right"
-        visible={props.visible}
         closable={false}
         onClose={() => {
           this.setState({ editing: false }, () => {
             props.onClose();
           });
         }}
+        visible={props.visible}
       >
         <div style={{ display: "block", width: "100%  " }}>
           <p
@@ -339,7 +336,7 @@ class CustomDrawer extends React.Component {
               display: "inline-block"
             }}
           >
-            Student Info
+            School Info
           </p>
           <Dropdown style={{ float: "right" }} overlay={menu}>
             <span style={{ float: "right" }}>
@@ -351,80 +348,21 @@ class CustomDrawer extends React.Component {
           <>
             <Row>
               <Col span={12}>
-                <DescriptionItem
-                  title="Full Name"
-                  content={
-                    capitalize(info.fname) + " " + capitalize(info.lname)
-                  }
-                />{" "}
+                <DescriptionItem title="Name" content={capitalize(info.name)} />{" "}
               </Col>
-              <Col span={12}>
-                <DescriptionItem
-                  title="Status"
-                  content={capitalize(info.status)}
-                />{" "}
-              </Col>
-            </Row>
-            <Row>
-              <Col span={12}>
-                <DescriptionItem
-                  title="Gender"
-                  content={capitalize(info.gender)}
-                />{" "}
-              </Col>
-              <Col span={12}>
-                <DescriptionItem
-                  title="Date of birth"
-                  content={
-                    info.DOB ? moment(info.DOB).format("DD/MM/YYYY") : "NA"
-                  }
-                />{" "}
-              </Col>
+              <Col span={12}></Col>
             </Row>
             <Row>
               <Col span={12}>
                 <DescriptionItem
                   title="County"
-                  content={
-                    info.school[0] ? capitalize(info.school[0].county) : ""
-                  }
+                  content={capitalize(info.county)}
                 />
               </Col>
               <Col span={12}>
                 <DescriptionItem
                   title="Sub County"
-                  content={
-                    info.school[0] ? capitalize(info.school[0].sub_county) : ""
-                  }
-                />
-              </Col>
-            </Row>
-
-            <Divider />
-            <p style={{ ...pStyle, fontWeight: 700 }}>School</p>
-            <Row>
-              <Col span={12}>
-                <DescriptionItem
-                  title="Name"
-                  content={info.school[0] ? unKebab(info.school[0].name) : ""}
-                />
-              </Col>
-            </Row>
-            <Row>
-              <Col span={12}>
-                <DescriptionItem
-                  title="County"
-                  content={
-                    info.school[0] ? capitalize(info.school[0].county) : ""
-                  }
-                />
-              </Col>
-              <Col span={12}>
-                <DescriptionItem
-                  title="Sub County"
-                  content={
-                    info.school[0] ? capitalize(info.school[0].sub_county) : ""
-                  }
+                  content={capitalize(info.sub_county)}
                 />
               </Col>
             </Row>
@@ -448,51 +386,40 @@ class CustomDrawer extends React.Component {
           <>
             {state.infoCopy ? (
               <Form layout="vertical">
-                <Form.Item label="First Name">
-                  {getFieldDecorator("fname", {
-                    initialValue: unKebab(state.infoCopy.fname),
+                <Form.Item label="Name">
+                  {getFieldDecorator("name", {
+                    initialValue: unKebab(state.infoCopy.name),
                     rules: [
                       {
                         required: true,
-                        message: "Please input first name!"
+                        message: "Please input schoolname!"
                       }
                     ]
                   })(<Input />)}
                 </Form.Item>
-                <Form.Item label="Last Name">
-                  {getFieldDecorator("lname", {
-                    initialValue: state.infoCopy.lname,
+                <Form.Item label="County">
+                  {getFieldDecorator("county", {
+                    initialValue: state.infoCopy.county,
                     rules: [
                       {
                         required: true,
-                        message: "Please input last name!"
+                        message: "Please input county name!"
                       }
                     ]
                   })(<Input />)}
                 </Form.Item>
 
-                <Form.Item label="Learning Venue/ School">
-                  {getFieldDecorator("school", {
-                    initialValue: state.infoCopy.school,
+                <Form.Item label="Sub County">
+                  {getFieldDecorator("sub_county", {
+                    initialValue: state.infoCopy.sub_county,
                     rules: [
                       {
                         type: "string",
                         required: true,
-                        message: "Please select school/venue!"
+                        message: "Please select sub county!"
                       }
                     ]
-                  })(
-                    <Select
-                      style={{ width: "100%" }}
-                      onChange={this.handleChange}
-                    >
-                      {state.schools.map(each => {
-                        {
-                        }
-                        return <Option key={each.value}>{each.label}</Option>;
-                      })}
-                    </Select>
-                  )}
+                  })(<Input />)}
                 </Form.Item>
                 <Form.Item>
                   <div className="text-center">
@@ -557,8 +484,6 @@ const unKebab = string => {
 const capitalize = str => {
   if (str) {
     str = str.charAt(0).toUpperCase() + str.slice(1);
-  } else {
-    str = "NA";
   }
   return str;
 };

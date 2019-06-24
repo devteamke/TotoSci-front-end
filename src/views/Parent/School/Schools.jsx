@@ -78,11 +78,11 @@ class AllStudents extends React.Component {
       users: [],
       page: 1,
       limit: 10,
+      //drawer
       dvisible: false,
       currentInfo: null,
       //modal
       visible: false,
-      fetchingClass: true,
       //skip:0,
       //snack
       open: false,
@@ -96,6 +96,52 @@ class AllStudents extends React.Component {
     };
     this.myRef = React.createRef();
   }
+  handleCancel = () => {
+    this.setState({ visible: false });
+  };
+  showDrawer = () => {
+    const state = this.state;
+    console.log("open drawer");
+
+    this.setState({
+      dvisible: true
+    });
+  };
+  onClose = () => {
+    this.setState({
+      dvisible: false
+    });
+  };
+  updateIndex = ({ i, obj }) => {
+    this.setState(prevState => {
+      let users = [...prevState.users];
+      users[i] = { ...obj, addedBy: users[i].addedBy, i };
+      console.log("new user", users[i]);
+      return {
+        users: users,
+        currentInfo: users[i]
+      };
+    });
+  };
+  removeIndex = (i, data) => {
+    this.setState(prevState => {
+      let courses = [...prevState.users];
+      console.log("Before Deleting", courses);
+      courses.splice(i, 1);
+      let total = prevState.totalDocs;
+      total--;
+      console.log("After Deleting", total);
+      return {
+        users: courses,
+        totalDocs: total
+      };
+    });
+    this.onClose();
+    this._snack({
+      type: data.success ? "success" : "warning",
+      msg: data.message
+    });
+  };
   _fetchUsers = () => {
     let state = this.state;
     let data = {
@@ -105,7 +151,7 @@ class AllStudents extends React.Component {
     };
     const FetchAsync = async () =>
       await (await fetch(
-        `${globals.BASE_URL}/api/${this.props.global.user.role}/all_instructors`,
+        `${globals.BASE_URL}/api/${this.props.global.user.role}/all_schools`,
         {
           method: "post",
           mode: "cors", // no-cors, cors, *same-origin
@@ -168,61 +214,6 @@ class AllStudents extends React.Component {
           }.bind(this),
           6000 * 9999
         );
-      });
-  };
-  _fetchClass = id => {
-    let data = {
-      _id: id
-    };
-
-    console.log("Received", id);
-    let promise = new Promise(async (resolve, reject) => {
-      let fetchClass = await (await fetch(
-        `${globals.BASE_URL}/api/${this.props.global.user.role}/fetch_instructor_class`,
-        {
-          method: "post",
-          mode: "cors", // no-cors, cors, *same-origin
-          cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
-          credentials: "same-origin", // include, *same-origin, omit
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: this.props.global.token
-            // "Content-Type": "application/x-www-form-urlencoded",
-          },
-          redirect: "follow", // manual, *follow, error
-          referrer: "no-referrer", // no-referrer, *client
-          body: JSON.stringify(data)
-        }
-      )).json();
-      resolve(fetchClass);
-    });
-    return promise
-      .then(data => {
-        if (data.success) {
-          console.log("[Returned Classes]", data._class);
-
-          return data._class;
-        } else {
-          this._snack({ type: "warning", msg: data.message });
-        }
-        console.log(data);
-        return data;
-      })
-
-      .catch(error => {
-        console.log(error);
-        if (error == "TypeError: Failed to fetch") {
-          this.setState({
-            serverRes: "Failed to contact server!"
-          });
-        } else if (error.message == "Network request failed") {
-          // alert('No internet connection')
-          this.setState({
-            serverRes: "Network request failed"
-          });
-        }
-
-        console.log(error);
       });
   };
   _handlePrevious = () => {
@@ -289,18 +280,10 @@ class AllStudents extends React.Component {
     }
   };
   //Ant Modal
-  showDrawer = () => {
-    const state = this.state;
-    //  console.log("open drawer");
 
-    this.setState({
-      dvisible: true
-    });
-  };
-  onClose = () => {
-    this.setState({
-      dvisible: false
-    });
+  showModal = () => {
+    console.log("show Modal");
+    this.setState({ visible: true });
   };
 
   handleCancel = () => {
@@ -318,15 +301,15 @@ class AllStudents extends React.Component {
       console.log("Received values of form: ", values);
 
       let data = {
-        _id: instructor._id,
+        _id: school._id,
         fname: values.fname,
         lname: values.lname,
-        instructor: values.instructor
+        school: values.school
       };
       this.setState({ updating: true });
       const SaveAsync = async () =>
         await (await fetch(
-          `${globals.BASE_URL}/api/${this.props.global.user.role}/instructor_save_info`,
+          `${globals.BASE_URL}/api/${this.props.global.user.role}/school_save_info`,
           {
             method: "PATCH",
             mode: "cors", // no-cors, cors, *same-origin
@@ -361,11 +344,11 @@ class AllStudents extends React.Component {
           );
 
           if (data.success) {
-            console.log("[newInstructor]", data.instructor);
+            console.log("[newSchool]", data.school);
 
             this.setState(prevState => {
               let users = [...prevState.users];
-              users[instructor.index] = data.instructor;
+              users[school.index] = data.school;
               return {
                 visible: false,
                 users: users
@@ -406,36 +389,7 @@ class AllStudents extends React.Component {
     this.formRef = formRef;
     console.log("save ref", formRef);
   };
-  updateIndex = ({ i, obj }) => {
-    this.setState(prevState => {
-      let users = [...prevState.users];
-      users[i] = { ...obj, addedBy: users[i].addedBy, i };
-      // console.log("new user", users[i]);
-      return {
-        users: users,
-        currentInfo: users[i]
-      };
-    });
-  };
-  removeIndex = (i, data) => {
-    this.setState(prevState => {
-      let courses = [...prevState.users];
-      //console.log("Before Deleting", courses);
-      courses.splice(i, 1);
-      let total = prevState.totalDocs;
-      total--;
-      console.log("After Deleting", total);
-      return {
-        users: courses,
-        totalDocs: total
-      };
-    });
-    this.onClose();
-    this._snack({
-      type: data.success ? "success" : "warning",
-      msg: data.message
-    });
-  };
+
   componentDidMount = () => {
     this._fetchUsers();
     this._snack();
@@ -466,19 +420,26 @@ class AllStudents extends React.Component {
           closeNotification={() => this.setState({ open: false })}
           close
         />
-
         <CustomDrawer
           visible={this.state.dvisible}
           onClose={this.onClose}
           info={this.state.currentInfo}
-          loading={this.state.fetchClass}
           infoCopy={this.state.currentInfo}
           onUpdateIndex={this.updateIndex}
           onRemoveIndex={this.removeIndex}
         />
+
+        <CollectionCreateForm
+          updating={this.state.updating}
+          _snack={this._snack}
+          ref={this.saveFormRef}
+          visible={this.state.visible}
+          onCancel={this.handleCancel}
+          onSave={this.handleSave}
+        />
         <GridContainer>
           <GridItem xs={12} sm={12} md={12}>
-            <Card title="All Instructors" style={{ width: "100%" }}>
+            <Card title="All Schools" style={{ width: "100%" }}>
               <GridContainer>
                 <GridItem xs={12} sm={12} md={12}>
                   <div style={{ width: "15rem", float: "right" }}>
@@ -513,10 +474,7 @@ class AllStudents extends React.Component {
                       <MDBTableHead>
                         <tr>
                           <th>No.</th>
-                          <th>First Name</th>
-                          <th>Last Name</th>
-                          <th>Email </th>
-                          <th> Phone Number</th>
+                          <th>Name</th>
                           <th>County</th>
                           <th>Sub County</th>
                           <th
@@ -525,39 +483,25 @@ class AllStudents extends React.Component {
                         </tr>
                       </MDBTableHead>
                       <MDBTableBody>
-                        {state.users.map((instructor, i) => (
+                        {state.users.map((school, i) => (
                           <tr
-                            key={instructor._id}
+                            key={school._id}
                             // onClick={() => {
                             //   this.props.history.push({
-                            //     pathname: `/${this.props.global.user.role}/instructors/single`,
+                            //     pathname: `/${this.props.global.user.role}/schools/single`,
                             //     data: user
                             //   });
                             // }}
                             style={{ cursor: "pointer" }}
                           >
-                            <td>{i + 1}</td>{" "}
-                            <td>{capitalize(instructor.fname)}</td>
-                            <td>{capitalize(instructor.lname)}</td>
-                            <td>{instructor.email}</td>
-                            <td>
-                              {instructor.phone_number
-                                ? instructor.phone_number.main
-                                : ""}
-                            </td>
-                            <td>{capitalize(instructor.county)}</td>
-                            <td>{capitalize(instructor.sub_county)}</td>
+                            <td>{i + 1}</td> <td>{unKebab(school.name)}</td>
+                            <td>{capitalize(school.county)}</td>
+                            <td>{capitalize(school.sub_county)}</td>
                             <td
-                              onClick={async () => {
-                                this.showDrawer();
-                                let gotclasses = await this._fetchClass(
-                                  instructor._id
-                                );
-                                console.log("Got Classes", gotclasses);
-                                let current = { ...instructor, i, gotclasses };
-                                this.setState({
-                                  currentInfo: current,
-                                  fetchClass: false
+                              onClick={() => {
+                                let currentInfo = { ...school, i };
+                                this.setState({ currentInfo }, () => {
+                                  this.showDrawer();
                                 });
                               }}
                               style={{
@@ -578,7 +522,7 @@ class AllStudents extends React.Component {
                         {" "}
                         {state.query
                           ? `No records found matching \" ${state.query}\"`
-                          : "No instructors yet"}
+                          : "No schools yet"}
                       </p>{" "}
                     </div>
                   )}
@@ -620,7 +564,7 @@ class AllStudents extends React.Component {
     );
   };
 }
-let instructor = {};
+let school = {};
 
 export default withGlobalContext(withStyles(styles)(AllStudents));
 
@@ -630,11 +574,11 @@ const CollectionCreateForm = Form.create({ name: "form_in_modal" })(
   withGlobalContext(
     // eslint-disable-next-line
     class extends React.Component {
-      state = { loading: false, edit: false };
-      _fetchInstructors = () => {
+      state = { loading: true, edit: false };
+      _fetchSchools = () => {
         const FetchAsync = async () =>
           await (await fetch(
-            `${globals.BASE_URL}/api/${this.props.global.user.role}/fetch_instructors`,
+            `${globals.BASE_URL}/api/${this.props.global.user.role}/fetch_schools`,
             {
               method: "post",
               mode: "cors", // no-cors, cors, *same-origin
@@ -655,12 +599,12 @@ const CollectionCreateForm = Form.create({ name: "form_in_modal" })(
           .then(data => {
             //this.setState({currentPlace:data.results})
             if (data.success) {
-              let instructors = data.instructors.map(each => {
+              let schools = data.schools.map(each => {
                 return { value: each._id, label: unKebab(each.name).join(" ") };
               });
-              console.log("mapped instructors", instructors);
+              console.log("mapped schools", schools);
               this.setState({
-                instructors: instructors,
+                schools: schools,
                 loading: false
               });
             } else {
@@ -685,7 +629,7 @@ const CollectionCreateForm = Form.create({ name: "form_in_modal" })(
         console.log(`selected ${value}`);
       };
       componentDidMount = () => {
-        // this._fetchInstructors();
+        this._fetchSchools();
       };
       render() {
         const state = this.state;
@@ -697,7 +641,7 @@ const CollectionCreateForm = Form.create({ name: "form_in_modal" })(
         return (
           <Modal
             visible={visible}
-            title="Instructor details"
+            title="School details"
             okText="Change"
             onCancel={onCancel}
             onOk={onSave}
@@ -753,7 +697,7 @@ const CollectionCreateForm = Form.create({ name: "form_in_modal" })(
             <Form layout="vertical">
               <Form.Item label="First Name">
                 {getFieldDecorator("fname", {
-                  initialValue: instructor.fname,
+                  initialValue: school.fname,
                   rules: [
                     {
                       required: true,
@@ -764,7 +708,7 @@ const CollectionCreateForm = Form.create({ name: "form_in_modal" })(
               </Form.Item>
               <Form.Item label="Last Name">
                 {getFieldDecorator("lname", {
-                  initialValue: instructor.lname,
+                  initialValue: school.lname,
                   rules: [
                     {
                       required: true,
@@ -772,6 +716,32 @@ const CollectionCreateForm = Form.create({ name: "form_in_modal" })(
                     }
                   ]
                 })(<Input />)}
+              </Form.Item>
+
+              <Form.Item label="Learning Venue/ School">
+                {getFieldDecorator("school", {
+                  initialValue: school.school,
+                  rules: [
+                    {
+                      type: "string",
+                      required: true,
+                      message: "Please select school/venue!"
+                    }
+                  ]
+                })(
+                  <Select
+                    style={{ width: "100%" }}
+                    onChange={this.handleChange}
+                  >
+                    {state.schools.map(each => {
+                      return (
+                        <Option key={each.value} value={each.value}>
+                          {each.label}
+                        </Option>
+                      );
+                    })}
+                  </Select>
+                )}
               </Form.Item>
             </Form>
           </Modal>
@@ -783,7 +753,7 @@ const CollectionCreateForm = Form.create({ name: "form_in_modal" })(
 
 const center = {
   position: "absolute",
-  left: "50%",
+  left: "58.3%",
   top: "50%",
   "-webkit-transform": "translate(-50%, -50%)",
   transform: "translate(-50%, -50%)"

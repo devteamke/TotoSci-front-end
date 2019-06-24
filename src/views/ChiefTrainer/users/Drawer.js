@@ -15,10 +15,12 @@ import {
   Radio,
   Menu,
   Dropdown,
-  Modal
+  Modal,
+  Table
 } from "antd";
 
 import { withGlobalContext } from "../../../context/Provider";
+import moment from "moment";
 import globals from "../../../constants/Globals";
 const { Option } = Select;
 const antIcon = <Icon type="loading" style={{ fontSize: 24 }} spin />;
@@ -35,7 +37,10 @@ class CustomDrawer extends React.Component {
       editing: false,
       loading: true,
       infoCopy: null,
-      schools: []
+      schools: [],
+      //Instructor modal
+      selectedRowKeys: [],
+      modalInstrucors: []
     };
   }
   _handleEdit = () => {
@@ -64,85 +69,89 @@ class CustomDrawer extends React.Component {
       okType: "danger",
       cancelText: "No",
       onOk() {
-        console.log("Info  On delete", info.i);
-        let data = { role: info.role, _id: info._id };
-        if (info.role == "chief-trainer") {
-          act.props._snack({
-            type: "warning",
-            msg: "Not permitted for the operation"
-          });
-          return;
-        }
-        act.setState({ updating: true });
-        const deleteAsync = async () =>
-          await (await fetch(
-            `${globals.BASE_URL}/api/${act.props.global.user.role}/remove_user`,
-            {
-              method: "DELETE",
-              mode: "cors", // no-cors, cors, *same-origin
-              cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
-              credentials: "same-origin", // include, *same-origin, omit
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: act.props.global.token,
-                "Access-Control-Allow-Origin": `${globals.BASE_URL}`
-                // "Content-Type": "application/x-www-form-urlencoded",
-              },
-              redirect: "follow", // manual, *follow, error
-              referrer: "no-referrer", // no-referrer, *client
-              body: JSON.stringify(data)
-            }
-          )).json();
-
-        deleteAsync()
-          .then(data => {
-            //this.setState({currentPlace:data.results})
-            act.setState({
-              open: true,
-              updating: false,
-              serverRes: data.message,
-              resType: data.success ? "success" : "warning"
+        return new Promise((resolve, reject) => {
+          console.log("Info  On delete", info.i);
+          let data = { role: info.role, _id: info._id };
+          if (info.role == "chief-trainer") {
+            act.props._snack({
+              type: "warning",
+              msg: "Not permitted for the operation"
             });
-            setTimeout(
-              function() {
-                act.setState({ open: false, updating: false });
-              }.bind(act),
-              9000
-            );
+            return;
+          }
+          act.setState({ updating: true });
+          const deleteAsync = async () =>
+            await (await fetch(
+              `${globals.BASE_URL}/api/${act.props.global.user.role}/remove_user`,
+              {
+                method: "DELETE",
+                mode: "cors", // no-cors, cors, *same-origin
+                cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
+                credentials: "same-origin", // include, *same-origin, omit
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: act.props.global.token,
+                  "Access-Control-Allow-Origin": `${globals.BASE_URL}`
+                  // "Content-Type": "application/x-www-form-urlencoded",
+                },
+                redirect: "follow", // manual, *follow, error
+                referrer: "no-referrer", // no-referrer, *client
+                body: JSON.stringify(data)
+              }
+            )).json();
 
-            if (data.success) {
-              console.log("[Course removed]", data);
-
-              act.props.onRemoveIndex(info.i, data);
-            } else {
-            }
-          })
-          .catch(error => {
-            console.log("Got error", error);
-            if (error == "TypeError: Failed to fetch") {
-              //   alert('Server is offline')
-              this.setState({
-                serverRes: "Failed to contact server!"
+          deleteAsync()
+            .then(data => {
+              //this.setState({currentPlace:data.results})
+              act.setState({
+                open: true,
+                updating: false,
+                serverRes: data.message,
+                resType: data.success ? "success" : "warning"
               });
-            } else if (error.message == "Network request failed") {
-              // alert('No internet connection')
-              this.setState({
-                serverRes: "Network request failed"
-              });
-            }
+              setTimeout(
+                function() {
+                  act.setState({ open: false, updating: false });
+                }.bind(act),
+                9000
+              );
 
-            act.setState({
-              open: true,
-              savingInfo: false,
-              resType: data.success ? "success" : "warning"
+              if (data.success) {
+                console.log("[Course removed]", data);
+
+                act.props.onRemoveIndex(info.i, data);
+                resolve();
+              } else {
+              }
+            })
+            .catch(error => {
+              console.log("Got error", error);
+              if (error == "TypeError: Failed to fetch") {
+                //   alert('Server is offline')
+                this.setState({
+                  serverRes: "Failed to contact server!"
+                });
+              } else if (error.message == "Network request failed") {
+                // alert('No internet connection')
+                this.setState({
+                  serverRes: "Network request failed"
+                });
+              }
+
+              act.setState({
+                open: true,
+                savingInfo: false,
+                resType: data.success ? "success" : "warning"
+              });
+              reject();
+              setTimeout(
+                function() {
+                  act.setState({ open: false });
+                }.bind(act),
+                9000
+              );
             });
-            setTimeout(
-              function() {
-                act.setState({ open: false });
-              }.bind(act),
-              9000
-            );
-          });
+        });
       },
 
       onCancel() {
@@ -253,7 +262,153 @@ class CustomDrawer extends React.Component {
         });
     });
   };
+  handleAssign = () => {};
+  onSelectChange = (selectedRowKeys, selectedRows) => {
+    console.log(
+      `selectedRowKeys: ${selectedRowKeys}`,
+      "selectedRows: ",
+      selectedRows
+    );
+    this.setState({ selectedRowKeys, selectedRows });
+  };
+  //Assign Modals
+  showAssignModal = () => {
+    this.setState({
+      assignModal: true,
+      loadingInstructors: true
+    });
+    this._fetchInstructors();
+  };
+  handleAssignOk = e => {
+    const state = this.state;
+    console.log(e);
+    this.setState({
+      assigningInstructors: true
+    });
+    console.log("selectedStudents", state.selectedRows);
+    this._addSelectedInstructors();
+  };
+  _addSelectedInstructors = () => {
+    const FetchAsync = async () =>
+      await (await fetch(
+        `${globals.BASE_URL}/api/${this.props.global.user.role}/assign_instructor_to_trainer`,
+        {
+          method: "post",
+          mode: "cors", // no-cors, cors, *same-origin
+          cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
+          credentials: "same-origin", // include, *same-origin, omit
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: this.props.global.token
+            // "Content-Type": "application/x-www-form-urlencoded",
+          },
+          redirect: "follow", // manual, *follow, error
+          referrer: "no-referrer", // no-referrer, *client
+          body: JSON.stringify({
+            instructors: this.state.selectedRows,
+            trainer: this.props.info._id
+          })
+        }
+      )).json();
 
+    FetchAsync()
+      .then(data => {
+        if (data.success) {
+          this._snack({
+            type: data.success ? "success" : "warning",
+            msg: data.message
+          });
+          console.log("[new data]", data);
+          let _class = {
+            ...this.state._class,
+            instructors: data.newClass.instructors
+          };
+          this.setState({
+            selectedRowsI: [],
+            assignModal: false,
+            assigningInstructors: false,
+            _class,
+            instructors: data.instructors,
+            reloadingI: true
+          });
+        } else {
+        }
+      })
+      .catch(error => {
+        console.log(error);
+        if (error == "TypeError: Failed to fetch") {
+          //   alert('Server is offline')
+        } else if (error.message == "Network request failed") {
+          // alert('No internet connection')
+          this.setState({
+            serverRes: "Network request failed"
+          });
+        }
+        this.setState({ addingStudents: false });
+        this._snack({ type: "warning", msg: error.toString() });
+
+        console.log(error);
+      });
+  };
+  handleAssignCancel = e => {
+    console.log(e);
+
+    console.log();
+    this.setState({
+      assignModal: false
+    });
+  };
+  _fetchInstructors = (inClass = false) => {
+    const FetchAsync = async () =>
+      await (await fetch(
+        `${globals.BASE_URL}/api/${this.props.global.user.role}/fetch_${
+          inClass ? "class_" : ""
+        }instructors`,
+        {
+          method: "post",
+          mode: "cors", // no-cors, cors, *same-origin
+          cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
+          credentials: "same-origin", // include, *same-origin, omit
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: this.props.global.token
+            // "Content-Type": "application/x-www-form-urlencoded",
+          },
+          redirect: "follow", // manual, *follow, error
+          referrer: "no-referrer", // no-referrer, *client
+          body: JSON.stringify({ trainer: this.props.info._id })
+        }
+      )).json();
+
+    FetchAsync()
+      .then(data => {
+        if (data.success) {
+          if (!inClass) {
+            this.setState({
+              modalInstrucors: data.instructors,
+              loadingInstructors: false
+            });
+          } else {
+            this.setState({ instructors: data.instructors });
+          }
+        } else {
+        }
+      })
+      .catch(error => {
+        console.log(error);
+        if (error == "TypeError: Failed to fetch") {
+          //   alert('Server is offline')
+        } else if (error.message == "Network request failed") {
+          // alert('No internet connection')
+          this.setState({
+            serverRes: "Network request failed"
+          });
+        }
+        this._snack({ type: "warning", msg: error.toString() });
+
+        console.log(error);
+      });
+  };
   componentDidMount = () => {
     //this._fetchSchools();
   };
@@ -267,6 +422,12 @@ class CustomDrawer extends React.Component {
     console.log("info copy", props.info);
     const { form } = this.props;
     const { getFieldDecorator } = form;
+    const { selectedRowKeys } = this.state;
+
+    const rowSelection = {
+      selectedRowKeys,
+      onChange: this.onSelectChange
+    };
     if (!props.info) {
       return <> </>;
     }
@@ -275,6 +436,11 @@ class CustomDrawer extends React.Component {
         <Menu.Item style={{ height: "30px" }} onClick={this._handleEdit}>
           <Icon style={{ fontSize: 15 }} type={"edit"} /> Edit
         </Menu.Item>
+        {info.role == "trainer" ? (
+          <Menu.Item style={{ height: "30px" }} onClick={this.showAssignModal}>
+            Assign Instructor
+          </Menu.Item>
+        ) : null}
         <Menu.Item style={{ height: "30px" }} onClick={this.showDeleteConfirm}>
           <Icon style={{ fontSize: 15 }} type={"delete"} /> Delete
         </Menu.Item>
@@ -292,6 +458,48 @@ class CustomDrawer extends React.Component {
           });
         }}
       >
+        {/*Instructor assign modal*/}
+        <Modal
+          title="Assign Instructors"
+          visible={this.state.assignModal}
+          onOk={this.handleAssignOk}
+          onCancel={this.handleAssignCancel}
+          footer={[
+            <>
+              <Button
+                form="myForm"
+                key="submit"
+                htmlType="submit"
+                onClick={this.handleAssignCancel}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="primary"
+                htmlType="submit"
+                onClick={this.handleAssignOk}
+                loading={state.assigningInstructors}
+                disabled={!(state.selectedRowKeys.length > 0)}
+              >
+                Assign instructor(s)
+              </Button>
+            </>
+          ]}
+        >
+          {this.state.loadingInstructors ? (
+            <div className="text-center">
+              {" "}
+              <Spin indicator={antIcon} />{" "}
+            </div>
+          ) : (
+            <Table
+              size="small"
+              rowSelection={rowSelection}
+              columns={columns}
+              dataSource={state.modalInstrucors}
+            />
+          )}
+        </Modal>
         <div style={{ display: "block", width: "100%  " }}>
           <p
             style={{
@@ -328,6 +536,22 @@ class CustomDrawer extends React.Component {
                 <DescriptionItem
                   title="Status"
                   content={capitalize(info.status)}
+                />{" "}
+              </Col>
+            </Row>
+            <Row>
+              <Col span={12}>
+                <DescriptionItem
+                  title="Gender"
+                  content={capitalize(info.gender)}
+                />{" "}
+              </Col>
+              <Col span={12}>
+                <DescriptionItem
+                  title="Date of birth"
+                  content={
+                    info.DOB ? moment(info.DOB).format("DD/MM/YYYY") : "NA"
+                  }
                 />{" "}
               </Col>
             </Row>
@@ -537,7 +761,10 @@ const unKebab = string => {
 const capitalize = str => {
   if (str) {
     str = str.charAt(0).toUpperCase() + str.slice(1);
+  } else {
+    str = "NA";
   }
+
   return str;
 };
 
@@ -563,3 +790,13 @@ const DescriptionItem = ({ title, content }) => (
     {content}
   </div>
 );
+const columns = [
+  {
+    title: "First Name",
+    dataIndex: "fname"
+  },
+  {
+    title: "Last Name",
+    dataIndex: "lname"
+  }
+];

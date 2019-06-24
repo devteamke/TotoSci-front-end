@@ -660,7 +660,17 @@ class AddUser extends React.Component {
                           </Form.Item>
                           {state.searching ? (
                             <div className="text-center">
-                              <Spin indicator={antIcon} />
+                              <div
+                                className="spinner-grow text-info"
+                                role="status"
+                                style={{
+                                  marginBottom: "15px",
+                                  marginLeft: "9rem",
+                                  marginTop: "1.1rem"
+                                }}
+                              >
+                                <span className="sr-only">Loading...</span>
+                              </div>
                             </div>
                           ) : state.searchStr && state.plength == 0 ? (
                             <div

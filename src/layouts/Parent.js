@@ -1,25 +1,13 @@
 import React from "react";
-import {
-  Layout,
-  Menu,
-  Breadcrumb,
-  Icon,
-  Modal,
-  Button,
-  Avatar,
-  Tabs,
-  Badge,
-  Divider
-} from "antd";
+import { Layout, Menu, Breadcrumb, Icon, Modal, Button } from "antd";
 import { Link, withRouter } from "react-router-dom";
 import { withGlobalContext } from "../context/Provider";
 import { Switch, Route, Redirect } from "react-router-dom";
-import routes from "../routes/chiefRoutes";
-import "./layouts.css";
+import routes from "../routes/parentRoutes";
 const { Header, Content, Footer, Sider } = Layout;
 const { SubMenu } = Menu;
 const confirm = Modal.confirm;
-const { TabPane } = Tabs;
+
 let mainRoutes;
 class Slider extends React.Component {
   constructor(props) {
@@ -43,7 +31,7 @@ class Slider extends React.Component {
       return main;
     });
 
-    console.log("mapped Routes", mainRoutes);
+    // console.log("mapped Routes", mainRoutes);
 
     this.state = {
       collapsed: false
@@ -62,6 +50,7 @@ class Slider extends React.Component {
     });
     this.props.global.onLogout();
   };
+
   showDeleteConfirm = () => {
     confirm({
       title: "Are you sure you want to logout?",
@@ -75,19 +64,7 @@ class Slider extends React.Component {
       }
     });
   };
-  toggle = () => {
-    this.setState({
-      collapsed: !this.state.collapsed
-    });
-  };
-  collapseOnClick = () => {
-    if (this.state.broken) {
-      this.setState({ collapsed: true });
-    }
-  };
-  callback = key => {
-    console.log(key);
-  };
+
   componentDidMount = () => {
     console.log(
       "current route: ",
@@ -98,41 +75,26 @@ class Slider extends React.Component {
       routes[0].path
     );
   };
-  // to stop the warning of calling setState of unmounted component
-  componentWillUnmount() {
-    var id = window.setTimeout(null, 0);
-    while (id--) {
-      window.clearTimeout(id);
-    }
-  }
   render() {
     const role = this.props.global.user.role;
     return (
       <Layout style={{ minHeight: "100vh" }}>
         <Sider
-          collapsible
           theme="dark"
           breakpoint="lg"
           collapsedWidth="0"
           onBreakpoint={broken => {
-            this.setState({ broken });
+            console.log(broken);
           }}
-          collapsed={this.state.collapsed}
-          style={{
-            boxShadow: this.state.collapsed
-              ? ""
-              : "5px 0 5px -5px rgba(0,0,0,0.5)"
-          }}
+          style={{ boxShadow: "5px 0 5px -5px rgba(0,0,0,0.5)" }}
           onCollapse={(collapsed, type) => {
             console.log(collapsed, type);
-            this.setState({ collapsed });
           }}
-          trigger={null}
         >
           <div
             className="logo"
             style={{
-              height: this.state.collapsed ? "4.3rem" : "6.3rem",
+              height: "6.3rem",
               padding: "1.3rem",
               backgroundColor: "#fff"
             }}
@@ -141,34 +103,29 @@ class Slider extends React.Component {
               src={require("../assets/img/totosci.png")}
               style={{ height: "36px" }}
             />
-            {this.state.collapsed ? null : (
-              <p
-                style={{
-                  fontSize: "1.2rem",
-                  fontWeight: 500,
-                  textAlign: "center",
-                  marginTop: "0.4rem"
-                }}
-              >
-                {capitalize(role)}
-              </p>
-            )}
+            <p
+              style={{
+                fontSize: "1.2rem",
+                fontWeight: 500,
+                textAlign: "center",
+                marginTop: "0.4rem"
+              }}
+            >
+              {capitalize(role)}
+            </p>
           </div>
           <Menu
             theme="dark"
             mode="inline"
             selectedKeys={[this.props.location.pathname]}
-            style={{ borderRight: 0 }}
+            style={{ height: "100%", borderRight: 0 }}
           >
             {mainRoutes.map(main => {
               if (main.child.length == 0) {
                 return (
-                  <Menu.Item
-                    onClick={this.collapseOnClick}
-                    key={`${main.layout}${main.path}`}
-                  >
+                  <Menu.Item key={`${main.layout}${main.path}`}>
                     <Link to={`${main.layout}${main.path}`}>
-                      <Icon type="dashboard" />
+                      <Icon type={main.icon} />
                       <span className="nav-text">{main.name}</span>
                     </Link>
                   </Menu.Item>
@@ -176,10 +133,7 @@ class Slider extends React.Component {
               } else {
                 let items = main.child.map(child => {
                   return (
-                    <Menu.Item
-                      onClick={this.collapseOnClick}
-                      key={`${child.layout}${child.path}`}
-                    >
+                    <Menu.Item key={`${child.layout}${child.path}`}>
                       <Link to={`${child.layout}${child.path}`}>
                         {child.name}
                       </Link>
@@ -187,10 +141,7 @@ class Slider extends React.Component {
                   );
                 });
                 items.unshift(
-                  <Menu.Item
-                    onClick={this.collapseOnClick}
-                    key={`${main.layout}${main.path}`}
-                  >
+                  <Menu.Item key={`${main.layout}${main.path}`}>
                     <Link to={`${main.layout}${main.path}`}>
                       <span className="nav-text">{main.sub}</span>
                     </Link>
@@ -233,31 +184,15 @@ class Slider extends React.Component {
               mode="horizontal"
               style={{ borderBottom: "0" }}
             >
-              {this.state.broken ? (
-                <Menu.Item key="sider i" onClick={this.toggle}>
-                  <Icon
-                    className="trigger"
-                    type={this.state.collapsed ? "menu-unfold" : "menu-fold"}
-                    onClick={this.toggle}
-                    style={{ fontSize: 24 }}
-                  />
-                </Menu.Item>
-              ) : null}
-
               <SubMenu
                 style={{ float: "right" }}
                 title={
                   <span className="submenu-title-wrapper">
-                    <Avatar
-                      size={15}
-                      style={{
-                        backgroundColor: "#00a2ae",
-                        verticalAlign: "middle"
-                      }}
-                      size="large"
-                    >
-                      {this.props.global.user.fname.charAt(0).toUpperCase()}
-                    </Avatar>
+                    <Icon
+                      type="setting"
+                      theme="filled"
+                      style={{ fontSize: 26 }}
+                    />
                   </span>
                 }
               >
@@ -285,63 +220,17 @@ class Slider extends React.Component {
                   />
                 </Menu.Item>
               </SubMenu>
-              <SubMenu
-                style={{ float: "right" }}
-                title={
-                  <span className="submenu-title-wrapper">
-                    <Badge count={5}>
-                      <Icon type="bell" style={{ fontSize: 24 }} />
-                    </Badge>
-                  </span>
-                }
-              >
-                <Tabs defaultActiveKey="1" onChange={this.callback}>
-                  <TabPane tab="Approval Requests" key="1">
-                    <div className="text-center">
-                      <img
-                        src="https://gw.alipayobjects.com/zos/rmsportal/sAuJeJzSKbUmHfBQRzmZ.svg"
-                        alt="not found"
-                      />
-                      <p>You have no new requests</p>
-                    </div>
-                  </TabPane>
-                  <TabPane tab="Feedback" key="2">
-                    <div className="text-center">
-                      <img
-                        src="https://gw.alipayobjects.com/zos/rmsportal/sAuJeJzSKbUmHfBQRzmZ.svg"
-                        alt="not found"
-                      />
-                      <p>You have no new messages</p>
-                    </div>
-                  </TabPane>
-                </Tabs>
-
-                <Divider style={{ margin: 0 }} />
-
-                <Menu.Item
-                  key="i2"
-                  onClick={() => {
-                    this.props.history.push({
-                      pathname: `/${role}/notifications`
-                    });
-                  }}
-                >
-                  <p style={{ textAlign: "center" }}>View all notifications</p>
-                </Menu.Item>
-              </SubMenu>
             </Menu>
           </Header>
           <Content style={{ margin: "24px 16px 0" }}>
             <Switch>
               {routes.map((prop, key) => {
-                if (prop.layout === "/chief-trainer") {
+                if (prop.layout === "/parent") {
                   return (
                     <Route
                       exact
                       path={prop.layout + prop.path}
-                      render={props => (
-                        <prop.component {...props} broken={this.state.broken} />
-                      )}
+                      component={prop.component}
                       key={key}
                     />
                   );

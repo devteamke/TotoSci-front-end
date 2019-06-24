@@ -111,6 +111,8 @@ class Dashboard extends React.Component {
             instructors_female: data.instructors_female,
             courses: data.courses,
             studentsRegistrations: data.studentsRegistrations.reverse(),
+            studentsRegistrationsM: data.studentsRegistrationsM.reverse(),
+            studentsRegistrationsF: data.studentsRegistrationsF.reverse(),
             loading: false
           });
         } else {
@@ -156,6 +158,20 @@ class Dashboard extends React.Component {
         data: state.studentsRegistrations
       }
     ];
+    let dataPre = [];
+    dataPre.push(state.studentsRegistrationsF);
+    const dataG = [
+      {
+        id: "Male",
+        color: "blue",
+        data: state.studentsRegistrationsM
+      },
+      {
+        id: "Female",
+        color: "green",
+        data: state.studentsRegistrationsF
+      }
+    ];
     if (state.loading) {
       return (
         <div style={center}>
@@ -166,7 +182,7 @@ class Dashboard extends React.Component {
     return (
       <div>
         <Row gutter={10}>
-          <Col xs={{ span: 12 }} md={{ span: 6 }}>
+          <Col xs={{ span: 24 }} md={{ span: 6 }}>
             <Card
               bordered={false}
               style={{ backgroundColor: "#1890ff", marginTop: "10px " }}
@@ -181,7 +197,7 @@ class Dashboard extends React.Component {
               </div>
             </Card>
           </Col>
-          <Col xs={{ span: 12 }} md={{ span: 6 }}>
+          <Col xs={{ span: 24 }} md={{ span: 6 }}>
             <Card
               bordered={false}
               style={{ backgroundColor: "#1890ff", marginTop: "10px " }}
@@ -192,11 +208,11 @@ class Dashboard extends React.Component {
               />
               <div style={{ float: "right" }}>
                 <h5 style={{ color: "#ffffff" }}>{state.trainers}</h5>
-                <p style={{ color: "#ffffff" }}>Trianers </p>
+                <p style={{ color: "#ffffff" }}>Trainers </p>
               </div>
             </Card>
           </Col>
-          <Col xs={{ span: 12 }} md={{ span: 6 }}>
+          <Col xs={{ span: 24 }} md={{ span: 6 }}>
             <Card
               bordered={false}
               style={{ backgroundColor: "#1890ff", marginTop: "10px " }}
@@ -211,7 +227,7 @@ class Dashboard extends React.Component {
               </div>
             </Card>
           </Col>{" "}
-          <Col xs={{ span: 12 }} md={{ span: 6 }}>
+          <Col xs={{ span: 24 }} md={{ span: 6 }}>
             <Card
               bordered={false}
               style={{ backgroundColor: "#1890ff", marginTop: "10px " }}
@@ -244,7 +260,7 @@ class Dashboard extends React.Component {
                     {
                       id: "male",
                       label: "Male",
-                      value: 10 || state.students_male,
+                      value: state.students_male,
                       color: "blue"
                     },
                     {
@@ -254,7 +270,7 @@ class Dashboard extends React.Component {
                       color: "green"
                     }
                   ]}
-                  margin={{ top: 40, right: 80, bottom: 80, left: 80 }}
+                  margin={{ top: 40, right: 10, bottom: 80, left: 10 }}
                   innerRadius={0.5}
                   padAngle={0.7}
                   cornerRadius={0}
@@ -333,7 +349,7 @@ class Dashboard extends React.Component {
                     {
                       id: "male",
                       label: "Male",
-                      value: 10 || state.trainers_male,
+                      value: state.trainers_male,
                       color: "blue"
                     },
                     {
@@ -343,7 +359,7 @@ class Dashboard extends React.Component {
                       color: "green"
                     }
                   ]}
-                  margin={{ top: 40, right: 80, bottom: 80, left: 80 }}
+                  margin={{ top: 40, right: 10, bottom: 80, left: 10 }}
                   innerRadius={0.5}
                   padAngle={0.7}
                   cornerRadius={0}
@@ -422,7 +438,7 @@ class Dashboard extends React.Component {
                     {
                       id: "male",
                       label: "Male",
-                      value: 10 || state.instructors_male,
+                      value: state.instructors_male,
                       color: "blue"
                     },
                     {
@@ -432,7 +448,7 @@ class Dashboard extends React.Component {
                       color: "green"
                     }
                   ]}
-                  margin={{ top: 40, right: 80, bottom: 80, left: 80 }}
+                  margin={{ top: 40, right: 10, bottom: 80, left: 10 }}
                   innerRadius={0.5}
                   padAngle={0.7}
                   cornerRadius={0}
@@ -511,12 +527,12 @@ class Dashboard extends React.Component {
               <h5 style={{ textAlign: "center" }}>
                 Students admissions in the past 6 months
               </h5>
-              <div style={{ height: "300px" }}>
+              <div style={{ height: "320px" }}>
                 {" "}
                 <ResponsiveLine
                   data={datax}
                   curve="cardinal"
-                  margin={{ top: 50, right: 110, bottom: 50, left: 60 }}
+                  margin={{ top: 50, right: 10, bottom: 80, left: 30 }}
                   xScale={{ type: "point" }}
                   yScale={{
                     type: "linear",
@@ -554,25 +570,20 @@ class Dashboard extends React.Component {
                   useMesh={true}
                   legends={[
                     {
-                      anchor: "bottom-right",
-                      direction: "column",
-                      justify: false,
-                      translateX: 100,
-                      translateY: 0,
-                      itemsSpacing: 0,
-                      itemDirection: "left-to-right",
-                      itemWidth: 80,
-                      itemHeight: 20,
-                      itemOpacity: 0.75,
-                      symbolSize: 12,
+                      anchor: "bottom",
+                      direction: "row",
+                      translateX: -50,
+                      translateY: 80,
+                      itemWidth: 100,
+                      itemHeight: 18,
+                      itemTextColor: "#999",
+                      symbolSize: 18,
                       symbolShape: "circle",
-                      symbolBorderColor: "rgba(0, 0, 0, .5)",
                       effects: [
                         {
                           on: "hover",
                           style: {
-                            itemBackground: "rgba(0, 0, 0, .03)",
-                            itemOpacity: 1
+                            itemTextColor: "#000"
                           }
                         }
                       ]
@@ -594,16 +605,16 @@ class Dashboard extends React.Component {
               <h5 style={{ textAlign: "center" }}>
                 Students admissions by gender comparison
               </h5>
-              <div style={{ height: "300px" }}>
+              <div style={{ height: "320px" }}>
                 {" "}
                 <ResponsiveLine
-                  data={data3}
+                  data={dataG}
                   curve="cardinal"
-                  margin={{ top: 50, right: 110, bottom: 50, left: 60 }}
+                  margin={{ top: 50, right: 10, bottom: 80, left: 30 }}
                   xScale={{ type: "point" }}
                   yScale={{
                     type: "linear",
-                    stacked: true,
+                    stacked: false,
                     min: "auto",
                     max: "auto"
                   }}
@@ -637,25 +648,20 @@ class Dashboard extends React.Component {
                   useMesh={true}
                   legends={[
                     {
-                      anchor: "bottom-right",
-                      direction: "column",
-                      justify: false,
-                      translateX: 100,
-                      translateY: 0,
-                      itemsSpacing: 0,
-                      itemDirection: "left-to-right",
-                      itemWidth: 80,
-                      itemHeight: 20,
-                      itemOpacity: 0.75,
-                      symbolSize: 12,
+                      anchor: "bottom",
+                      direction: "row",
+                      translateX: -50,
+                      translateY: 80,
+                      itemWidth: 100,
+                      itemHeight: 18,
+                      itemTextColor: "#999",
+                      symbolSize: 18,
                       symbolShape: "circle",
-                      symbolBorderColor: "rgba(0, 0, 0, .5)",
                       effects: [
                         {
                           on: "hover",
                           style: {
-                            itemBackground: "rgba(0, 0, 0, .03)",
-                            itemOpacity: 1
+                            itemTextColor: "#000"
                           }
                         }
                       ]

@@ -1,12 +1,11 @@
 import React from "react";
 // @material-ui/core components
 import withStyles from "@material-ui/core/styles/withStyles";
-import InputLabel from "@material-ui/core/InputLabel";
+
 // core components
 import Snackbar from "../../../components/dcomponents/Snackbar/Snackbar.jsx";
 import GridItem from "../../../components/dcomponents/Grid/GridItem.jsx";
 import GridContainer from "../../../components/dcomponents/Grid/GridContainer.jsx";
-import CustomInput from "../../../components/dcomponents/CustomInput/CustomInput.jsx";
 
 import { MDBBtn, MDBInput } from "mdbreact";
 import avatar from "../../../assets/img/faces/marc.jpg";
@@ -16,7 +15,7 @@ import globals from "../../../constants/Globals";
 import AddAlert from "@material-ui/icons/AddAlert";
 import { withGlobalContext } from "../../../context/Provider";
 //Form components
-import InstructorForm from "./forms/Instructor";
+
 import validate from "./validation";
 //antd
 import {
@@ -33,15 +32,11 @@ import {
   AutoComplete,
   Card,
   Radio,
-  Spin,
-  DatePicker
+  InputNumber,
+  Spin
 } from "antd";
-import moment from "moment";
-const { MonthPicker, RangePicker } = DatePicker;
 const antIcon = <Icon type="loading" style={{ fontSize: 24 }} spin />;
 const antIconLarge = <Icon type="loading" style={{ fontSize: 40 }} spin />;
-const { Option } = Select;
-
 const styles = {
   cardCategoryWhite: {
     color: "rgba(255,255,255,.62)",
@@ -61,13 +56,19 @@ const styles = {
   }
 };
 
-class AddUser extends React.Component {
+class Add extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      loading: false,
+      //form fields
+      name: "",
+      nameError: null,
+      county: "",
+      countyError: null,
+      sub_county: "",
+      sub_countyError: null,
       //other
-      addingUser: false,
+      adding: false,
       open: false,
       place: "bc",
       resType: "warning"
@@ -100,29 +101,28 @@ class AddUser extends React.Component {
     }
   };
 
+  handleChange = event => {
+    console.log("value", event.target.value);
+    this.setState({ [event.target.name]: event.target.value });
+  };
+
   handleSubmit = e => {
     e.preventDefault();
-    const state = this.state;
-
+    let state = this.state;
     this.props.form.validateFieldsAndScroll((err, values) => {
       if (!err) {
         console.log("Received values of form: ", values);
-        this.setState({ registering: true });
+        this.setState({ adding: true });
         let data = {
-          role: "instructor",
-          email: values.email,
-          gender: values.gender,
-          DOB: values.dob,
-          fname: values.fname,
-          lname: values.lname,
-          school: values.school,
-          phone_number: { main: values.phone, alt: "" }
+          name: values.name,
+          county: values.county,
+          sub_county: values.sub_county
         };
         console.log(data);
-        this.setState({ registering: true });
+        this.setState({ adding: true });
         const AddAsync = async () =>
           await (await fetch(
-            `${globals.BASE_URL}/api/${this.props.global.user.role}/register`,
+            `${globals.BASE_URL}/api/${this.props.global.user.role}/new_school`,
             {
               method: "post",
               mode: "cors", // no-cors, cors, *same-origin
@@ -149,12 +149,19 @@ class AddUser extends React.Component {
             if (data.success) {
               this.props.form.resetFields();
               this.setState({
-                registering: false,
-                serverRes: data.message
+                adding: false,
+                serverRes: data.message,
+                //form fields
+                name: "",
+                nameError: null,
+                county: "",
+                countyError: null,
+                sub_county: "",
+                sub_countyError: null
               });
             } else {
               this.setState({
-                registering: false,
+                adding: false,
 
                 serverRes: data.message
               });
@@ -170,32 +177,17 @@ class AddUser extends React.Component {
                 serverRes: "Network request failed"
               });
             }
-            this.props.snack({ type: "warning", msg: error.toString() });
-            this.setState({ registering: false });
+            this._snack({ type: "warning", msg: error.toString() });
+            this.setState({ adding: false });
             console.log(error);
           });
       }
     });
   };
-  onChange = e => {
-    console.log("radio checked", e.target.value);
-    this.setState({
-      value: e.target.value,
-      role: e.target.value
-    });
+
+  componentDidMount = () => {
+    this._snack();
   };
-  onChangeG = e => {
-    console.log("radio checked", e.target.value);
-    this.setState({
-      value: e.target.value,
-      gender: e.target.value
-    });
-  };
-  disabledDate = current => {
-    // Can not select days before today and today
-    return current && current > moment().subtract(6570, "days");
-  };
-  componentDidMount = () => {};
 
   render() {
     const { classes } = this.props;
@@ -224,27 +216,7 @@ class AddUser extends React.Component {
         }
       }
     };
-    const prefixSelector = getFieldDecorator("prefix", {
-      initialValue: "254"
-    })(
-      <Select style={{ width: 90 }}>
-        <Option value="254">+254</Option>
-      </Select>
-    );
 
-    if (state.loading) {
-      return (
-        <div style={center}>
-          <div
-            className="spinner-grow text-info"
-            role="status"
-            style={{ marginBottom: "15px" }}
-          >
-            <span className="sr-only">Loading...</span>
-          </div>
-        </div>
-      );
-    }
     return (
       <div>
         <Snackbar
@@ -258,101 +230,46 @@ class AddUser extends React.Component {
         />
         <GridContainer>
           <GridItem xs={12} sm={12} md={9}>
-            <Card title="Register a new Instructor" style={{ width: "100%" }}>
-              <GridItem xs={12} sm={12} md={12}>
-                <h5>Instructor Details</h5>
-              </GridItem>
+            <Card title="Add a new school" style={{ width: "100%" }}>
               <GridItem xs={12} sm={12} md={12}>
                 <Form {...formItemLayout} onSubmit={this.handleSubmit}>
-                  <Form.Item label="First Name">
-                    {getFieldDecorator("fname", {
+                  <Form.Item label="Name">
+                    {getFieldDecorator("name", {
                       rules: [
                         {
                           required: true,
-                          message: "Please input  first name!"
+                          message: "Please input  school name!"
                         }
                       ]
                     })(<Input />)}
                   </Form.Item>
-                  <Form.Item label="Last Name">
-                    {getFieldDecorator("lname", {
+                  <Form.Item label="County">
+                    {getFieldDecorator("county", {
                       rules: [
                         {
                           required: true,
-                          message: "Please input last  name!"
+                          message: "Please input county!"
                         }
                       ]
                     })(<Input />)}
                   </Form.Item>
-                  <Form.Item label="Gender">
-                    {getFieldDecorator("gender", {
+                  <Form.Item label="Sub County">
+                    {getFieldDecorator("sub_county", {
                       rules: [
                         {
                           required: true,
-                          message: "Please select the students gender!"
-                        }
-                      ]
-                    })(
-                      <Radio.Group
-                        style={{ float: "left" }}
-                        onChange={this.onChangeG}
-                      >
-                        <Radio value={"male"}>Male</Radio>
-                        <Radio value={"female"}>Female</Radio>
-                      </Radio.Group>
-                    )}
-                  </Form.Item>
-                  <Form.Item label="DOB">
-                    {getFieldDecorator("dob", {
-                      rules: [
-                        {
-                          required: true,
-                          message: "Please select the students date of birth!"
-                        }
-                      ]
-                    })(
-                      <DatePicker
-                        disabledDate={this.disabledDate}
-                        format={"DD/MM/YYYY"}
-                      />
-                    )}
-                  </Form.Item>
-                  <Form.Item label="E-mail">
-                    {getFieldDecorator("email", {
-                      rules: [
-                        {
-                          type: "email",
-                          message: "The input is not valid E-mail!"
-                        },
-                        {
-                          required: true,
-                          message: "Please input your E-mail!"
+                          message: "Please input sub county!"
                         }
                       ]
                     })(<Input />)}
-                  </Form.Item>
-                  <Form.Item label="Phone Number">
-                    {getFieldDecorator("phone", {
-                      rules: [
-                        {
-                          required: true,
-                          message: "Please input your phone number!"
-                        }
-                      ]
-                    })(
-                      <Input
-                        addonBefore={prefixSelector}
-                        style={{ width: "100%" }}
-                      />
-                    )}
                   </Form.Item>
 
                   <div className="text-center">
-                    {state.registering ? (
+                    {state.adding ? (
                       <Spin indicator={antIcon} />
                     ) : (
                       <Button type="primary" htmlType="submit">
-                        Register
+                        Add School
                       </Button>
                     )}
                   </div>
@@ -367,7 +284,6 @@ class AddUser extends React.Component {
     );
   }
 }
-
 const capitalize = str => {
   if (str) {
     str = str.charAt(0).toUpperCase() + str.slice(1);
@@ -394,7 +310,6 @@ const center = {
   "-webkit-transform": "translate(-50%, -50%)",
   transform: "translate(-50%, -50%)"
 };
-
 export default Form.create({ name: "register" })(
-  withGlobalContext(withStyles(styles)(AddUser))
+  withGlobalContext(withStyles(styles)(Add))
 );

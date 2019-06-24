@@ -28,7 +28,7 @@ import Manager from "./layouts/Manager";
 import Chief from "./layouts/Chief";
 import Trainer from "./layouts/Trainer";
 import Instructor from "./layouts/Instructor";
-
+import Parent from "./layouts/Parent";
 import Original from "./layouts/Original";
 
 class App extends React.Component {
@@ -79,12 +79,10 @@ class App extends React.Component {
         } else if (gstate.user.role == "chief-trainer") {
           return (
             <Router>
-              <div>
-                <Switch>
-                  <Route path="/chief-trainer" component={Chief} />
-                  <Route path="/**/" component={Chief} />
-                </Switch>
-              </div>
+              <Switch>
+                <Route path="/chief-trainer" component={Chief} />
+                <Route path="/**/" component={Chief} />
+              </Switch>
             </Router>
           );
         } else if (gstate.user.role == "trainer") {
@@ -105,6 +103,17 @@ class App extends React.Component {
                 <Switch>
                   <Route path="/trainer" component={Instructor} />
                   <Route path="/**/" component={Instructor} />
+                </Switch>
+              </div>
+            </Router>
+          );
+        } else if (gstate.user.role == "parent") {
+          return (
+            <Router>
+              <div>
+                <Switch>
+                  <Route path="/parent" component={Parent} />
+                  <Route path="/**/" component={Parent} />
                 </Switch>
               </div>
             </Router>
