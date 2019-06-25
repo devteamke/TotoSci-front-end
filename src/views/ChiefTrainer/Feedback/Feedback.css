@@ -1,0 +1,9 @@
+.threads:hover {
+    cursor: pointer;
+    background-color: #fafafa;
+
+}
+
+.threads {
+    padding: 1rem;
+}

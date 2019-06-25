@@ -27,6 +27,8 @@ import SingleCourse from "../views/ChiefTrainer/courses/Single";
 import AddCourse from "../views/ChiefTrainer/courses/Add";
 
 import Compose from "../views/ChiefTrainer/Feedback/Compose";
+import Feedback from "../views/ChiefTrainer/Feedback/Feedback";
+import SingleThread from "../views/ChiefTrainer/Feedback/SingleThread";
 
 import Profile from "../views/profile/Profile.jsx";
 
@@ -117,7 +119,7 @@ const dashboardRoutes = [
     name: "Feedback",
     sub: "All Feedback",
     icon: "mail",
-    component: Schools,
+    component: Feedback,
     layout: "/chief-trainer"
   },
   {
@@ -127,6 +129,14 @@ const dashboardRoutes = [
     component: Compose,
     layout: "/chief-trainer",
     type: "nested"
+  },
+  {
+    path: "/feedback/single",
+    name: "Single Thread",
+
+    component: SingleThread,
+    layout: "/chief-trainer",
+    type: "hidden"
   },
   //Profile
   {

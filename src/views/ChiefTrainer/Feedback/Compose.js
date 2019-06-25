@@ -100,56 +100,6 @@ class AddUser extends React.Component {
     }
   };
 
-  _fetchSchools = () => {
-    const FetchAsync = async () =>
-      await (await fetch(
-        `${globals.BASE_URL}/api/${this.props.global.user.role}/fetch_schools`,
-        {
-          method: "post",
-          mode: "cors", // no-cors, cors, *same-origin
-          cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
-          credentials: "same-origin", // include, *same-origin, omit
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: this.props.global.token
-            // "Content-Type": "application/x-www-form-urlencoded",
-          },
-          redirect: "follow", // manual, *follow, error
-          referrer: "no-referrer", // no-referrer, *client
-          body: JSON.stringify({ data: "hello server" })
-        }
-      )).json();
-
-    FetchAsync()
-      .then(data => {
-        //this.setState({currentPlace:data.results})
-        if (data.success) {
-          let schools = data.schools.map(each => {
-            return { value: each._id, label: unKebab(each.name) };
-          });
-          console.log("mapped schools", schools);
-          this.setState({
-            schools: schools,
-            loading: false
-          });
-        } else {
-        }
-      })
-      .catch(error => {
-        console.log(error);
-        if (error == "TypeError: Failed to fetch") {
-          //   alert('Server is offline')
-        } else if (error.message == "Network request failed") {
-          // alert('No internet connection')
-          this.setState({
-            serverRes: "Network request failed"
-          });
-        }
-        this._snack({ type: "warning", msg: error.toString() });
-
-        console.log(error);
-      });
-  };
   handleSubmit = e => {
     e.preventDefault();
     const state = this.state;
@@ -168,7 +118,7 @@ class AddUser extends React.Component {
         };
 
         this.setState({ sending: true });
-        const AddAsync = async () =>
+        const FetchAsync = async () =>
           await (await fetch(`${globals.BASE_URL}/api/users/send_message`, {
             method: "post",
             mode: "cors", // no-cors, cors, *same-origin
@@ -184,7 +134,7 @@ class AddUser extends React.Component {
             body: JSON.stringify(data)
           })).json();
 
-        AddAsync()
+        FetchAsync()
           .then(data => {
             this._snack({
               type: data.success ? "success" : "warning",
@@ -195,7 +145,10 @@ class AddUser extends React.Component {
               this.props.form.resetFields();
               this.setState({
                 sending: false,
-                serverRes: data.message
+                serverRes: data.message,
+                data: "",
+                selectedRecipient: false,
+                selected: null
               });
             } else {
               this.setState({
@@ -408,9 +361,9 @@ class AddUser extends React.Component {
                         style={{ width: 120 }}
                         onChange={this.handleChangeTo}
                       >
-                        <Option value="trainers">Trainers</Option>
-                        <Option value="instructors">Instructors</Option>
-                        <Option value="parents">Parents</Option>
+                        <Option value="trainer">Trainers</Option>
+                        <Option value="instructor">Instructors</Option>
+                        <Option value="parent">Parents</Option>
                         <Option value="disabled" disabled>
                           All
                         </Option>
