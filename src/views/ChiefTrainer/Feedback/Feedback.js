@@ -46,7 +46,9 @@ class Notifications extends React.Component {
     super(props);
     this.state = {
       loading: true,
-      conversations: []
+      conversations: [],
+      individual: [],
+      broadcasts: []
     };
   }
   _snack = params => {
@@ -104,7 +106,9 @@ class Notifications extends React.Component {
         if (data.success) {
           this.setState({
             loading: false,
-            conversations: data.conversations
+            conversations: data.conversations,
+            individual: data.individual,
+            broadcasts: data.broadcasts
           });
         } else {
           this.setState({
@@ -146,10 +150,10 @@ class Notifications extends React.Component {
           <Card bordered={false}>
             <Tabs defaultActiveKey="1" onChange={this.callback}>
               <TabPane tab="Messages" key="1">
-                {state.conversations.length > 0 ? (
+                {state.individual.length > 0 ? (
                   <List
                     itemLayout="horizontal"
-                    dataSource={state.conversations}
+                    dataSource={state.individual}
                     renderItem={item => (
                       <List.Item
                         className="threads"
@@ -161,21 +165,36 @@ class Notifications extends React.Component {
                         }}
                       >
                         <List.Item.Meta
-                          avatar={
-                            <Avatar
-                              src={`https://ui-avatars.com/api/?name=${
-                                item.recipient.split(" ")[0]
-                              }+${
-                                item.recipient.split(" ")[1]
-                              }K&background=01afc4&color=fff&size=256`}
-                            />
-                          }
-                          title={capitalize(item.recipient)}
                           description={
-                            item.lastMessage
-                              .replace(/<[^>]*>?/gm, "")
-                              .replace(/&nbsp;/gi, "")
-                              .slice(0, 50) + "..."
+                            <span
+                              style={{
+                                display: "flex"
+                              }}
+                            >
+                              <span
+                                style={{
+                                  marginRight: "15px",
+                                  fontWeight: 500,
+                                  width: "175px",
+                                  color: "black"
+                                }}
+                              >
+                                {capitalize(item.recipient)}
+                              </span>
+                              <span
+                                style={{
+                                  fontWeight: 500,
+                                  color: "black"
+                                }}
+                              >
+                                {capitalize(item.subject)}
+                              </span>{" "}
+                              -{" "}
+                              {item.lastMessage.content
+                                .replace(/<[^>]*>?/gm, "")
+                                .replace(/&nbsp;/gi, "")
+                                .slice(0, 50) + "..."}
+                            </span>
                           }
                         />
                         <div>{moment(item.createdAt).fromNow()}</div>
@@ -202,13 +221,66 @@ class Notifications extends React.Component {
                 </div>
               </TabPane>
               <TabPane tab="Broadcasts" key="3">
-                <div className="text-center" style={{ margin: "50px" }}>
-                  <img
-                    src="https://gw.alipayobjects.com/zos/rmsportal/sAuJeJzSKbUmHfBQRzmZ.svg"
-                    alt="not found"
+                {state.broadcasts.length > 0 ? (
+                  <List
+                    itemLayout="horizontal"
+                    dataSource={state.broadcasts}
+                    renderItem={item => (
+                      <List.Item
+                        className="threads"
+                        onClick={() => {
+                          this.props.history.push({
+                            pathname: `/${this.props.global.user.role}/feedback/single`,
+                            data: item
+                          });
+                        }}
+                      >
+                        <List.Item.Meta
+                          description={
+                            <span
+                              style={{
+                                display: "flex"
+                              }}
+                            >
+                              <span
+                                style={{
+                                  marginRight: "15px",
+                                  fontWeight: 500,
+                                  width: "175px",
+                                  color: "black"
+                                }}
+                              >
+                                {capitalize(item.recipient)}
+                              </span>
+                              <span
+                                style={{
+                                  fontWeight: 500,
+                                  color: "black"
+                                }}
+                              >
+                                {capitalize(item.subject)}
+                              </span>{" "}
+                              -{" "}
+                              {item.lastMessage.content
+                                .replace(/<[^>]*>?/gm, "")
+                                .replace(/&nbsp;/gi, "")
+                                .slice(0, 50) + "..."}
+                            </span>
+                          }
+                        />
+                        <div>{moment(item.createdAt).fromNow()}</div>
+                      </List.Item>
+                    )}
                   />
-                  <p>You have no new messages</p>
-                </div>
+                ) : (
+                  <div className="text-center" style={{ margin: "50px" }}>
+                    <img
+                      src="https://gw.alipayobjects.com/zos/rmsportal/sAuJeJzSKbUmHfBQRzmZ.svg"
+                      alt="not found"
+                    />
+                    <p>You have no broadcasts</p>
+                  </div>
+                )}
               </TabPane>
             </Tabs>
           </Card>

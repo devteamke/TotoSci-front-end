@@ -1,45 +1,53 @@
 import React from "react";
 // @material-ui/core components
 import withStyles from "@material-ui/core/styles/withStyles";
-import InputLabel from "@material-ui/core/InputLabel";
-import FormControl from "@material-ui/core/FormControl";
-import MenuItem from "@material-ui/core/MenuItem";
-import Select from "@material-ui/core/Select";
+import CssBaseline from "@material-ui/core/CssBaseline";
+import Typography from "@material-ui/core/Typography";
+import Container from "@material-ui/core/Container";
+import { makeStyles, createStyles, Theme } from "@material-ui/core/styles";
+import Paper from "@material-ui/core/Paper";
+import Grid from "@material-ui/core/Grid";
 // core components
 import Snackbar from "../../../components/dcomponents/Snackbar/Snackbar.jsx";
 import GridItem from "../../../components/dcomponents/Grid/GridItem.jsx";
 import GridContainer from "../../../components/dcomponents/Grid/GridContainer.jsx";
-import CustomInput from "../../../components/dcomponents/CustomInput/CustomInput.jsx";
-import Button from "../../../components/dcomponents/CustomButtons/Button.jsx";
-import Card from "../../../components/dcomponents/Card/Card.jsx";
-import CardHeader from "../../../components/dcomponents/Card/CardHeader.jsx";
-import CardAvatar from "../../../components/dcomponents/Card/CardAvatar.jsx";
-import CardBody from "../../../components/dcomponents/Card/CardBody.jsx";
-import CardFooter from "../../../components/dcomponents/Card/CardFooter.jsx";
-import {
-  MDBInput,
-  MDBBtn,
-  MDBIcon,
-  MDBTable,
-  MDBTableBody,
-  MDBDropdown,
-  MDBDropdownItem,
-  MDBDropdownToggle,
-  MDBDropdownMenu,
-  MDBModal,
-  MDBModalHeader,
-  MDBModalBody,
-  MDBModalFooter
-} from "mdbreact";
+
+import { MDBBtn, MDBInput } from "mdbreact";
 import avatar from "../../../assets/img/faces/marc.jpg";
-import { withGlobalContext } from "../../../context/Provider";
-import validate from "./validation.js";
+
 import globals from "../../../constants/Globals";
 // @material-ui/icons
 import AddAlert from "@material-ui/icons/AddAlert";
-//Moment
+import { withGlobalContext } from "../../../context/Provider";
+
+import validate from "./validation";
+
+//antd
+import {
+  Form,
+  Spin,
+  Tag,
+  Tabs,
+  Card,
+  Button,
+  Icon,
+  Statistic,
+  Row,
+  Badge,
+  Col,
+  Descriptions,
+  Menu,
+  Dropdown,
+  Modal,
+  PageHeader
+} from "antd";
 import moment from "moment";
 
+const format = "HH:mm";
+
+const { Paragraph } = Typography;
+const antIcon = <Icon type="loading" style={{ fontSize: 24 }} spin />;
+const antIconLarge = <Icon type="loading" style={{ fontSize: 40 }} spin />;
 const styles = {
   cardCategoryWhite: {
     color: "rgba(255,255,255,.62)",
@@ -58,94 +66,144 @@ const styles = {
     textDecoration: "none"
   }
 };
-const parseStudent = student => {
-  if (typeof student.phone_number == "object") {
-    student = {
-      ...student,
-
-      phone_number: student.phone_number.main,
-      alt_phone_number: student.phone_number.alt
-    };
-  }
-  student = {
-    ...student,
-    idno: student.idNumber ? student.idNumber.toString() : ""
-  };
-  return student;
-};
-class Single extends React.Component {
+const confirm = Modal.confirm;
+class Add extends React.Component {
   constructor(props) {
     super(props);
-    let student = this.props.location.data;
-    if (!student) {
-      this.props.history.push(`/${this.props.global.user.role}/students`);
+    let _class = this.props.location.data;
+    if (!_class) {
+      this.props.history.push(`/${this.props.global.user.role}/mystudents`);
       return;
     }
-    student = parseStudent(student);
-    console.log("{student}", student);
+
     this.state = {
-      //Student info
-      student: student,
-      oldStudent: student,
-      addedBy:
-        student.addedBy.length > 0
-          ? student.addedBy[0].fname +
-            " " +
-            (student.addedBy[0].lname ? student.addedBy[0].lname : "")
-          : "NA",
-      parent:
-        student.parent.length > 0
-          ? student.parent[0].fname +
-            " " +
-            (student.parent[0].lname ? student.parent[0].lname : "")
-          : "NA",
-      //snack
+      _class,
+      loading: true,
+      selectedRowKeys: [],
+      currentDisplay: "Student List",
+      //Show instructors
+      studentCourses: _class.class,
+      //other
+      adding: false,
       open: false,
       place: "bc",
-      resType: "warning",
-      serverRes: "",
-      updating: false,
-
-      //Account Status
-      savingInfo: false,
-      //delete Modal
-      deleteModal: false,
-      deleting: false,
-
-      //student erros
-      schoolID: student.school[0]._id,
-      emailError: null,
-      fnameError: null,
-      lnameError: null,
-
-      school: "",
-      schools: []
+      resType: "warning"
     };
   }
+
+  _snack = params => {
+    if (this.props.location.snack) {
+      let snack = this.props.location.snack;
+      this.setState({ open: true, resType: snack.type, serverRes: snack.msg });
+      setTimeout(
+        function() {
+          this.setState({ open: false });
+        }.bind(this),
+        9000
+      );
+    }
+    if (params) {
+      this.setState({
+        open: true,
+        resType: params.type,
+        serverRes: params.msg
+      });
+      setTimeout(
+        function() {
+          this.setState({ open: false });
+        }.bind(this),
+        9000
+      );
+    }
+  };
+  //Student modals
 
   handleChange = event => {
     console.log("value", event.target.value);
-    this.setState(prevState => {
-      let school =
-        prevState.oldStudent.school[0]._id == event.target.value
-          ? prevState.oldStudent.school
-          : event.target.value;
-      let student = { ...prevState.student, school: school };
-      return {
-        [event.target.name]: event.target.value,
-        student,
-        schoolID: event.target.value,
-        schoolError: validate(
-          "school",
-          event.target.value === "" ? null : event.target.value
-        )
-      };
+    this.setState({ [event.target.name]: event.target.value });
+  };
+  handleSubmit = e => {
+    e.preventDefault();
+    let state = this.state;
+    this.props.form.validateFieldsAndScroll((err, values) => {
+      if (!err) {
+        console.log("Received values of form: ", values);
+        console.log("Time", moment(values.start_time).format("HH:mm"));
+
+        this.setState({ adding: true });
+        let data = {
+          ...values
+        };
+        console.log(data);
+        this.setState({ serverRes: null });
+        const AddAsync = async () =>
+          await (await fetch(
+            `${globals.BASE_URL}/api/${this.props.global.user.role}/new_class`,
+            {
+              method: "post",
+              mode: "cors", // no-cors, cors, *same-origin
+              cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
+              credentials: "same-origin", // include, *same-origin, omit
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: this.props.global.token
+                // "Content-Type": "application/x-www-form-urlencoded",
+              },
+              redirect: "follow", // manual, *follow, error
+              referrer: "no-referrer", // no-referrer, *client
+              body: JSON.stringify(data)
+            }
+          )).json();
+
+        AddAsync()
+          .then(data => {
+            this._snack({
+              type: data.success ? "success" : "warning",
+              msg: data.message
+            });
+            //this.setState({currentPlace:data.results})
+            if (data.success) {
+              this.props.form.resetFields();
+              this.setState({
+                adding: false,
+                serverRes: data.message,
+                //form fields
+                name: "",
+                nameError: null,
+                description: "",
+                descriptionError: null,
+                charge: "",
+                chargeError: null
+              });
+            } else {
+              this.setState({
+                adding: false,
+
+                serverRes: data.message
+              });
+            }
+          })
+          .catch(error => {
+            console.log(error);
+            if (error == "TypeError: Failed to fetch") {
+              //   alert('Server is offline')
+            } else if (error.message == "Network request failed") {
+              // alert('No internet connection')
+              this.setState({
+                serverRes: "Network request failed"
+              });
+            }
+            this._snack({ type: "warning", msg: error.toString() });
+            this.setState({ adding: false });
+            console.log(error);
+          });
+      }
     });
   };
-  _fetchSchools = () => {
+  _addSelectedStudents = () => {
     const FetchAsync = async () =>
       await (await fetch(
-        `${globals.BASE_URL}/api/${this.props.global.user.role}/fetch_schools`,
+        `${globals.BASE_URL}/api/${this.props.global.user.role}/add_students_to_class`,
         {
           method: "post",
           mode: "cors", // no-cors, cors, *same-origin
@@ -158,17 +216,342 @@ class Single extends React.Component {
           },
           redirect: "follow", // manual, *follow, error
           referrer: "no-referrer", // no-referrer, *client
-          body: JSON.stringify({ data: "hello server" })
+          body: JSON.stringify({
+            students: this.state.selectedRowsModal,
+            class_id: this.state._class._id
+          })
         }
       )).json();
 
     FetchAsync()
       .then(data => {
-        //this.setState({currentPlace:data.results})
+        if (data.success) {
+          this._snack({
+            type: data.success ? "success" : "warning",
+            msg: data.message
+          });
+          console.log("[new data]", data);
+          let _class = {
+            ...this.state._class,
+            students: data.newClass.students
+          };
+          this.setState({
+            selectedRowKeys: [],
+            addModal: false,
+            addingStudents: false,
+            _class,
+            students: data.students,
+            reloading: true
+          });
+        } else {
+        }
+      })
+      .catch(error => {
+        console.log(error);
+        if (error == "TypeError: Failed to fetch") {
+          //   alert('Server is offline')
+        } else if (error.message == "Network request failed") {
+          // alert('No internet connection')
+          this.setState({
+            serverRes: "Network request failed"
+          });
+        }
+        this.setState({ addingStudents: false });
+        this._snack({ type: "warning", msg: error.toString() });
+
+        console.log(error);
+      });
+  };
+  _addSelectedInstructors = () => {
+    const FetchAsync = async () =>
+      await (await fetch(
+        `${globals.BASE_URL}/api/${this.props.global.user.role}/add_instructors_to_class`,
+        {
+          method: "post",
+          mode: "cors", // no-cors, cors, *same-origin
+          cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
+          credentials: "same-origin", // include, *same-origin, omit
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: this.props.global.token
+            // "Content-Type": "application/x-www-form-urlencoded",
+          },
+          redirect: "follow", // manual, *follow, error
+          referrer: "no-referrer", // no-referrer, *client
+          body: JSON.stringify({
+            instructors: this.state.selectedRowsI,
+            class_id: this.state._class._id
+          })
+        }
+      )).json();
+
+    FetchAsync()
+      .then(data => {
+        if (data.success) {
+          this._snack({
+            type: data.success ? "success" : "warning",
+            msg: data.message
+          });
+          console.log("[new data]", data);
+          let _class = {
+            ...this.state._class,
+            instructors: data.newClass.instructors
+          };
+          this.setState({
+            selectedRowsI: [],
+            assignModal: false,
+            assigningInstructors: false,
+            _class,
+            instructors: data.instructors,
+            reloadingI: true
+          });
+        } else {
+        }
+      })
+      .catch(error => {
+        console.log(error);
+        if (error == "TypeError: Failed to fetch") {
+          //   alert('Server is offline')
+        } else if (error.message == "Network request failed") {
+          // alert('No internet connection')
+          this.setState({
+            serverRes: "Network request failed"
+          });
+        }
+        this.setState({ addingStudents: false });
+        this._snack({ type: "warning", msg: error.toString() });
+
+        console.log(error);
+      });
+  };
+  markAttendance = () => {
+    this.setState({ savingAttendance: true });
+    const FetchAsync = async () =>
+      await (await fetch(
+        `${globals.BASE_URL}/api/${this.props.global.user.role}/mark_attendance`,
+        {
+          method: "post",
+          mode: "cors", // no-cors, cors, *same-origin
+          cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
+          credentials: "same-origin", // include, *same-origin, omit
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: this.props.global.token
+            // "Content-Type": "application/x-www-form-urlencoded",
+          },
+          redirect: "follow", // manual, *follow, error
+          referrer: "no-referrer", // no-referrer, *client
+          body: JSON.stringify({
+            students: this.state.selectedRowsAtt,
+            _class: this.state._class,
+            values: this.state.values
+          })
+        }
+      )).json();
+
+    FetchAsync()
+      .then(data => {
+        if (data.success) {
+          this._snack({
+            type: data.success ? "success" : "warning",
+            msg: data.message
+          });
+          console.log("[new data]", data);
+
+          this.setState({
+            currentStep: 0,
+            markModal: false,
+            rowSelectionAtt: [],
+            savingAttendance: false,
+            step1: true
+          });
+          this._fetchAttendance();
+        } else {
+        }
+      })
+      .catch(error => {
+        console.log(error);
+        if (error == "TypeError: Failed to fetch") {
+          //   alert('Server is offline')
+        } else if (error.message == "Network request failed") {
+          // alert('No internet connection')
+          this.setState({
+            serverRes: "Network request failed"
+          });
+        }
+        this.setState({ addingStudents: false });
+        this._snack({ type: "warning", msg: error.toString() });
+
+        console.log(error);
+      });
+  };
+  onChange = (time, timeString) => {
+    console.log(time, timeString);
+  };
+  _fetchCourse = () => {
+    let coursesId = [];
+    if (this.props.location.data) {
+      let student = this.props.location.data;
+      if (student.class.length > 0) {
+        student.class.map((each, i) => {
+          coursesId.push(each.course);
+        });
+      } else {
+        this.setState({ loading: false });
+        return;
+      }
+    } else {
+      return;
+    }
+    console.log("Courses Id", coursesId);
+    const FetchAsync = async () =>
+      await (await fetch(
+        `${globals.BASE_URL}/api/${this.props.global.user.role}/fetch_course`,
+        {
+          method: "post",
+          mode: "cors", // no-cors, cors, *same-origin
+          cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
+          credentials: "same-origin", // include, *same-origin, omit
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: this.props.global.token
+            // "Content-Type": "application/x-www-form-urlencoded",
+          },
+          redirect: "follow", // manual, *follow, error
+          referrer: "no-referrer", // no-referrer, *client
+          body: JSON.stringify({ coursesId })
+        }
+      )).json();
+
+    FetchAsync()
+      .then(data => {
+        if (data.success) {
+          let currentCourse = [];
+          currentCourse = this.state.studentCourses;
+          console.log("result", data.result);
+          data.result.map((each, i) => {
+            currentCourse[i].course = { ...each };
+          });
+
+          this.setState({
+            studentCourses: currentCourse,
+            loading: false
+          });
+          console.log("Got this courses", this.state.studentCourses);
+        } else {
+        }
+      })
+      .catch(error => {
+        console.log(error);
+        if (error == "TypeError: Failed to fetch") {
+          //   alert('Server is offline')
+        } else if (error.message == "Network request failed") {
+          // alert('No internet connection')
+          this.setState({
+            serverRes: "Network request failed"
+          });
+        }
+        this._snack({ type: "warning", msg: error.toString() });
+
+        console.log(error);
+      });
+  };
+  _fetchTrainer = () => {
+    let trainersId = [];
+    if (this.props.location.data) {
+      let student = this.props.location.data;
+      if (student.class.length > 0) {
+        student.class.map((each, i) => {
+          trainersId.push(each.trainer);
+        });
+      } else {
+        this.setState({ loading: false });
+        return;
+      }
+    } else {
+      return;
+    }
+    // console.log("Courses Id", coursesId);
+    const FetchAsync = async () =>
+      await (await fetch(
+        `${globals.BASE_URL}/api/${this.props.global.user.role}/fetch_trainer`,
+        {
+          method: "post",
+          mode: "cors", // no-cors, cors, *same-origin
+          cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
+          credentials: "same-origin", // include, *same-origin, omit
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: this.props.global.token
+            // "Content-Type": "application/x-www-form-urlencoded",
+          },
+          redirect: "follow", // manual, *follow, error
+          referrer: "no-referrer", // no-referrer, *client
+          body: JSON.stringify({ trainersId })
+        }
+      )).json();
+
+    FetchAsync()
+      .then(data => {
+        if (data.success) {
+          let currentCourse = [];
+          currentCourse = this.state.studentCourses;
+          console.log("result", data.result);
+          data.result.map((each, i) => {
+            currentCourse[i].trainer = { ...each };
+          });
+
+          this.setState({
+            studentCourses: currentCourse,
+            loading: false
+          });
+          console.log("Got this courses", this.state.studentCourses);
+        } else {
+        }
+      })
+      .catch(error => {
+        console.log(error);
+        if (error == "TypeError: Failed to fetch") {
+          //   alert('Server is offline')
+        } else if (error.message == "Network request failed") {
+          // alert('No internet connection')
+          this.setState({
+            serverRes: "Network request failed"
+          });
+        }
+        this._snack({ type: "warning", msg: error.toString() });
+
+        console.log(error);
+      });
+  };
+
+  _fetchFeedBack = student => {
+    const FetchAsync = async () =>
+      await (await fetch(
+        `${globals.BASE_URL}/api/${this.props.global.user.role}/fetch_feed_attendance`,
+        {
+          method: "post",
+          mode: "cors", // no-cors, cors, *same-origin
+          cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
+          credentials: "same-origin", // include, *same-origin, omit
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: this.props.global.token
+            // "Content-Type": "application/x-www-form-urlencoded",
+          },
+          redirect: "follow", // manual, *follow, error
+          referrer: "no-referrer", // no-referrer, *client
+          body: JSON.stringify({ student, _class: this.state._class })
+        }
+      )).json();
+
+    FetchAsync()
+      .then(data => {
         if (data.success) {
           this.setState({
-            schools: data.schools,
-            loading: false
+            loadingFeed: false,
+            singleAtt: data.attendance,
+            currentFeedback: data.feedback
           });
         } else {
         }
@@ -188,428 +571,56 @@ class Single extends React.Component {
         console.log(error);
       });
   };
-  handleStatus = () => {
-    this.setState(prevState => {
-      let newStatus =
-        prevState.student.status == "active" ? "suspended" : "active";
-      let newStudent = { ...prevState.student };
-      newStudent.status = newStatus;
-      return {
-        student: newStudent,
-        statusSaved: !prevState.statusSaved
-      };
+  onChange = (time, timeString) => {
+    console.log(time, timeString);
+  };
+  showRemoveConfirm = () => {
+    confirm({
+      title: "Are you sure you want to remove this students?",
+      onOk: this.removeStudents,
+      onCancel() {}
     });
   };
-  handleSaveInfo = () => {
+
+  handleSubmit = e => {
+    e.preventDefault();
     let state = this.state;
-    let student = this.state.student;
-    const fnameError = validate(
-      "fname",
-      student.fname === "" ? null : student.fname
-    );
-
-    const lnameError = validate(
-      "lname",
-      student.lname === "" ? null : student.lname
-    );
-
-    const schoolError = validate(
-      "school",
-      student.school === "" ? null : student.school
-    );
-
-    this.setState(
-      {
-        fnameError: fnameError,
-        lnameError: lnameError,
-        schoolError: schoolError
-      },
-      () => {
-        console.log(fnameError, lnameError, schoolError);
-        if (!fnameError && !lnameError && !schoolError) {
-          console.log("No error");
-          if (!this.state.savingInfo) {
-            this.setState({ savingInfo: true }, () => {
-              let data = {
-                student: {
-                  ...this.state.student
-                }
-              };
-
-              const SaveAsync = async () =>
-                await (await fetch(
-                  `${globals.BASE_URL}/api/${this.props.global.user.role}/student_save_info`,
-                  {
-                    method: "PATCH",
-                    mode: "cors", // no-cors, cors, *same-origin
-                    cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
-                    credentials: "same-origin", // include, *same-origin, omit
-                    headers: {
-                      "Content-Type": "application/json",
-                      Authorization: this.props.global.token,
-                      "Access-Control-Allow-Origin": `${globals.BASE_URL}`
-                      // "Content-Type": "application/x-www-form-urlencoded",
-                    },
-                    redirect: "follow", // manual, *follow, error
-                    referrer: "no-referrer", // no-referrer, *client
-                    body: JSON.stringify(data)
-                  }
-                )).json();
-
-              SaveAsync()
-                .then(data => {
-                  //this.setState({currentPlace:data.results})
-                  this.setState({
-                    open: true,
-                    updating: false,
-                    resType: data.success ? "success" : "warning"
-                  });
-                  setTimeout(
-                    function() {
-                      this.setState({ open: false, updating: false });
-                    }.bind(this),
-                    9000
-                  );
-
-                  if (data.success) {
-                    console.log("[newStudent]", data.student);
-                    this.setState({
-                      serverRes: data.message,
-                      savingInfo: false,
-                      student: {
-                        ...data.student,
-                        addedBy: state.addedBy,
-                        parent: state.parent
-                      },
-                      oldStudent: {
-                        ...data.student,
-                        addedBy: state.addedBy,
-                        parent: state.parent
-                      }
-                    });
-                  } else {
-                    this.setState({
-                      serverRes: data.message
-                    });
-                  }
-                })
-                .catch(error => {
-                  console.log(error);
-                  if (error == "TypeError: Failed to fetch") {
-                    //   alert('Server is offline')
-                    this.setState({
-                      serverRes: "Failed to contact server!"
-                    });
-                  } else if (error.message == "Network request failed") {
-                    // alert('No internet connection')
-                    this.setState({
-                      serverRes: "Network request failed"
-                    });
-                  }
-
-                  this.setState({
-                    open: true,
-                    savingInfo: false,
-                    resType: data.success ? "success" : "warning"
-                  });
-                  setTimeout(
-                    function() {
-                      this.setState({ open: false });
-                    }.bind(this),
-                    9000
-                  );
-                });
-            });
-          }
-        }
+    this.props.form.validateFieldsAndScroll((err, values) => {
+      if (!err) {
+        console.log("Received values of form: ", values);
+        this.setState({ step1: false, currentStep: 1, values });
       }
-    );
+    });
   };
-  handleDeleteModal = () => {
-    this.setState({ deleteModal: !this.state.deleteModal });
-  };
-  handleDelete = () => {
-    this.setState({ deleteModal: !this.state.deleteModal, deleting: true });
-    let data = {
-      _id: this.state.student._id
-    };
-
-    const DeleteAsync = async () =>
-      await (await fetch(
-        `${globals.BASE_URL}/api/${this.props.global.student.role}/requestDelete`,
-        {
-          method: "DELETE",
-          mode: "cors", // no-cors, cors, *same-origin
-          cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
-          credentials: "same-origin", // include, *same-origin, omit
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: this.props.global.token,
-            "Access-Control-Allow-Origin": `${globals.BASE_URL}`
-            // "Content-Type": "application/x-www-form-urlencoded",
-          },
-          redirect: "follow", // manual, *follow, error
-          referrer: "no-referrer", // no-referrer, *client
-          body: JSON.stringify(data)
-        }
-      )).json();
-
-    DeleteAsync()
-      .then(data => {
-        //this.setState({currentPlace:data.results})
-        this.setState({
-          open: true,
-          updating: false,
-          resType: data.success ? "success" : "warning"
-        });
-        setTimeout(
-          function() {
-            this.setState({ open: false, updating: false });
-          }.bind(this),
-          9000
-        );
-
-        if (data.success) {
-          this.props.history.push({
-            pathname: "/admin/students",
-            snack: { type: "success", msg: data.message }
-          });
-        } else {
-          this.setState({
-            serverRes: data.message
-          });
-        }
-      })
-      .catch(error => {
-        console.log(error);
-        if (error == "TypeError: Failed to fetch") {
-          //   alert('Server is offline')
-          this.setState({
-            serverRes: "Failed to contact server!"
-          });
-        } else if (error.message == "Network request failed") {
-          // alert('No internet connection')
-          this.setState({
-            serverRes: "Network request failed"
-          });
-        }
-        this.setState({ updating: false });
-        console.log(error);
-        this.setState({
-          open: true,
-          updating: false,
-          resType: data.success ? "success" : "warning"
-        });
-        setTimeout(
-          function() {
-            this.setState({ open: false });
-          }.bind(this),
-          9000
-        );
-      });
+  componentDidMount = () => {
+    this._fetchCourse();
+    this._fetchTrainer();
+    // this._fetchInstructors(true);
   };
 
-  componentWillMount = () => {
-    this._fetchSchools();
-  };
-  render = () => {
+  render() {
     if (!this.props.location.data) {
-      return null;
+      return <></>;
     }
-    const gstate = this.props.global;
+
+    const props = this.props;
     const state = this.state;
-    const { student } = this.state;
-    const { oldStudent } = this.state;
-    const { classes } = this.props;
-
-    let items = null;
-    if (state.schools.length > 0) {
-      console.log("schools", this.state.schools);
-      items = state.schools.map(each => {
-        let school = unKebab(each.name);
-
-        return <MenuItem value={each._id}>{school}</MenuItem>;
-      });
+    console.log("Got Data", props.location.data);
+    const student = props.location.data;
+    if (state.loading) {
+      return (
+        <div style={center}>
+          <Spin indicator={antIconLarge} />
+        </div>
+      );
     }
-
-    let edit = null;
-
-    edit = (
-      <>
-        {/* change account info */}
-
-        <GridItem xs={12} sm={12} md={8}>
-          <Card>
-            <CardHeader color="info" style={{ backgroundColor: "#2bbbad" }}>
-              <h4 className={classes.cardTitleWhite}>
-                Change{" "}
-                {oldStudent.fname
-                  ? oldStudent.fname.charAt(0).toUpperCase() +
-                    oldStudent.fname.slice(1) +
-                    "'s "
-                  : "their"}{" "}
-                account info{" "}
-              </h4>
-              <p className={classes.cardCategoryWhite}>
-                Update status , profile info...{" "}
-              </p>
-            </CardHeader>
-            <CardBody>
-              <GridContainer>
-                <GridItem xs={12} sm={12} md={10}>
-                  <h5 style={{ display: "inline" }}>
-                    Status :{"\u00A0"}{" "}
-                    <span
-                      style={{
-                        color: student.status == "active" ? "green" : "red"
-                      }}
-                    >
-                      {capitalize(student.status)}
-                    </span>
-                  </h5>{" "}
-                  {"\u00A0"} {"\u00A0"} {"\u00A0"}
-                  <MDBBtn
-                    style={{ marginTop: -1 }}
-                    size="sm"
-                    onClick={this.handleStatus}
-                  >
-                    {student.status == "active" ? "Suspend" : "Activate"}
-                  </MDBBtn>
-                </GridItem>
-              </GridContainer>
-              <GridContainer></GridContainer>
-
-              <>
-                <GridContainer>
-                  <GridItem xs={12} sm={12} md={8}>
-                    <MDBInput
-                      label={"First Name"}
-                      group
-                      value={student.fname}
-                      onChange={event => {
-                        let value = event.target.value;
-                        this.setState(prevState => ({
-                          student: { ...prevState.student, fname: value }
-                        }));
-                      }}
-                      onBlur={() =>
-                        this.setState({
-                          fnameError: validate(
-                            "fname",
-                            student.fname == "" ? null : student.fname
-                          )
-                        })
-                      }
-                      error="Whoops!"
-                      success="right"
-                    />
-                    <p
-                      style={{
-                        color: "red",
-                        fontSize: "0.8rem",
-                        textAlign: "center"
-                      }}
-                    >
-                      {state.fnameError}
-                    </p>
-                  </GridItem>
-
-                  <GridItem xs={12} sm={12} md={6}>
-                    <MDBInput
-                      label={"Last Name"}
-                      group
-                      value={student.lname}
-                      onChange={event => {
-                        let value = event.target.value;
-                        this.setState(prevState => ({
-                          student: { ...prevState.student, lname: value }
-                        }));
-                      }}
-                      onBlur={() =>
-                        this.setState({
-                          lnameError: validate(
-                            "lname",
-                            student.lname == "" ? null : student.lname
-                          )
-                        })
-                      }
-                      error="Whoops!"
-                      success="right"
-                    />
-                    <p
-                      style={{
-                        color: "red",
-                        fontSize: "0.8rem",
-                        textAlign: "center"
-                      }}
-                    >
-                      {state.lnameError}
-                    </p>
-                  </GridItem>
-
-                  <GridItem xs={12} sm={12} md={6}>
-                    <FormControl style={{ width: "100%" }}>
-                      <InputLabel htmlFor="">
-                        Learning Venue or School
-                      </InputLabel>
-                      <Select
-                        value={state.schoolID}
-                        onChange={this.handleChange}
-                        inputProps={{
-                          name: "school",
-                          id: ""
-                        }}
-                        style={{ width: "100%" }}
-                      >
-                        <MenuItem value="">
-                          <em>-</em>
-                        </MenuItem>
-                        {items}
-                      </Select>
-                    </FormControl>
-                    <p
-                      style={{
-                        color: "red",
-                        fontSize: "0.8rem",
-                        textAlign: "center"
-                      }}
-                    >
-                      {state.schoolError}
-                    </p>
-                  </GridItem>
-                </GridContainer>
-              </>
-            </CardBody>
-            {state.savingInfo ? (
-              <div className="text-center">
-                <div
-                  className="spinner-grow text-info"
-                  role="status"
-                  style={{ marginBottom: "15px" }}
-                >
-                  <span className="sr-only">Loading...</span>
-                </div>
-              </div>
-            ) : (
-              <>
-                {JSON.stringify(student) !==
-                JSON.stringify(state.oldStudent) ? (
-                  <div className="text-center">
-                    <MDBBtn style={btnBg} onClick={this.handleSaveInfo}>
-                      Save
-                    </MDBBtn>
-                  </div>
-                ) : null}
-              </>
-            )}
-            <CardFooter></CardFooter>
-          </Card>
-        </GridItem>
-      </>
-    );
 
     return (
-      <div>
+      <div
+        ref={el => {
+          this.myN = el;
+        }}
+      >
         <Snackbar
           place={this.state.place}
           color={state.resType}
@@ -619,133 +630,112 @@ class Single extends React.Component {
           closeNotification={() => this.setState({ open: false })}
           close
         />
+
+        <CssBaseline />
         <GridContainer>
           <GridItem xs={12} sm={12} md={12}>
-            <MDBBtn
-              onClick={() => {
-                this.props.history.goBack();
-              }}
-            >
-              Back
-            </MDBBtn>
-          </GridItem>
-          <GridItem xs={12} sm={12} md={8}>
-            <Card profile>
-              <CardAvatar profile>
-                <a href="#pablo" onClick={e => e.preventDefault()}>
-                  {student.fname ? (
-                    <img
-                      src={`https://ui-avatars.com/api/?name=${student.fname}+${student.lname}&background=01afc4&color=fff&size=256`}
-                      alt="..."
-                    />
-                  ) : (
-                    <MDBIcon
-                      icon="student-circle"
-                      className="blue-grey-text"
-                      size="9x"
-                    />
+            <Card>
+              <PageHeader
+                onBack={() =>
+                  this.props.history.push(
+                    `/${this.props.global.user.role}/mystudents`
+                  )
+                }
+                title={student.fname}
+              />
+              <Descriptions title="Student Information">
+                <Descriptions.Item label="Name">
+                  {capitalize(student.fname)} {capitalize(student.lname)}
+                </Descriptions.Item>
+
+                <Descriptions.Item label="Date Of Birth">
+                  {moment(student.DOB).format("dddd, MMMM Do YYYY")}
+                </Descriptions.Item>
+                <Descriptions.Item label="Age">
+                  {new Date().getFullYear() - moment(student.DOB).year()} Years
+                </Descriptions.Item>
+                <Descriptions.Item label="Date Of Admission">
+                  {moment(student.createdAt).format(
+                    "dddd, MMMM Do YYYY , h:mm:ss a"
                   )}
-                </a>
-              </CardAvatar>
+                </Descriptions.Item>
+                <Descriptions.Item label="Registered By">
+                  {capitalize(student.addedBy[0].fname) +
+                    " " +
+                    capitalize(student.addedBy[0].lname)}
+                </Descriptions.Item>
+                <Descriptions.Item label="E-mail">
+                  {student.addedBy[0].email}
+                </Descriptions.Item>
+              </Descriptions>
+              {/** school information**/}
+              <Descriptions title="Academic Information">
+                <Descriptions.Item label="School">
+                  {capitalize(student.school[0].name)}
+                </Descriptions.Item>
 
-              <CardBody profile>
-                <GridItem xs={12} sm={10} md={10} style={{ margin: "0 auto" }}>
-                  <MDBTable borderless hover small>
-                    <MDBTableBody>
-                      <tr>
-                        <td style={{ width: "50%" }}>
-                          <b style={{ fontSize: "1.25em" }}>Status</b>
-                        </td>
-                        <td
-                          style={{
-                            textAlign: "left",
-                            width: "50%",
-                            color:
-                              oldStudent.status == "active" ? "green" : "red"
-                          }}
-                        >
-                          {oldStudent.status.charAt(0).toUpperCase() +
-                            oldStudent.status.slice(1)}
-                        </td>
-                      </tr>
-
-                      <tr>
-                        <td style={{ width: "50%" }}>
-                          <b style={{ fontSize: "1.25em" }}>First Name</b>
-                        </td>
-                        <td style={{ textAlign: "left", width: "50%" }}>
-                          {capitalize(oldStudent.fname)}
-                        </td>
-                      </tr>
-
-                      <tr>
-                        <td style={{ width: "50%" }}>
-                          <b style={{ fontSize: "1.25em" }}>Last Name</b>
-                        </td>
-                        <td style={{ textAlign: "left", width: "50%" }}>
-                          {capitalize(oldStudent.lname)}
-                        </td>
-                      </tr>
-
-                      <tr>
-                        <td style={{ width: "50%" }}>
-                          <b style={{ fontSize: "1.25em" }}>School</b>
-                        </td>
-                        <td style={{ textAlign: "left", width: "50%" }}>
-                          {unKebab(oldStudent.school[0].name)}
-                        </td>
-                      </tr>
-
-                      <tr>
-                        <td style={{ width: "50%" }}>
-                          <b style={{ fontSize: "1.25em" }}>Added By</b>
-                        </td>
-                        <td style={{ textAlign: "left", width: "50%" }}>
-                          {capitalize(state.addedBy.split()[0])}
-                        </td>
-                      </tr>
-                      <tr>
-                        <td style={{ width: "50%" }}>
-                          <b style={{ fontSize: "1.25em" }}>Parent</b>
-                        </td>
-                        <td style={{ textAlign: "left", width: "50%" }}>
-                          {capitalize(state.parent.split()[0])}
-                        </td>
-                      </tr>
-                      <tr>
-                        <td style={{ width: "50%" }}>
-                          <b style={{ fontSize: "1.25em" }}>Joined</b>
-                        </td>
-                        <td style={{ textAlign: "left", width: "50%" }}>
-                          {oldStudent.createdAt
-                            ? moment(oldStudent.createdAt).format("MMM Do YY")
-                            : null}
-                        </td>
-                      </tr>
-                      <tr>
-                        <td style={{ width: "50%" }}>
-                          <b style={{ fontSize: "1.25em" }}>Updated</b>
-                        </td>
-                        <td style={{ textAlign: "left", width: "50%" }}>
-                          {oldStudent.updatedAt
-                            ? moment(oldStudent.updatedAt).format("MMM Do YY")
-                            : null}
-                        </td>
-                      </tr>
-                    </MDBTableBody>
-                  </MDBTable>
-                </GridItem>
-              </CardBody>
+                <Descriptions.Item label="County">
+                  {capitalize(student.school[0].county)}
+                </Descriptions.Item>
+                <Descriptions.Item label="Sub County">
+                  {capitalize(student.school[0].sub_county)}
+                </Descriptions.Item>
+              </Descriptions>
+              <Descriptions title="User Info" bordered>
+                <Descriptions.Item label="Product">
+                  Cloud Database
+                </Descriptions.Item>
+                <Descriptions.Item label="Billing Mode">
+                  Prepaid
+                </Descriptions.Item>
+                <Descriptions.Item label="Automatic Renewal">
+                  YES
+                </Descriptions.Item>
+                <Descriptions.Item label="Order time">
+                  2018-04-24 18:00:00
+                </Descriptions.Item>
+                <Descriptions.Item label="Usage Time" span={3}>
+                  2019-04-24 18:00:00
+                </Descriptions.Item>
+                <Descriptions.Item label="Status" span={3}>
+                  <Badge status="processing" text="Running" />
+                </Descriptions.Item>
+                <Descriptions.Item label="Negotiated Amount">
+                  $80.00
+                </Descriptions.Item>
+                <Descriptions.Item label="Discount">$20.00</Descriptions.Item>
+                <Descriptions.Item label="Official Receipts">
+                  $60.00
+                </Descriptions.Item>
+                <Descriptions.Item label="Config Info">
+                  Data disk type: MongoDB
+                  <br />
+                  Database version: 3.4
+                  <br />
+                  Package: dds.mongo.mid
+                  <br />
+                  Storage space: 10 GB
+                  <br />
+                  Replication_factor:3
+                  <br />
+                  Region: East China 1<br />
+                </Descriptions.Item>
+              </Descriptions>
+              ,
             </Card>
           </GridItem>
-          {edit}
         </GridContainer>
       </div>
     );
-  };
+  }
 }
 
-export default withGlobalContext(withStyles(styles)(Single));
+const capitalize = str => {
+  if (str) {
+    str = str.charAt(0).toUpperCase() + str.slice(1);
+  }
+  return str;
+};
 const unKebab = string => {
   if (string) {
     string = string.replace(/-/g, " ").toLowerCase();
@@ -759,12 +749,58 @@ const unKebab = string => {
   return string;
 };
 
-const capitalize = str => {
-  if (str) {
-    str = str.charAt(0).toUpperCase() + str.slice(1);
-  }
-  return str;
+const center = {
+  position: "absolute",
+  left: "58.3%",
+  top: "50%",
+  "-webkit-transform": "translate(-50%, -50%)",
+  transform: "translate(-50%, -50%)"
 };
-const btnBg = {
-  backgroundColor: "#01afc4 !important"
+export default Form.create({ name: "register" })(
+  withGlobalContext(withStyles(styles)(Add))
+);
+
+const columns = [
+  {
+    title: "First Name",
+    dataIndex: "fname"
+  },
+  {
+    title: "Last Name",
+    dataIndex: "lname"
+  }
+];
+const columnsAtt = [
+  {
+    title: "First Name",
+    dataIndex: "fname"
+  },
+  {
+    title: "Last Name",
+    dataIndex: "lname"
+  }
+];
+const columnsModal = [
+  {
+    title: "First Name",
+    dataIndex: "fname"
+  },
+  {
+    title: "Last Name",
+    dataIndex: "lname"
+  }
+];
+const columnsI = [
+  {
+    title: "First Name",
+    dataIndex: "fname"
+  },
+  {
+    title: "Last Name",
+    dataIndex: "lname"
+  }
+];
+//form functions
+const hasErrors = fieldsError => {
+  return Object.keys(fieldsError).some(field => fieldsError[field]);
 };

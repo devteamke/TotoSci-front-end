@@ -147,6 +147,7 @@ class AddUser extends React.Component {
                 sending: false,
                 serverRes: data.message,
                 data: "",
+                dataError: null,
                 selectedRecipient: false,
                 selected: null
               });
@@ -422,7 +423,7 @@ class AddUser extends React.Component {
                     }}
                     onChange={(event, editor) => {
                       const data = editor.getData();
-                      if (data == "") {
+                      if (data == "" && !state.open) {
                         this.setState({ dataError: "Message is required!" });
                       } else {
                         this.setState({ dataError: null });

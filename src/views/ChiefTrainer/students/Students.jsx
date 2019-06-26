@@ -386,16 +386,7 @@ class AllStudents extends React.Component {
                       </MDBTableHead>
                       <MDBTableBody>
                         {state.users.map((user, i) => (
-                          <tr
-                            key={user._id}
-                            // onClick={() => {
-                            //   this.props.history.push({
-                            //     pathname: `/${this.props.global.user.role}/students/single`,
-                            //     data: user
-                            //   });
-                            // }}
-                            style={{ cursor: "pointer" }}
-                          >
+                          <tr key={user._id}>
                             <td>{i + 1}</td> <td>{capitalize(user.fname)}</td>
                             <td>{capitalize(user.lname)}</td>
                             <td>

@@ -13,3 +13,8 @@
     color: #1890ff;
     border-bottom: 0px solid #1890ff;
 }
+.notifs:hover {
+    cursor: pointer;
+    background-color: #fafafa;
+
+}

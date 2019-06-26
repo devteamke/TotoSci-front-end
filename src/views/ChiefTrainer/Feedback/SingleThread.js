@@ -38,9 +38,16 @@ import {
   Modal,
   Divider,
   Steps,
-  List
+  List,
+  Avatar
 } from "antd";
 import moment from "moment";
+//Markdown editor
+import CKEditor from "@ckeditor/ckeditor5-react";
+import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
+//scroll to
+
+import "./Thread.css";
 const ReactMarkdown = require("react-markdown");
 const format = "HH:mm";
 const { Step } = Steps;
@@ -86,7 +93,9 @@ class Add extends React.Component {
       place: "bc",
       resType: "warning"
     };
-    this.item = {};
+
+    this.item2 = React.createRef();
+    this.item = React.createRef();
   }
 
   _snack = params => {
@@ -117,14 +126,92 @@ class Add extends React.Component {
 
   scrollToBottom = () => {
     console.log("messagesEnd", this.item);
-    this.item.scrollIntoView({
-      behavior: "smooth"
-    });
+    console.log("list", this.item2);
+    const scrollHeight = this.item2.current.scrollHeight;
+    const height = this.item2.current.clientHeight;
+    const maxScrollTop = scrollHeight - height;
+    this.item2.current.scrollTop = maxScrollTop > 0 ? maxScrollTop : 0;
+    console.log(this.item2.current.scrollHeight);
+    console.log(this.item2.current.scrollTop);
+    // this.item.current.scrollIntoView({
+    //   behavior: "smooth",
+    //   block: "center",
+    //   inline: "end"
+    // });
+    //  this.item2.current.scrollTop = this.item2.current.scrollHeight + 100;
+  };
+
+  handleSendMessage = () => {
+    const { state } = this;
+    let data = {
+      conversation: state.conversation._id,
+      message: state.data
+    };
+
+    this.setState({ sending: true });
+    const FetchAsync = async () =>
+      await (await fetch(`${globals.BASE_URL}/api/users/send_message_reply`, {
+        method: "post",
+        mode: "cors", // no-cors, cors, *same-origin
+        cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
+        credentials: "same-origin", // include, *same-origin, omit
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: this.props.global.token
+          // "Content-Type": "application/x-www-form-urlencoded",
+        },
+        redirect: "follow", // manual, *follow, error
+        referrer: "no-referrer", // no-referrer, *client
+        body: JSON.stringify(data)
+      })).json();
+
+    FetchAsync()
+      .then(data => {
+        this._snack({
+          type: data.success ? "success" : "warning",
+          msg: data.message
+        });
+        //this.setState({currentPlace:data.results})
+        if (data.success) {
+          this.setState(prevState => {
+            let messages = [...state.conversation.messages];
+            messages.push(data.newMessage);
+
+            return {
+              sending: false,
+              conversation: { ...state.conversation, messages },
+              data: "",
+              dataError: null
+            };
+          });
+          this.scrollToBottom();
+        } else {
+          this.setState({
+            sending: false,
+
+            serverRes: data.message
+          });
+        }
+      })
+      .catch(error => {
+        console.log(error);
+        if (error == "TypeError: Failed to fetch") {
+          //   alert('Server is offline')
+        } else if (error.message == "Network request failed") {
+          // alert('No internet connection')
+          this.setState({
+            serverRes: "Network request failed"
+          });
+        }
+        this._snack({ type: "warning", msg: error.toString() });
+        this.setState({ sending: false });
+        console.log(error);
+      });
   };
 
   componentDidMount = () => {
     if (this.props.location.data) {
-      this.scrollToBottom();
+      setTimeout(() => this.scrollToBottom(), 300);
     }
   };
 
@@ -174,61 +261,158 @@ class Add extends React.Component {
                   />
 
                   <span style={{ display: "inline", marginLeft: "12px" }}>
-                    {capitalize(state.conversation.recipient)}{" "}
+                    {capitalize(state.conversation.subject)}{" "}
                   </span>
                 </span>
               }
               bordered={false}
             >
-              <List
-                style={{ height: "22rem", overflow: "auto" }}
-                itemLayout="horizontal"
-                dataSource={state.conversation.messages}
-                renderItem={(item, i) => (
-                  <>
-                    <List.Item className="threads">
-                      <List.Item.Meta
-                        // avatar={
-                        //   <Avatar
-                        //     src={`https://ui-avatars.com/api/?name=${
-                        //       item.recipient.split(" ")[0]
-                        //     }+${
-                        //       item.recipient.split(" ")[1]
-                        //     }K&background=01afc4&color=fff&size=256`}
-                        //   />
-                        // }
-                        // title={capitalize(item.recipient)}
-                        description={
-                          <ReactMarkdown
-                            source={item.content}
-                            escapeHtml={false}
+              <div
+                style={{ height: "26rem", overflow: "auto" }}
+                ref={this.item2}
+              >
+                <List
+                  itemLayout="horizontal"
+                  dataSource={state.conversation.messages}
+                  renderItem={(item, i) => {
+                    let sender;
+                    if (
+                      item.sender == state.conversation.participantsFull[0]._id
+                    ) {
+                      sender = state.conversation.participantsFull[0];
+                    } else {
+                      sender = state.conversation.participantsFull[1];
+                    }
+                    return (
+                      <>
+                        <List.Item className="threads">
+                          <List.Item.Meta
+                            avatar={
+                              <Avatar
+                                src={`https://ui-avatars.com/api/?name=${
+                                  item.sender ==
+                                  state.conversation.participantsFull[0]._id
+                                    ? state.conversation.participantsFull[0]
+                                        .fname
+                                    : state.conversation.participantsFull[1]
+                                        .fname
+                                }+${
+                                  item.sender ==
+                                  state.conversation.participantsFull[0]._id
+                                    ? state.conversation.participantsFull[0]
+                                        .lname
+                                    : state.conversation.participantsFull[1]
+                                        .lname
+                                }K&background=01afc4&color=fff&size=256`}
+                              />
+                            }
+                            description={
+                              <span>
+                                <span
+                                  style={{
+                                    marginRight: "15px",
+                                    fontWeight: 500,
+                                    width: "175px",
+                                    color: "black"
+                                  }}
+                                >
+                                  {capitalize(sender.fname) +
+                                    " " +
+                                    capitalize(sender.lname)}
+                                  <span
+                                    style={{
+                                      fontWeight: 200,
+
+                                      color: "black"
+                                    }}
+                                  >
+                                    {" "}
+                                    - {capitalize(sender.role)}
+                                  </span>
+                                </span>
+                                <span
+                                  style={{
+                                    color: "black"
+                                  }}
+                                >
+                                  <ReactMarkdown
+                                    source={item.content}
+                                    escapeHtml={false}
+                                  />
+                                </span>
+                              </span>
+                            }
                           />
-                        }
-                      />
-                      <div
-                        ref={el => {
-                          this.item = el;
-                        }}
-                      >
-                        {" "}
-                        {moment(item.createdAt).fromNow()}
-                      </div>
-                    </List.Item>
-                    {i == state.conversation.messages.length - 1 ? (
-                      <List.Item>
-                        <div
-                          ref={el => {
-                            this.item = el;
-                          }}
-                        >
-                          {" "}
-                          reply
-                        </div>
-                      </List.Item>
-                    ) : null}
-                  </>
-                )}
-              />
+                          <div style={{ fontSize: "0.8rem" }}>
+                            {moment(item.createdAt).format(
+                              "MMMM Do YYYY, hh:mm a"
+                            )}{" "}
+                            ({moment(item.createdAt).fromNow()})
+                          </div>
+                        </List.Item>
+                      </>
+                    );
+                  }}
+                />
+                <div style={{ width: "100%" }}>
+                  <CKEditor
+                    style={{ width: "100%" }}
+                    editor={ClassicEditor}
+                    data={state.data}
+                    onInit={editor => {
+                      // You can store the "editor" and use when it is needed.
+
+                      console.log("Editor is ready to use!", editor);
+                    }}
+                    config={{
+                      toolbar: [
+                        "bold",
+                        "italic",
+                        "bulletedList",
+                        "numberedList",
+                        "blockQuote",
+                        "Heading",
+                        "Link"
+                      ]
+                    }}
+                    onChange={(event, editor) => {
+                      const data = editor.getData();
+                      if (data == "" && !state.open) {
+                        this.setState({
+                          dataError: "Message is required!"
+                        });
+                      } else {
+                        this.setState({ dataError: null });
+                      }
+                      this.setState({ data });
+                      console.log({ event, editor, data });
+                    }}
+                    onBlur={editor => {
+                      console.log("Blur.", editor);
+                    }}
+                    onFocus={editor => {
+                      console.log("Focus.", editor);
+                    }}
+                  />
+                  <p style={{ color: "red" }}>{state.dataError}</p>
+                  <br />
+                  <div
+                    ref={this.item}
+                    // ref={el => {
+                    //   this.item = el;
+                    // }}
+                    className="text-center"
+                  >
+                    {state.sending ? (
+                      <Spin indicator={antIcon} />
+                    ) : (
+                      <Button type="primary" onClick={this.handleSendMessage}>
+                        Send
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </div>
             </Card>
           </Col>
         </Row>

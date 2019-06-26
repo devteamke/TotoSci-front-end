@@ -33,7 +33,7 @@ import {
   Spin
 } from "antd";
 //Drawer
-import CustomDrawer from "./Drawer";
+//import CustomDrawer from "./Drawer";
 import moment from "moment";
 
 const antIcon = <Icon type="loading" style={{ fontSize: 24 }} spin />;
@@ -133,7 +133,7 @@ class AllStudents extends React.Component {
         if (data.success) {
           console.log("[users]", data);
           this.setState({
-            users: data.result.docs,
+            users: data.result,
             page: data.result.page,
             totalPages: data.result.totalPages,
             totalDocs: data.result.totalDocs,
@@ -272,14 +272,14 @@ class AllStudents extends React.Component {
       msg: data.message
     });
   };
-  showDrawer = () => {
-    const state = this.state;
-    console.log("open drawer");
+  // showDrawer = () => {
+  //   const state = this.state;
+  //   console.log("open drawer");
 
-    this.setState({
-      dvisible: true
-    });
-  };
+  //   this.setState({
+  //     dvisible: true
+  //   });
+  // };
   onClose = () => {
     this.setState({
       dvisible: false
@@ -320,14 +320,6 @@ class AllStudents extends React.Component {
           open={this.state.open}
           closeNotification={() => this.setState({ open: false })}
           close
-        />
-        <CustomDrawer
-          visible={this.state.dvisible}
-          onClose={this.onClose}
-          info={this.state.currentInfo}
-          infoCopy={this.state.currentInfo}
-          onUpdateIndex={this.updateIndex}
-          onRemoveIndex={this.removeIndex}
         />
 
         <GridContainer>
@@ -442,21 +434,6 @@ class AllStudents extends React.Component {
                               {user.school[0]
                                 ? unKebab(user.school[0].name)
                                 : ""}
-                            </td>
-                            <td
-                              onClick={() => {
-                                let current = { ...user, i };
-                                this.setState({ currentInfo: current }, () => {
-                                  this.showDrawer();
-                                });
-                              }}
-                              style={{
-                                textAlign: "center",
-                                width: "100px",
-                                fontsize: "1.3rem"
-                              }}
-                            >
-                              <Icon type="select" />
                             </td>
                           </tr>
                         ))}
