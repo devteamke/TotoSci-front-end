@@ -3,17 +3,15 @@ import React from "react";
 import withStyles from "@material-ui/core/styles/withStyles";
 import CssBaseline from "@material-ui/core/CssBaseline";
 import Typography from "@material-ui/core/Typography";
-import Container from "@material-ui/core/Container";
-import { makeStyles, createStyles, Theme } from "@material-ui/core/styles";
-import Paper from "@material-ui/core/Paper";
-import Grid from "@material-ui/core/Grid";
+//import Container from "@material-ui/core/Container";
+
 // core components
 import Snackbar from "../../../components/dcomponents/Snackbar/Snackbar.jsx";
 import GridItem from "../../../components/dcomponents/Grid/GridItem.jsx";
 import GridContainer from "../../../components/dcomponents/Grid/GridContainer.jsx";
 
-import { MDBBtn, MDBInput } from "mdbreact";
-import avatar from "../../../assets/img/faces/marc.jpg";
+// import { MDBBtn, MDBInput } from "mdbreact";
+// import avatar from "../../../assets/img/faces/marc.jpg";
 
 import globals from "../../../constants/Globals";
 // @material-ui/icons
@@ -21,7 +19,14 @@ import AddAlert from "@material-ui/icons/AddAlert";
 import { withGlobalContext } from "../../../context/Provider";
 
 import validate from "./validation";
-
+import {
+  MDBTable,
+  MDBTableBody,
+  MDBTableHead,
+  MDBBtn,
+  MDBIcon,
+  MDBInput
+} from "mdbreact";
 //antd
 import {
   Form,
@@ -38,6 +43,7 @@ import {
   Descriptions,
   Menu,
   Dropdown,
+  Table,
   Modal,
   PageHeader
 } from "antd";
@@ -82,7 +88,7 @@ class Add extends React.Component {
       selectedRowKeys: [],
       currentDisplay: "Student List",
       //Show instructors
-      studentCourses: _class.class,
+      studentCourses: [],
       //other
       adding: false,
       open: false,
@@ -91,7 +97,7 @@ class Add extends React.Component {
     };
   }
 
-  _snack = params => {
+  _snack = (params) => {
     if (this.props.location.snack) {
       let snack = this.props.location.snack;
       this.setState({ open: true, resType: snack.type, serverRes: snack.msg });
@@ -118,11 +124,11 @@ class Add extends React.Component {
   };
   //Student modals
 
-  handleChange = event => {
+  handleChange = (event) => {
     console.log("value", event.target.value);
     this.setState({ [event.target.name]: event.target.value });
   };
-  handleSubmit = e => {
+  handleSubmit = (e) => {
     e.preventDefault();
     let state = this.state;
     this.props.form.validateFieldsAndScroll((err, values) => {
@@ -156,7 +162,7 @@ class Add extends React.Component {
           )).json();
 
         AddAsync()
-          .then(data => {
+          .then((data) => {
             this._snack({
               type: data.success ? "success" : "warning",
               msg: data.message
@@ -183,7 +189,7 @@ class Add extends React.Component {
               });
             }
           })
-          .catch(error => {
+          .catch((error) => {
             console.log(error);
             if (error == "TypeError: Failed to fetch") {
               //   alert('Server is offline')
@@ -203,7 +209,9 @@ class Add extends React.Component {
   _addSelectedStudents = () => {
     const FetchAsync = async () =>
       await (await fetch(
-        `${globals.BASE_URL}/api/${this.props.global.user.role}/add_students_to_class`,
+        `${globals.BASE_URL}/api/${
+          this.props.global.user.role
+        }/add_students_to_class`,
         {
           method: "post",
           mode: "cors", // no-cors, cors, *same-origin
@@ -224,7 +232,7 @@ class Add extends React.Component {
       )).json();
 
     FetchAsync()
-      .then(data => {
+      .then((data) => {
         if (data.success) {
           this._snack({
             type: data.success ? "success" : "warning",
@@ -246,7 +254,7 @@ class Add extends React.Component {
         } else {
         }
       })
-      .catch(error => {
+      .catch((error) => {
         console.log(error);
         if (error == "TypeError: Failed to fetch") {
           //   alert('Server is offline')
@@ -265,7 +273,9 @@ class Add extends React.Component {
   _addSelectedInstructors = () => {
     const FetchAsync = async () =>
       await (await fetch(
-        `${globals.BASE_URL}/api/${this.props.global.user.role}/add_instructors_to_class`,
+        `${globals.BASE_URL}/api/${
+          this.props.global.user.role
+        }/add_instructors_to_class`,
         {
           method: "post",
           mode: "cors", // no-cors, cors, *same-origin
@@ -286,7 +296,7 @@ class Add extends React.Component {
       )).json();
 
     FetchAsync()
-      .then(data => {
+      .then((data) => {
         if (data.success) {
           this._snack({
             type: data.success ? "success" : "warning",
@@ -308,7 +318,7 @@ class Add extends React.Component {
         } else {
         }
       })
-      .catch(error => {
+      .catch((error) => {
         console.log(error);
         if (error == "TypeError: Failed to fetch") {
           //   alert('Server is offline')
@@ -328,7 +338,9 @@ class Add extends React.Component {
     this.setState({ savingAttendance: true });
     const FetchAsync = async () =>
       await (await fetch(
-        `${globals.BASE_URL}/api/${this.props.global.user.role}/mark_attendance`,
+        `${globals.BASE_URL}/api/${
+          this.props.global.user.role
+        }/mark_attendance`,
         {
           method: "post",
           mode: "cors", // no-cors, cors, *same-origin
@@ -350,7 +362,7 @@ class Add extends React.Component {
       )).json();
 
     FetchAsync()
-      .then(data => {
+      .then((data) => {
         if (data.success) {
           this._snack({
             type: data.success ? "success" : "warning",
@@ -369,7 +381,7 @@ class Add extends React.Component {
         } else {
         }
       })
-      .catch(error => {
+      .catch((error) => {
         console.log(error);
         if (error == "TypeError: Failed to fetch") {
           //   alert('Server is offline')
@@ -389,13 +401,11 @@ class Add extends React.Component {
     console.log(time, timeString);
   };
   _fetchCourse = () => {
-    let coursesId = [];
+    let studentId = "";
     if (this.props.location.data) {
       let student = this.props.location.data;
-      if (student.class.length > 0) {
-        student.class.map((each, i) => {
-          coursesId.push(each.course);
-        });
+      if (student) {
+        studentId = student._id;
       } else {
         this.setState({ loading: false });
         return;
@@ -403,7 +413,7 @@ class Add extends React.Component {
     } else {
       return;
     }
-    console.log("Courses Id", coursesId);
+    console.log("Courses Id", studentId);
     const FetchAsync = async () =>
       await (await fetch(
         `${globals.BASE_URL}/api/${this.props.global.user.role}/fetch_course`,
@@ -419,97 +429,26 @@ class Add extends React.Component {
           },
           redirect: "follow", // manual, *follow, error
           referrer: "no-referrer", // no-referrer, *client
-          body: JSON.stringify({ coursesId })
+          body: JSON.stringify({ studentId })
         }
       )).json();
 
     FetchAsync()
-      .then(data => {
+      .then((data) => {
         if (data.success) {
           let currentCourse = [];
           currentCourse = this.state.studentCourses;
           console.log("result", data.result);
-          data.result.map((each, i) => {
-            currentCourse[i].course = { ...each };
-          });
 
           this.setState({
-            studentCourses: currentCourse,
+            studentCourses: data.result,
             loading: false
           });
           console.log("Got this courses", this.state.studentCourses);
         } else {
         }
       })
-      .catch(error => {
-        console.log(error);
-        if (error == "TypeError: Failed to fetch") {
-          //   alert('Server is offline')
-        } else if (error.message == "Network request failed") {
-          // alert('No internet connection')
-          this.setState({
-            serverRes: "Network request failed"
-          });
-        }
-        this._snack({ type: "warning", msg: error.toString() });
-
-        console.log(error);
-      });
-  };
-  _fetchTrainer = () => {
-    let trainersId = [];
-    if (this.props.location.data) {
-      let student = this.props.location.data;
-      if (student.class.length > 0) {
-        student.class.map((each, i) => {
-          trainersId.push(each.trainer);
-        });
-      } else {
-        this.setState({ loading: false });
-        return;
-      }
-    } else {
-      return;
-    }
-    // console.log("Courses Id", coursesId);
-    const FetchAsync = async () =>
-      await (await fetch(
-        `${globals.BASE_URL}/api/${this.props.global.user.role}/fetch_trainer`,
-        {
-          method: "post",
-          mode: "cors", // no-cors, cors, *same-origin
-          cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
-          credentials: "same-origin", // include, *same-origin, omit
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: this.props.global.token
-            // "Content-Type": "application/x-www-form-urlencoded",
-          },
-          redirect: "follow", // manual, *follow, error
-          referrer: "no-referrer", // no-referrer, *client
-          body: JSON.stringify({ trainersId })
-        }
-      )).json();
-
-    FetchAsync()
-      .then(data => {
-        if (data.success) {
-          let currentCourse = [];
-          currentCourse = this.state.studentCourses;
-          console.log("result", data.result);
-          data.result.map((each, i) => {
-            currentCourse[i].trainer = { ...each };
-          });
-
-          this.setState({
-            studentCourses: currentCourse,
-            loading: false
-          });
-          console.log("Got this courses", this.state.studentCourses);
-        } else {
-        }
-      })
-      .catch(error => {
+      .catch((error) => {
         console.log(error);
         if (error == "TypeError: Failed to fetch") {
           //   alert('Server is offline')
@@ -525,52 +464,6 @@ class Add extends React.Component {
       });
   };
 
-  _fetchFeedBack = student => {
-    const FetchAsync = async () =>
-      await (await fetch(
-        `${globals.BASE_URL}/api/${this.props.global.user.role}/fetch_feed_attendance`,
-        {
-          method: "post",
-          mode: "cors", // no-cors, cors, *same-origin
-          cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
-          credentials: "same-origin", // include, *same-origin, omit
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: this.props.global.token
-            // "Content-Type": "application/x-www-form-urlencoded",
-          },
-          redirect: "follow", // manual, *follow, error
-          referrer: "no-referrer", // no-referrer, *client
-          body: JSON.stringify({ student, _class: this.state._class })
-        }
-      )).json();
-
-    FetchAsync()
-      .then(data => {
-        if (data.success) {
-          this.setState({
-            loadingFeed: false,
-            singleAtt: data.attendance,
-            currentFeedback: data.feedback
-          });
-        } else {
-        }
-      })
-      .catch(error => {
-        console.log(error);
-        if (error == "TypeError: Failed to fetch") {
-          //   alert('Server is offline')
-        } else if (error.message == "Network request failed") {
-          // alert('No internet connection')
-          this.setState({
-            serverRes: "Network request failed"
-          });
-        }
-        this._snack({ type: "warning", msg: error.toString() });
-
-        console.log(error);
-      });
-  };
   onChange = (time, timeString) => {
     console.log(time, timeString);
   };
@@ -582,7 +475,7 @@ class Add extends React.Component {
     });
   };
 
-  handleSubmit = e => {
+  handleSubmit = (e) => {
     e.preventDefault();
     let state = this.state;
     this.props.form.validateFieldsAndScroll((err, values) => {
@@ -592,9 +485,10 @@ class Add extends React.Component {
       }
     });
   };
+
   componentDidMount = () => {
     this._fetchCourse();
-    this._fetchTrainer();
+    // this._fetchTrainer();
     // this._fetchInstructors(true);
   };
 
@@ -602,6 +496,106 @@ class Add extends React.Component {
     if (!this.props.location.data) {
       return <></>;
     }
+    const NestedTable = () => {
+      const menu = (
+        <Menu>
+          <Menu.Item>Action 1</Menu.Item>
+          <Menu.Item>Action 2</Menu.Item>
+        </Menu>
+      );
+      const expandedRowRender = () => {
+        const columns = [
+          { title: "Name", dataIndex: "name", key: "name" },
+          { title: "Course", dataIndex: "course", key: "course" },
+          { title: "Charge", dataIndex: "charge", key: "charge" },
+          {
+            title: "Description",
+            dataIndex: "description",
+            key: "description"
+          },
+          { title: "Trainer", dataIndex: "trainer", 
+          key: "trainer" },
+          { title: "Day", dataIndex: "day", key: "day" },
+          { title: "Time", dataIndex: "time", key: "time" },
+          {
+            title: "Action",
+            key: "operation",
+            render: () => <a href="javascript:;">Publish</a>
+          }
+        ];
+        
+        const data = [];
+        this.state.studentCourses.map((each, i) => {
+          data.push({
+            key: each.i,
+            name: capitalize(each.name),
+            course: capitalize(each.course[0].name),
+            charge: each.course[0].charge,
+            desciption: each.course[0].description,
+            trainer:
+              capitalize(each.trainer[0].fname) +
+              " " +
+              capitalize(each.trainer[0].lname),
+            day: capitalize(each.day),
+            time: moment(each.start_time).format("h:mm:ss a")
+          });
+        });
+        return <Table columns={columns} dataSource={data} pagination={false} />;
+      };
+
+      const columns = [
+        { title: "Week", dataIndex: "week", key: "week" },
+        { title: "Remarks", dataIndex: "remarks", key: "remarks" },
+        {
+          title: "Status",
+          key: "state",
+          render: () => (
+            <span>
+              <Badge status="success" />
+              Paid
+            </span>
+          )
+        },
+
+        {
+          title: "Action",
+          dataIndex: "operation",
+          key: "operation",
+          render: () => (
+            <span className="table-operation">
+              <a href="javascript:;">Pause</a>
+              <a href="javascript:;">Stop</a>
+              <Dropdown overlay={menu}>
+                <a href="javascript:;">
+                  More <Icon type="down" />
+                </a>
+              </Dropdown>
+            </span>
+          )
+        }
+      ];
+
+      const data = [];
+      this.state.studentCourses.map((each, i) => {
+        console.log("Ateended", i, each.attendance);
+        each.attendance.map((attended, j) => {
+          data.push({
+            key: j,
+            week: unKebab(attended.week),
+            remarks: attended.remarks
+          });
+        });
+      });
+
+      return (
+        <Table
+          className="components-table-demo-nested"
+          columns={columns}
+          expandedRowRender={data}
+          dataSource={expandedRowRender}
+        />
+      );
+    };
 
     const props = this.props;
     const state = this.state;
@@ -617,10 +611,9 @@ class Add extends React.Component {
 
     return (
       <div
-        ref={el => {
+        ref={(el) => {
           this.myN = el;
-        }}
-      >
+        }}>
         <Snackbar
           place={this.state.place}
           color={state.resType}
@@ -645,7 +638,8 @@ class Add extends React.Component {
               />
               <Descriptions title="Student Information">
                 <Descriptions.Item label="Name">
-                  {capitalize(student.fname)} {capitalize(student.lname)}
+                  {capitalize(student.fname)}
+                  {capitalize(student.lname)}
                 </Descriptions.Item>
 
                 <Descriptions.Item label="Date Of Birth">
@@ -681,46 +675,18 @@ class Add extends React.Component {
                   {capitalize(student.school[0].sub_county)}
                 </Descriptions.Item>
               </Descriptions>
-              <Descriptions title="User Info" bordered>
-                <Descriptions.Item label="Product">
-                  Cloud Database
-                </Descriptions.Item>
-                <Descriptions.Item label="Billing Mode">
-                  Prepaid
-                </Descriptions.Item>
-                <Descriptions.Item label="Automatic Renewal">
-                  YES
-                </Descriptions.Item>
-                <Descriptions.Item label="Order time">
-                  2018-04-24 18:00:00
-                </Descriptions.Item>
-                <Descriptions.Item label="Usage Time" span={3}>
-                  2019-04-24 18:00:00
-                </Descriptions.Item>
-                <Descriptions.Item label="Status" span={3}>
-                  <Badge status="processing" text="Running" />
-                </Descriptions.Item>
-                <Descriptions.Item label="Negotiated Amount">
-                  $80.00
-                </Descriptions.Item>
-                <Descriptions.Item label="Discount">$20.00</Descriptions.Item>
-                <Descriptions.Item label="Official Receipts">
-                  $60.00
-                </Descriptions.Item>
-                <Descriptions.Item label="Config Info">
-                  Data disk type: MongoDB
-                  <br />
-                  Database version: 3.4
-                  <br />
-                  Package: dds.mongo.mid
-                  <br />
-                  Storage space: 10 GB
-                  <br />
-                  Replication_factor:3
-                  <br />
-                  Region: East China 1<br />
-                </Descriptions.Item>
-              </Descriptions>
+              {state.studentCourses.length > 0 ? (
+                <>{NestedTable()}</>
+              ) : (
+                <div className="text-center" style={{ height: 300 }}>
+                  <p style={{ marginTop: 145 }}>
+                    {" "}
+                    {state.query
+                      ? `No records found matching \" ${state.query}\"`
+                      : "No students yet"}
+                  </p>{" "}
+                </div>
+              )}
               ,
             </Card>
           </GridItem>
@@ -730,18 +696,18 @@ class Add extends React.Component {
   }
 }
 
-const capitalize = str => {
+const capitalize = (str) => {
   if (str) {
     str = str.charAt(0).toUpperCase() + str.slice(1);
   }
   return str;
 };
-const unKebab = string => {
+const unKebab = (string) => {
   if (string) {
     string = string.replace(/-/g, " ").toLowerCase();
 
     let splitStr = string.toLowerCase().split(" ");
-    string = splitStr.map(str => {
+    string = splitStr.map((str) => {
       return str.charAt(0).toUpperCase() + str.slice(1) + " ";
     });
   }
@@ -760,47 +726,7 @@ export default Form.create({ name: "register" })(
   withGlobalContext(withStyles(styles)(Add))
 );
 
-const columns = [
-  {
-    title: "First Name",
-    dataIndex: "fname"
-  },
-  {
-    title: "Last Name",
-    dataIndex: "lname"
-  }
-];
-const columnsAtt = [
-  {
-    title: "First Name",
-    dataIndex: "fname"
-  },
-  {
-    title: "Last Name",
-    dataIndex: "lname"
-  }
-];
-const columnsModal = [
-  {
-    title: "First Name",
-    dataIndex: "fname"
-  },
-  {
-    title: "Last Name",
-    dataIndex: "lname"
-  }
-];
-const columnsI = [
-  {
-    title: "First Name",
-    dataIndex: "fname"
-  },
-  {
-    title: "Last Name",
-    dataIndex: "lname"
-  }
-];
 //form functions
-const hasErrors = fieldsError => {
-  return Object.keys(fieldsError).some(field => fieldsError[field]);
+const hasErrors = (fieldsError) => {
+  return Object.keys(fieldsError).some((field) => fieldsError[field]);
 };

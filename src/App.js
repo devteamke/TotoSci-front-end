@@ -30,10 +30,19 @@ import Trainer from "./layouts/Trainer";
 import Instructor from "./layouts/Instructor";
 import Parent from "./layouts/Parent";
 import Original from "./layouts/Original";
-
+import { Spin, Icon } from "antd";
+const antIcon = <Icon type="loading" style={{ fontSize: 24 }} spin />;
+const antIconLarge = <Icon type="loading" style={{ fontSize: 40 }} spin />;
 class App extends React.Component {
   render() {
     const gstate = this.props.global;
+    if (gstate.loadingState) {
+      return (
+        <div style={{ ...center, left: this.props.broken ? "50%" : "58.3%" }}>
+          <Spin indicator={antIconLarge} />
+        </div>
+      );
+    }
     if (gstate.isAuthenticated) {
       if (gstate.user.role == "admin") {
         return (
@@ -133,7 +142,7 @@ class App extends React.Component {
               <Route exact path="/reset" component={Reset} />
               <Route
                 path="/reset/:id"
-                render={props => <ResetPassword {...props} />}
+                render={(props) => <ResetPassword {...props} />}
               />
               <Route path="/**/" component={Login} />
 
@@ -147,3 +156,10 @@ class App extends React.Component {
 }
 
 export default withGlobalContext(App);
+const center = {
+  position: "absolute",
+  left: "50%",
+  top: "50%",
+  WebkitTransform: "translate(-50%, -50%)",
+  transform: "translate(-50%, -50%)"
+};

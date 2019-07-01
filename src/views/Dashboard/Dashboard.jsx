@@ -180,7 +180,7 @@ class Dashboard extends React.Component {
       );
     }
     return (
-      <div>
+      <div >
         <Row gutter={10}>
           <Col xs={{ span: 24 }} md={{ span: 6 }}>
             <Card
@@ -686,7 +686,7 @@ const center = {
   position: "absolute",
   left: "58.5%",
   top: "50%",
-  "-webkit-transform": "translate(-50%, -50%)",
+  WebkitTransform: "translate(-50%, -50%)",
   transform: "translate(-50%, -50%)"
 };
 const data = [

@@ -70,7 +70,9 @@ class CustomDrawer extends React.Component {
         act.setState({ updating: true });
         const deleteAsync = async () =>
           await (await fetch(
-            `${globals.BASE_URL}/api/${act.props.global.user.role}/remove_student`,
+            `${globals.BASE_URL}/api/${
+              act.props.global.user.role
+            }/remove_student`,
             {
               method: "DELETE",
               mode: "cors", // no-cors, cors, *same-origin
@@ -89,7 +91,7 @@ class CustomDrawer extends React.Component {
           )).json();
 
         deleteAsync()
-          .then(data => {
+          .then((data) => {
             //this.setState({currentPlace:data.results})
             act.setState({
               open: true,
@@ -111,7 +113,7 @@ class CustomDrawer extends React.Component {
             } else {
             }
           })
-          .catch(error => {
+          .catch((error) => {
             console.log("Got error", error);
             if (error == "TypeError: Failed to fetch") {
               //   alert('Server is offline')
@@ -170,7 +172,9 @@ class CustomDrawer extends React.Component {
       this.setState({ updating: true });
       const SaveAsync = async () =>
         await (await fetch(
-          `${globals.BASE_URL}/api/${this.props.global.user.role}/student_save_info`,
+          `${globals.BASE_URL}/api/${
+            this.props.global.user.role
+          }/student_save_info`,
           {
             method: "PATCH",
             mode: "cors", // no-cors, cors, *same-origin
@@ -189,7 +193,7 @@ class CustomDrawer extends React.Component {
         )).json();
 
       SaveAsync()
-        .then(data => {
+        .then((data) => {
           //this.setState({currentPlace:data.results})
           this.setState({
             open: true,
@@ -214,7 +218,7 @@ class CustomDrawer extends React.Component {
           } else {
           }
         })
-        .catch(error => {
+        .catch((error) => {
           console.log(error);
           if (error == "TypeError: Failed to fetch") {
             //   alert('Server is offline')
@@ -263,10 +267,10 @@ class CustomDrawer extends React.Component {
       )).json();
 
     FetchAsync()
-      .then(data => {
+      .then((data) => {
         //this.setState({currentPlace:data.results})
         if (data.success) {
-          let schools = data.schools.map(each => {
+          let schools = data.schools.map((each) => {
             return { value: each._id, label: unKebab(each.name) };
           });
           console.log("Not set", schools);
@@ -277,7 +281,7 @@ class CustomDrawer extends React.Component {
         } else {
         }
       })
-      .catch(error => {
+      .catch((error) => {
         console.log(error);
         if (error == "TypeError: Failed to fetch") {
           //   alert('Server is offline')
@@ -320,7 +324,7 @@ class CustomDrawer extends React.Component {
     );
     return (
       <Drawer
-        width={640}
+        width={this.props.broken ? "100%" : 640}
         placement="right"
         visible={props.visible}
         closable={false}
@@ -328,17 +332,23 @@ class CustomDrawer extends React.Component {
           this.setState({ editing: false }, () => {
             props.onClose();
           });
-        }}
-      >
+        }}>
         <div style={{ display: "block", width: "100%  " }}>
+        <Icon type="close" style={  {  marginRight: '20px',
+    marginTop: '3px',
+    float: 'left',
+    fontSize: '19px'}} onClick={() => {
+          this.setState({ editing: false }, () => {
+            props.onClose();
+          });
+        }}/>
           <p
             style={{
               ...pStyle,
               marginBottom: 24,
               fontWeight: 700,
               display: "inline-block"
-            }}
-          >
+            }}>
             Student Info
           </p>
           <Dropdown style={{ float: "right" }} overlay={menu}>
@@ -346,6 +356,7 @@ class CustomDrawer extends React.Component {
               Actions <Icon type="down" />
             </span>
           </Dropdown>{" "}
+        
         </div>{" "}
         {!state.editing ? (
           <>
@@ -470,7 +481,28 @@ class CustomDrawer extends React.Component {
                     ]
                   })(<Input />)}
                 </Form.Item>
-
+                <Form.Item label="Last Name">
+                  {getFieldDecorator("lname", {
+                    initialValue: state.infoCopy.lname,
+                    rules: [
+                      {
+                        required: true,
+                        message: "Please input last name!"
+                      }
+                    ]
+                  })(<Input />)}
+                </Form.Item>
+                <Form.Item label="Last Name">
+                  {getFieldDecorator("lname", {
+                    initialValue: state.infoCopy.lname,
+                    rules: [
+                      {
+                        required: true,
+                        message: "Please input last name!"
+                      }
+                    ]
+                  })(<Input />)}
+                </Form.Item>
                 <Form.Item label="Learning Venue/ School">
                   {getFieldDecorator("school", {
                     initialValue: state.infoCopy.school,
@@ -484,9 +516,8 @@ class CustomDrawer extends React.Component {
                   })(
                     <Select
                       style={{ width: "100%" }}
-                      onChange={this.handleChange}
-                    >
-                      {state.schools.map(each => {
+                      onChange={this.handleChange}>
+                      {state.schools.map((each) => {
                         {
                         }
                         return <Option key={each.value}>{each.label}</Option>;
@@ -506,15 +537,13 @@ class CustomDrawer extends React.Component {
                           htmlType="submit"
                           onClick={() => {
                             this.setState({ editing: false });
-                          }}
-                        >
+                          }}>
                           Cancel
                         </Button>{" "}
                         <Button
                           type="primary"
                           htmlType="submit"
-                          onClick={this.handleSave}
-                        >
+                          onClick={this.handleSave}>
                           Save Changes
                         </Button>
                       </>
@@ -541,12 +570,12 @@ const pStyle = {
   marginBottom: 16
 };
 
-const unKebab = string => {
+const unKebab = (string) => {
   if (string) {
     string = string.replace(/-/g, " ").toLowerCase();
 
     let splitStr = string.toLowerCase().split(" ");
-    string = splitStr.map(str => {
+    string = splitStr.map((str) => {
       return str.charAt(0).toUpperCase() + str.slice(1) + " ";
     });
   }
@@ -554,7 +583,7 @@ const unKebab = string => {
   return string;
 };
 
-const capitalize = str => {
+const capitalize = (str) => {
   if (str) {
     str = str.charAt(0).toUpperCase() + str.slice(1);
   } else {
@@ -571,15 +600,13 @@ const DescriptionItem = ({ title, content }) => (
       marginBottom: 7,
 
       color: "rgba(0,0,0,0.65)"
-    }}
-  >
+    }}>
     <p
       style={{
         marginRight: 8,
         display: "inline-block",
         color: "rgba(0,0,0,0.85)"
-      }}
-    >
+      }}>
       {title}:
     </p>
     {content}

@@ -126,7 +126,7 @@ class AllStudents extends React.Component {
       )).json();
 
     FetchAsync()
-      .then(data => {
+      .then((data) => {
         //this.setState({currentPlace:data.results})
         if (data.success) {
           console.log("[users]", data);
@@ -147,7 +147,7 @@ class AllStudents extends React.Component {
           loaded: true
         });
       })
-      .catch(error => {
+      .catch((error) => {
         console.log(error);
         if (error == "TypeError: Failed to fetch") {
           this.setState({
@@ -200,7 +200,7 @@ class AllStudents extends React.Component {
       }
     );
   };
-  _handleSearch = event => {
+  _handleSearch = (event) => {
     this.setState(
       {
         query: event.target.value,
@@ -212,7 +212,7 @@ class AllStudents extends React.Component {
       }
     );
   };
-  _snack = params => {
+  _snack = (params) => {
     if (this.props.location.snack) {
       let snack = this.props.location.snack;
       this.setState({ open: true, resType: snack.type, serverRes: snack.msg });
@@ -252,7 +252,7 @@ class AllStudents extends React.Component {
     this._snack();
   };
   removeIndex = (i, data) => {
-    this.setState(prevState => {
+    this.setState((prevState) => {
       let courses = [...prevState.users];
       console.log("Before Deleting", courses);
       courses.splice(i, 1);
@@ -284,7 +284,7 @@ class AllStudents extends React.Component {
     });
   };
   updateIndex = ({ i, obj }) => {
-    this.setState(prevState => {
+    this.setState((prevState) => {
       let users = [...prevState.users];
       users[i] = { ...obj, addedBy: users[i].addedBy, i };
       console.log("new user", users[i]);
@@ -306,10 +306,9 @@ class AllStudents extends React.Component {
     }
     return (
       <div
-        ref={el => {
+        ref={(el) => {
           this.myN = el;
-        }}
-      >
+        }}>
         <Snackbar
           place={this.state.place}
           color={state.resType}
@@ -320,6 +319,7 @@ class AllStudents extends React.Component {
           close
         />
         <CustomDrawer
+          broken={this.props.broken}
           visible={this.state.dvisible}
           onClose={this.onClose}
           info={this.state.currentInfo}
@@ -340,7 +340,7 @@ class AllStudents extends React.Component {
                       marginBottom: "3px",
                       float: "left"
                     }}
-                  ></div>
+                  />
                   <div style={{ width: "15rem", float: "right" }}>
                     <Input
                       value={state.query}
@@ -349,8 +349,7 @@ class AllStudents extends React.Component {
                         <Button
                           className="search-btn"
                           style={{ marginRight: -12 }}
-                          type="primary"
-                        >
+                          type="primary">
                           <Icon type="search" />
                         </Button>
                       }
@@ -363,8 +362,7 @@ class AllStudents extends React.Component {
                   <GridItem xs={12} sm={12} md={12}>
                     <div
                       className="text-center"
-                      style={{ height: 300, marginTop: "9.2rem" }}
-                    >
+                      style={{ height: 300, marginTop: "9.2rem" }}>
                       <Spin indicator={antIcon} />
                     </div>
                   </GridItem>
@@ -379,9 +377,7 @@ class AllStudents extends React.Component {
                           <th>First Name</th>
                           <th>Last Name</th>
                           <th>School</th>
-                          <th
-                            style={{ textAlign: "center", width: "100px" }}
-                          ></th>
+                          <th style={{ textAlign: "center", width: "100px" }} />
                         </tr>
                       </MDBTableHead>
                       <MDBTableBody>
@@ -405,8 +401,7 @@ class AllStudents extends React.Component {
                                 textAlign: "center",
                                 width: "100px",
                                 fontsize: "1.3rem"
-                              }}
-                            >
+                              }}>
                               <Icon type="select" />
                             </td>
                           </tr>
@@ -431,8 +426,7 @@ class AllStudents extends React.Component {
                     <Button
                       type="primary"
                       style={{ display: "inline-block" }}
-                      onClick={this._handlePrevious}
-                    >
+                      onClick={this._handlePrevious}>
                       <MDBIcon size="2x" icon="angle-double-left" />
                     </Button>
                   ) : null}
@@ -443,8 +437,7 @@ class AllStudents extends React.Component {
                     <Button
                       type="primary"
                       style={{ display: "inline-block" }}
-                      onClick={this._handleNext}
-                    >
+                      onClick={this._handleNext}>
                       <MDBIcon size="2x" icon="angle-double-right" />
                     </Button>
                   ) : null}
@@ -470,15 +463,15 @@ const center = {
   position: "absolute",
   left: "58.5%",
   top: "50%",
-  "-webkit-transform": "translate(-50%, -50%)",
+  WebkitTransform: "translate(-50%, -50%)",
   transform: "translate(-50%, -50%)"
 };
-const unKebab = string => {
+const unKebab = (string) => {
   if (string) {
     string = string.replace(/-/g, " ").toLowerCase();
 
     let splitStr = string.toLowerCase().split(" ");
-    string = splitStr.map(str => {
+    string = splitStr.map((str) => {
       return str.charAt(0).toUpperCase() + str.slice(1) + " ";
     });
   }
@@ -486,7 +479,7 @@ const unKebab = string => {
   return string;
 };
 
-const capitalize = str => {
+const capitalize = (str) => {
   if (str) {
     str = str.charAt(0).toUpperCase() + str.slice(1);
   }

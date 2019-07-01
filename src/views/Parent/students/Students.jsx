@@ -240,10 +240,6 @@ class AllStudents extends React.Component {
   };
   //Ant Modal
 
-  showModal = () => {
-    console.log("show Modal");
-    this.setState({ visible: true });
-  };
 
   handleCancel = () => {
     this.setState({ visible: false });

@@ -1,17 +1,17 @@
-import React from "react";
+import React from 'react';
 // @material-ui/core components
-import withStyles from "@material-ui/core/styles/withStyles";
+import withStyles from '@material-ui/core/styles/withStyles';
 
 // core components
-import Snackbar from "../../../components/dcomponents/Snackbar/Snackbar.jsx";
+import Snackbar from '../../../components/dcomponents/Snackbar/Snackbar.jsx';
 
-import { MDBBtn, MDBInput } from "mdbreact";
-import avatar from "../../../assets/img/faces/marc.jpg";
+import { MDBBtn, MDBInput } from 'mdbreact';
+import avatar from '../../../assets/img/faces/marc.jpg';
 
-import globals from "../../../constants/Globals";
+import globals from '../../../constants/Globals';
 // @material-ui/icons
-import AddAlert from "@material-ui/icons/AddAlert";
-import { withGlobalContext } from "../../../context/Provider";
+import AddAlert from '@material-ui/icons/AddAlert';
+import { withGlobalContext } from '../../../context/Provider';
 
 //antd
 import {
@@ -40,38 +40,38 @@ import {
   Steps,
   List,
   Avatar
-} from "antd";
-import moment from "moment";
+} from 'antd';
+import moment from 'moment';
 //Markdown editor
-import CKEditor from "@ckeditor/ckeditor5-react";
-import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
+import CKEditor from '@ckeditor/ckeditor5-react';
+import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
 //scroll to
 
-import "./Thread.css";
-const ReactMarkdown = require("react-markdown");
-const format = "HH:mm";
+import './Thread.css';
+const ReactMarkdown = require('react-markdown');
+const format = 'HH:mm';
 const { Step } = Steps;
 const { Column, ColumnGroup } = Table;
 const { Option } = Select;
 const { TextArea } = Input;
-const antIcon = <Icon type="loading" style={{ fontSize: 24 }} spin />;
-const antIconLarge = <Icon type="loading" style={{ fontSize: 40 }} spin />;
+const antIcon = <Icon type='loading' style={{ fontSize: 24 }} spin />;
+const antIconLarge = <Icon type='loading' style={{ fontSize: 40 }} spin />;
 const styles = {
   cardCategoryWhite: {
-    color: "rgba(255,255,255,.62)",
-    margin: "0",
-    fontSize: "14px",
-    marginTop: "0",
-    marginBottom: "0"
+    color: 'rgba(255,255,255,.62)',
+    margin: '0',
+    fontSize: '14px',
+    marginTop: '0',
+    marginBottom: '0'
   },
   cardTitleWhite: {
-    color: "#FFFFFF",
-    marginTop: "0px",
-    minHeight: "auto",
-    fontWeight: "300",
+    color: '#FFFFFF',
+    marginTop: '0px',
+    minHeight: 'auto',
+    fontWeight: '300',
     fontFamily: "'Roboto', 'Helvetica', 'Arial', sans-serif",
-    marginBottom: "3px",
-    textDecoration: "none"
+    marginBottom: '3px',
+    textDecoration: 'none'
   }
 };
 const confirm = Modal.confirm;
@@ -86,12 +86,12 @@ class Add extends React.Component {
 
     this.state = {
       conversation,
-
+      loading: true,
       //other
       adding: false,
       open: false,
-      place: "bc",
-      resType: "warning"
+      place: 'bc',
+      resType: 'warning'
     };
 
     this.item2 = React.createRef();
@@ -125,66 +125,63 @@ class Add extends React.Component {
   };
 
   scrollToBottom = () => {
-    console.log("messagesEnd", this.item);
-    console.log("list", this.item2);
-    const scrollHeight = this.item2.current.scrollHeight;
-    const height = this.item2.current.clientHeight;
-    const maxScrollTop = scrollHeight - height;
-    this.item2.current.scrollTop = maxScrollTop > 0 ? maxScrollTop : 0;
-    console.log(this.item2.current.scrollHeight);
-    console.log(this.item2.current.scrollTop);
-    // this.item.current.scrollIntoView({
-    //   behavior: "smooth",
-    //   block: "center",
-    //   inline: "end"
-    // });
+    console.log('messagesEnd', this.item);
+    console.log('list', this.item2);
+    // const scrollHeight = this.item2.current.scrollHeight;
+    // const height = this.item2.current.clientHeight;
+    // const maxScrollTop = scrollHeight - height;
+    // this.item2.current.scrollTop = maxScrollTop > 0 ? maxScrollTop : 0;
+    // console.log(this.item2.current.scrollHeight);
+    // console.log(this.item2.current.scrollTop);
+    this.item.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start'
+    });
     //  this.item2.current.scrollTop = this.item2.current.scrollHeight + 100;
   };
 
   handleSendMessage = () => {
     const { state } = this;
     let data = {
-      conversation: state.conversation._id,
+      conversation: state.conversation,
       message: state.data
     };
 
     this.setState({ sending: true });
     const FetchAsync = async () =>
       await (await fetch(`${globals.BASE_URL}/api/users/send_message_reply`, {
-        method: "post",
-        mode: "cors", // no-cors, cors, *same-origin
-        cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
-        credentials: "same-origin", // include, *same-origin, omit
+        method: 'post',
+        mode: 'cors', // no-cors, cors, *same-origin
+        cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+        credentials: 'same-origin', // include, *same-origin, omit
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
           Authorization: this.props.global.token
           // "Content-Type": "application/x-www-form-urlencoded",
         },
-        redirect: "follow", // manual, *follow, error
-        referrer: "no-referrer", // no-referrer, *client
+        redirect: 'follow', // manual, *follow, error
+        referrer: 'no-referrer', // no-referrer, *client
         body: JSON.stringify(data)
       })).json();
 
     FetchAsync()
       .then(data => {
         this._snack({
-          type: data.success ? "success" : "warning",
+          type: data.success ? 'success' : 'warning',
           msg: data.message
         });
         //this.setState({currentPlace:data.results})
         if (data.success) {
           this.setState(prevState => {
-            let messages = [...state.conversation.messages];
-            messages.push(data.newMessage);
+            //   let messages = [...state.messages];
+            //   messages.push(data.newMessage);
 
             return {
-              sending: false,
-              conversation: { ...state.conversation, messages },
-              data: "",
+              data: '',
               dataError: null
             };
           });
-          this.scrollToBottom();
+          // this.scrollToBottom();
         } else {
           this.setState({
             sending: false,
@@ -195,23 +192,113 @@ class Add extends React.Component {
       })
       .catch(error => {
         console.log(error);
-        if (error == "TypeError: Failed to fetch") {
+        if (error == 'TypeError: Failed to fetch') {
           //   alert('Server is offline')
-        } else if (error.message == "Network request failed") {
+        } else if (error.message == 'Network request failed') {
           // alert('No internet connection')
           this.setState({
-            serverRes: "Network request failed"
+            serverRes: 'Network request failed'
           });
         }
-        this._snack({ type: "warning", msg: error.toString() });
+        this._snack({ type: 'warning', msg: error.toString() });
         this.setState({ sending: false });
         console.log(error);
       });
   };
+  _fetchMessages = () => {
+    const { state } = this;
+    let data = {
+      conversation: this.props.location.data._id
+    };
 
+    const FetchAsync = async () =>
+      await (await fetch(
+        `${globals.BASE_URL}/api/users/fetch_conversation_messages`,
+        {
+          method: 'post',
+          mode: 'cors', // no-cors, cors, *same-origin
+          cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+          credentials: 'same-origin', // include, *same-origin, omit
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: this.props.global.token
+            // "Content-Type": "application/x-www-form-urlencoded",
+          },
+          redirect: 'follow', // manual, *follow, error
+          referrer: 'no-referrer', // no-referrer, *client
+          body: JSON.stringify(data)
+        }
+      )).json();
+
+    FetchAsync()
+      .then(data => {
+        // this._snack({
+        //   type: data.success ? 'success' : 'warning',
+        //   msg: data.message
+        // });
+        //this.setState({currentPlace:data.results})
+        if (data.success) {
+          console.log('messages', data.messages);
+          this.setState({ messages: data.messages, loading: false }, () =>
+            setTimeout(() => this.scrollToBottom(), 300)
+          );
+          // this.setState(prevState => {
+          //   let messages = [...state.conversation.messages];
+          //   messages.push(data.newMessage);
+          //   return {
+          //     sending: false,
+          //     conversation: { ...state.conversation, messages },
+          //     data: '',
+          //     dataError: null
+          //   };
+          // });
+        } else {
+          // this.setState({
+          //   sending: false,
+          //   serverRes: data.message
+          // });
+        }
+      })
+      .catch(error => {
+        console.log(error);
+        if (error == 'TypeError: Failed to fetch') {
+          //   alert('Server is offline')
+        } else if (error.message == 'Network request failed') {
+          // alert('No internet connection')
+          this.setState({
+            serverRes: 'Network request failed'
+          });
+        }
+        this._snack({ type: 'warning', msg: error.toString() });
+        this.setState({ sending: false });
+        console.log(error);
+      });
+  };
   componentDidMount = () => {
     if (this.props.location.data) {
-      setTimeout(() => this.scrollToBottom(), 300);
+      console.log('Props recieved', this.props);
+      this._fetchMessages();
+      //   setTimeout(() => this.scrollToBottom(), 300);
+      //Socket on new message
+      this.props.socket.on('newMessage', data => {
+        if (
+          window.location.pathname ==
+            `/${this.props.global.user.role}/feedback/single` &&
+          data.conversation == this.state.conversation._id
+        ) {
+          console.log('newMessage', data);
+          this.setState(prevState => {
+            let messages = [...this.state.messages];
+            messages.push(data);
+
+            return {
+              sending: false,
+              messages
+            };
+          });
+          setTimeout(() => this.scrollToBottom(), 300);
+        }
+      });
     }
   };
 
@@ -225,7 +312,7 @@ class Add extends React.Component {
 
     if (state.loading) {
       return (
-        <div style={center}>
+        <div style={{ ...center, left: this.props.broken ? '50%' : '58.3%' }}>
           <Spin indicator={antIconLarge} />
         </div>
       );
@@ -250,59 +337,64 @@ class Add extends React.Component {
                 <span>
                   <Icon
                     style={{
-                      float: "left",
-                      marginTop: "1px",
-                      fontSize: "28px"
+                      float: 'left',
+                      marginTop: '1px',
+                      fontSize: '28px'
                     }}
                     onClick={() => {
-                      this.props.history.goBack();
+                      this.props.history.push({
+                        pathname: `/${this.props.global.user.role}/feedback`
+                      });
                     }}
-                    type="left-square"
+                    type='left-square'
                   />
 
-                  <span style={{ display: "inline", marginLeft: "12px" }}>
-                    {capitalize(state.conversation.subject)}{" "}
+                  <span style={{ display: 'inline', marginLeft: '12px' }}>
+                    {capitalize(state.conversation.subject)}{' '}
                   </span>
                 </span>
               }
               bordered={false}
             >
               <div
-                style={{ height: "26rem", overflow: "auto" }}
+                style={{ height: '26rem', overflow: 'auto' }}
                 ref={this.item2}
               >
                 <List
-                  itemLayout="horizontal"
-                  dataSource={state.conversation.messages}
+                  itemLayout='horizontal'
+                  dataSource={state.messages}
                   renderItem={(item, i) => {
                     let sender;
-                    if (
-                      item.sender == state.conversation.participantsFull[0]._id
-                    ) {
-                      sender = state.conversation.participantsFull[0];
+
+                    if (state.conversation.participantsFull) {
+                      if (
+                        item.sender ==
+                        state.conversation.participantsFull[0]._id
+                      ) {
+                        sender = state.conversation.participantsFull[0];
+                      } else {
+                        sender = state.conversation.participantsFull[1];
+                      }
                     } else {
-                      sender = state.conversation.participantsFull[1];
+                      if (
+                        item.sender == state.conversation.participants[0]._id
+                      ) {
+                        sender = state.conversation.participants[0];
+                      } else {
+                        sender = state.conversation.participants[1];
+                      }
                     }
+
                     return (
                       <>
-                        <List.Item className="threads">
+                        <List.Item className='threads'>
                           <List.Item.Meta
                             avatar={
                               <Avatar
                                 src={`https://ui-avatars.com/api/?name=${
-                                  item.sender ==
-                                  state.conversation.participantsFull[0]._id
-                                    ? state.conversation.participantsFull[0]
-                                        .fname
-                                    : state.conversation.participantsFull[1]
-                                        .fname
+                                  sender.fname
                                 }+${
-                                  item.sender ==
-                                  state.conversation.participantsFull[0]._id
-                                    ? state.conversation.participantsFull[0]
-                                        .lname
-                                    : state.conversation.participantsFull[1]
-                                        .lname
+                                  sender.lname
                                 }K&background=01afc4&color=fff&size=256`}
                               />
                             }
@@ -310,29 +402,29 @@ class Add extends React.Component {
                               <span>
                                 <span
                                   style={{
-                                    marginRight: "15px",
+                                    marginRight: '15px',
                                     fontWeight: 500,
-                                    width: "175px",
-                                    color: "black"
+                                    width: '175px',
+                                    color: 'black'
                                   }}
                                 >
                                   {capitalize(sender.fname) +
-                                    " " +
-                                    capitalize(sender.lname)}
+                                    ' ' +
+                                    capitalize(sender.fname)}
                                   <span
                                     style={{
                                       fontWeight: 200,
 
-                                      color: "black"
+                                      color: 'black'
                                     }}
                                   >
-                                    {" "}
+                                    {' '}
                                     - {capitalize(sender.role)}
                                   </span>
                                 </span>
                                 <span
                                   style={{
-                                    color: "black"
+                                    color: 'black'
                                   }}
                                 >
                                   <ReactMarkdown
@@ -343,10 +435,10 @@ class Add extends React.Component {
                               </span>
                             }
                           />
-                          <div style={{ fontSize: "0.8rem" }}>
+                          <div style={{ fontSize: '0.8rem' }}>
                             {moment(item.createdAt).format(
-                              "MMMM Do YYYY, hh:mm a"
-                            )}{" "}
+                              'MMMM Do YYYY, hh:mm a'
+                            )}{' '}
                             ({moment(item.createdAt).fromNow()})
                           </div>
                         </List.Item>
@@ -354,32 +446,32 @@ class Add extends React.Component {
                     );
                   }}
                 />
-                <div style={{ width: "100%" }}>
+                <div style={{ width: '100%' }}>
                   <CKEditor
-                    style={{ width: "100%" }}
+                    style={{ width: '100%' }}
                     editor={ClassicEditor}
                     data={state.data}
                     onInit={editor => {
                       // You can store the "editor" and use when it is needed.
 
-                      console.log("Editor is ready to use!", editor);
+                      console.log('Editor is ready to use!', editor);
                     }}
                     config={{
                       toolbar: [
-                        "bold",
-                        "italic",
-                        "bulletedList",
-                        "numberedList",
-                        "blockQuote",
-                        "Heading",
-                        "Link"
+                        'bold',
+                        'italic',
+                        'bulletedList',
+                        'numberedList',
+                        'blockQuote',
+                        'Heading',
+                        'Link'
                       ]
                     }}
                     onChange={(event, editor) => {
                       const data = editor.getData();
-                      if (data == "" && !state.open) {
+                      if (data == '' && !state.open) {
                         this.setState({
-                          dataError: "Message is required!"
+                          dataError: 'Message is required!'
                         });
                       } else {
                         this.setState({ dataError: null });
@@ -388,25 +480,24 @@ class Add extends React.Component {
                       console.log({ event, editor, data });
                     }}
                     onBlur={editor => {
-                      console.log("Blur.", editor);
+                      console.log('Blur.', editor);
                     }}
                     onFocus={editor => {
-                      console.log("Focus.", editor);
+                      console.log('Focus.', editor);
                     }}
                   />
-                  <p style={{ color: "red" }}>{state.dataError}</p>
+                  <p style={{ color: 'red' }}>{state.dataError}</p>
                   <br />
                   <div
-                    ref={this.item}
-                    // ref={el => {
-                    //   this.item = el;
-                    // }}
-                    className="text-center"
+                    ref={el => {
+                      this.item = el;
+                    }}
+                    className='text-center'
                   >
                     {state.sending ? (
                       <Spin indicator={antIcon} />
                     ) : (
-                      <Button type="primary" onClick={this.handleSendMessage}>
+                      <Button type='primary' onClick={this.handleSendMessage}>
                         Send
                       </Button>
                     )}
@@ -429,11 +520,11 @@ const capitalize = str => {
 };
 const unKebab = string => {
   if (string) {
-    string = string.replace(/-/g, " ").toLowerCase();
+    string = string.replace(/-/g, ' ').toLowerCase();
 
-    let splitStr = string.toLowerCase().split(" ");
+    let splitStr = string.toLowerCase().split(' ');
     string = splitStr.map(str => {
-      return str.charAt(0).toUpperCase() + str.slice(1) + " ";
+      return str.charAt(0).toUpperCase() + str.slice(1) + ' ';
     });
   }
 
@@ -441,54 +532,54 @@ const unKebab = string => {
 };
 
 const center = {
-  position: "absolute",
-  left: "58.3%",
-  top: "50%",
-  "-webkit-transform": "translate(-50%, -50%)",
-  transform: "translate(-50%, -50%)"
+  position: 'absolute',
+  left: '58.3%',
+  top: '50%',
+  '-webkit-transform': 'translate(-50%, -50%)',
+  transform: 'translate(-50%, -50%)'
 };
-export default Form.create({ name: "register" })(
+export default Form.create({ name: 'register' })(
   withGlobalContext(withStyles(styles)(Add))
 );
 
 const columns = [
   {
-    title: "First Name",
-    dataIndex: "fname"
+    title: 'First Name',
+    dataIndex: 'fname'
   },
   {
-    title: "Last Name",
-    dataIndex: "lname"
+    title: 'Last Name',
+    dataIndex: 'lname'
   }
 ];
 const columnsAtt = [
   {
-    title: "First Name",
-    dataIndex: "fname"
+    title: 'First Name',
+    dataIndex: 'fname'
   },
   {
-    title: "Last Name",
-    dataIndex: "lname"
+    title: 'Last Name',
+    dataIndex: 'lname'
   }
 ];
 const columnsModal = [
   {
-    title: "First Name",
-    dataIndex: "fname"
+    title: 'First Name',
+    dataIndex: 'fname'
   },
   {
-    title: "Last Name",
-    dataIndex: "lname"
+    title: 'Last Name',
+    dataIndex: 'lname'
   }
 ];
 const columnsI = [
   {
-    title: "First Name",
-    dataIndex: "fname"
+    title: 'First Name',
+    dataIndex: 'fname'
   },
   {
-    title: "Last Name",
-    dataIndex: "lname"
+    title: 'Last Name',
+    dataIndex: 'lname'
   }
 ];
 //form functions

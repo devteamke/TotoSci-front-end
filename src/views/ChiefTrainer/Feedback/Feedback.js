@@ -1,42 +1,42 @@
 /* eslint-disable */
-import React from "react";
+import React from 'react';
 // @material-ui/core components
-import withStyles from "@material-ui/core/styles/withStyles";
-import { Card, Col, Row, Tabs, Icon, Spin, List, Avatar } from "antd";
-import globals from "../../../constants/Globals";
-import { withGlobalContext } from "../../../context/Provider";
-import moment from "moment";
-import "./Feedback.css";
+import withStyles from '@material-ui/core/styles/withStyles';
+import { Card, Col, Row, Tabs, Icon, Spin, List, Badge } from 'antd';
+import globals from '../../../constants/Globals';
+import { withGlobalContext } from '../../../context/Provider';
+import moment from 'moment';
+import './Feedback.css';
 
 const { TabPane } = Tabs;
-const antIcon = <Icon type="loading" style={{ fontSize: 24 }} spin />;
-const antIconLarge = <Icon type="loading" style={{ fontSize: 40 }} spin />;
+const antIcon = <Icon type='loading' style={{ fontSize: 24 }} spin />;
+const antIconLarge = <Icon type='loading' style={{ fontSize: 40 }} spin />;
 const styles = {
   cardCategoryWhite: {
-    "&,& a,& a:hover,& a:focus": {
-      color: "rgba(255,255,255,.62)",
-      margin: "0",
-      fontSize: "14px",
-      marginTop: "0",
-      marginBottom: "0"
+    '&,& a,& a:hover,& a:focus': {
+      color: 'rgba(255,255,255,.62)',
+      margin: '0',
+      fontSize: '14px',
+      marginTop: '0',
+      marginBottom: '0'
     },
-    "& a,& a:hover,& a:focus": {
-      color: "#FFFFFF"
+    '& a,& a:hover,& a:focus': {
+      color: '#FFFFFF'
     }
   },
   cardTitleWhite: {
-    color: "#FFFFFF",
-    marginTop: "0px",
-    minHeight: "auto",
-    fontWeight: "300",
+    color: '#FFFFFF',
+    marginTop: '0px',
+    minHeight: 'auto',
+    fontWeight: '300',
     fontFamily: "'Roboto', 'Helvetica', 'Arial', sans-serif",
-    marginBottom: "3px",
-    textDecoration: "none",
-    "& small": {
-      color: "#777",
-      fontSize: "65%",
-      fontWeight: "400",
-      lineHeight: "1"
+    marginBottom: '3px',
+    textDecoration: 'none',
+    '& small': {
+      color: '#777',
+      fontSize: '65%',
+      fontWeight: '400',
+      lineHeight: '1'
     }
   }
 };
@@ -81,17 +81,17 @@ class Notifications extends React.Component {
       await (await fetch(
         `${globals.BASE_URL}/api/${this.props.global.user.role}/fetch_messages`,
         {
-          method: "post",
-          mode: "cors", // no-cors, cors, *same-origin
-          cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
-          credentials: "same-origin", // include, *same-origin, omit
+          method: 'post',
+          mode: 'cors', // no-cors, cors, *same-origin
+          cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+          credentials: 'same-origin', // include, *same-origin, omit
           headers: {
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json',
             Authorization: this.props.global.token
             // "Content-Type": "application/x-www-form-urlencoded",
           },
-          redirect: "follow", // manual, *follow, error
-          referrer: "no-referrer", // no-referrer, *client
+          redirect: 'follow', // manual, *follow, error
+          referrer: 'no-referrer', // no-referrer, *client
           body: JSON.stringify({})
         }
       )).json();
@@ -99,10 +99,10 @@ class Notifications extends React.Component {
     FetchAsync()
       .then(data => {
         this._snack({
-          type: data.success ? "success" : "warning",
+          type: data.success ? 'success' : 'warning',
           msg: data.message
         });
-        console.log("conversations", data.conversations);
+        console.log('conversations', data.conversations);
         if (data.success) {
           this.setState({
             loading: false,
@@ -118,15 +118,15 @@ class Notifications extends React.Component {
       })
       .catch(error => {
         console.log(error);
-        if (error == "TypeError: Failed to fetch") {
+        if (error == 'TypeError: Failed to fetch') {
           //   alert('Server is offline')
-        } else if (error.message == "Network request failed") {
+        } else if (error.message == 'Network request failed') {
           // alert('No internet connection')
           this.setState({
-            serverRes: "Network request failed"
+            serverRes: 'Network request failed'
           });
         }
-        this._snack({ type: "warning", msg: error.toString() });
+        this._snack({ type: 'warning', msg: error.toString() });
         this.setState({ sending: false });
         console.log(error);
       });
@@ -139,7 +139,7 @@ class Notifications extends React.Component {
     const { state } = this;
     if (state.loading) {
       return (
-        <div style={center}>
+        <div style={{ ...center, left: this.props.broken ? '50%' : '58.3%' }}>
           <Spin indicator={antIconLarge} />
         </div>
       );
@@ -148,18 +148,20 @@ class Notifications extends React.Component {
       <Row gutter={16}>
         <Col span={24}>
           <Card bordered={false}>
-            <Tabs defaultActiveKey="1" onChange={this.callback}>
-              <TabPane tab="Messages" key="1">
+            <Tabs defaultActiveKey='1' onChange={this.callback}>
+              <TabPane tab='Messages' key='1'>
                 {state.individual.length > 0 ? (
                   <List
-                    itemLayout="horizontal"
+                    itemLayout='horizontal'
                     dataSource={state.individual}
                     renderItem={item => (
                       <List.Item
-                        className="threads"
+                        className='threads'
                         onClick={() => {
                           this.props.history.push({
-                            pathname: `/${this.props.global.user.role}/feedback/single`,
+                            pathname: `/${
+                              this.props.global.user.role
+                            }/feedback/single`,
                             data: item
                           });
                         }}
@@ -168,32 +170,33 @@ class Notifications extends React.Component {
                           description={
                             <span
                               style={{
-                                display: "flex"
+                                display: 'flex'
                               }}
                             >
                               <span
                                 style={{
-                                  marginRight: "15px",
-                                  fontWeight: 500,
-                                  width: "175px",
-                                  color: "black"
+                                  marginRight: '15px',
+                                  fontWeight: item.lastMessage.read ? 100 : 500,
+                                  width: '175px',
+                                  color: 'black'
                                 }}
                               >
                                 {capitalize(item.recipient)}
                               </span>
+                              <Badge style={{marginRight:'20px'}}count={item.unread} />
                               <span
                                 style={{
                                   fontWeight: 500,
-                                  color: "black"
+                                  color: 'black'
                                 }}
                               >
                                 {capitalize(item.subject)}
-                              </span>{" "}
-                              -{" "}
+                              </span>{' '}
+                              -{' '}
                               {item.lastMessage.content
-                                .replace(/<[^>]*>?/gm, "")
-                                .replace(/&nbsp;/gi, "")
-                                .slice(0, 50) + "..."}
+                                .replace(/<[^>]*>?/gm, '')
+                                .replace(/&nbsp;/gi, '')
+                                .slice(0, 50) + '...'}
                             </span>
                           }
                         />
@@ -202,35 +205,37 @@ class Notifications extends React.Component {
                     )}
                   />
                 ) : (
-                  <div className="text-center" style={{ margin: "50px" }}>
+                  <div className='text-center' style={{ margin: '50px' }}>
                     <img
-                      src="https://gw.alipayobjects.com/zos/rmsportal/sAuJeJzSKbUmHfBQRzmZ.svg"
-                      alt="not found"
+                      src='https://gw.alipayobjects.com/zos/rmsportal/sAuJeJzSKbUmHfBQRzmZ.svg'
+                      alt='not found'
                     />
                     <p>You have no new messages</p>
                   </div>
                 )}
               </TabPane>
-              <TabPane tab="Approval Requests" key="2">
-                <div className="text-center" style={{ margin: "50px" }}>
+              <TabPane tab='Approval Requests' key='2'>
+                <div className='text-center' style={{ margin: '50px' }}>
                   <img
-                    src="https://gw.alipayobjects.com/zos/rmsportal/sAuJeJzSKbUmHfBQRzmZ.svg"
-                    alt="not found"
+                    src='https://gw.alipayobjects.com/zos/rmsportal/sAuJeJzSKbUmHfBQRzmZ.svg'
+                    alt='not found'
                   />
                   <p>You have no new requests</p>
                 </div>
               </TabPane>
-              <TabPane tab="Broadcasts" key="3">
+              <TabPane tab='Broadcasts' key='3'>
                 {state.broadcasts.length > 0 ? (
                   <List
-                    itemLayout="horizontal"
+                    itemLayout='horizontal'
                     dataSource={state.broadcasts}
                     renderItem={item => (
                       <List.Item
-                        className="threads"
+                        className='threads'
                         onClick={() => {
                           this.props.history.push({
-                            pathname: `/${this.props.global.user.role}/feedback/single`,
+                            pathname: `/${
+                              this.props.global.user.role
+                            }/feedback/single`,
                             data: item
                           });
                         }}
@@ -239,15 +244,15 @@ class Notifications extends React.Component {
                           description={
                             <span
                               style={{
-                                display: "flex"
+                                display: 'flex'
                               }}
                             >
                               <span
                                 style={{
-                                  marginRight: "15px",
+                                  marginRight: '15px',
                                   fontWeight: 500,
-                                  width: "175px",
-                                  color: "black"
+                                  width: '200px',
+                                  color: 'black'
                                 }}
                               >
                                 {capitalize(item.recipient)}
@@ -255,16 +260,16 @@ class Notifications extends React.Component {
                               <span
                                 style={{
                                   fontWeight: 500,
-                                  color: "black"
+                                  color: 'black'
                                 }}
                               >
                                 {capitalize(item.subject)}
-                              </span>{" "}
-                              -{" "}
+                              </span>{' '}
+                              -{' '}
                               {item.lastMessage.content
-                                .replace(/<[^>]*>?/gm, "")
-                                .replace(/&nbsp;/gi, "")
-                                .slice(0, 50) + "..."}
+                                .replace(/<[^>]*>?/gm, '')
+                                .replace(/&nbsp;/gi, '')
+                                .slice(0, 50) + '...'}
                             </span>
                           }
                         />
@@ -273,10 +278,10 @@ class Notifications extends React.Component {
                     )}
                   />
                 ) : (
-                  <div className="text-center" style={{ margin: "50px" }}>
+                  <div className='text-center' style={{ margin: '50px' }}>
                     <img
-                      src="https://gw.alipayobjects.com/zos/rmsportal/sAuJeJzSKbUmHfBQRzmZ.svg"
-                      alt="not found"
+                      src='https://gw.alipayobjects.com/zos/rmsportal/sAuJeJzSKbUmHfBQRzmZ.svg'
+                      alt='not found'
                     />
                     <p>You have no broadcasts</p>
                   </div>
@@ -292,11 +297,11 @@ class Notifications extends React.Component {
 
 export default withGlobalContext(withStyles(styles)(Notifications));
 const center = {
-  position: "absolute",
-  left: "58.3%",
-  top: "50%",
-  "-webkit-transform": "translate(-50%, -50%)",
-  transform: "translate(-50%, -50%)"
+  position: 'absolute',
+  left: '58.3%',
+  top: '50%',
+  WebkitTransform: 'translate(-50%, -50%)',
+  transform: 'translate(-50%, -50%)'
 };
 const capitalize = str => {
   if (str) {
