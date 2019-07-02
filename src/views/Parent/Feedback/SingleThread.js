@@ -454,56 +454,64 @@ class Add extends React.Component {
                   }}
                   style={{ width: '100%' }}
                 >
-                  <CKEditor
-                    style={{ width: '100%' }}
-                    editor={ClassicEditor}
-                    data={state.data}
-                    onInit={editor => {
-                      // You can store the "editor" and use when it is needed.
+                  {state.conversation.type !== 'broadcast' ? (
+                    <>
+                      {' '}
+                      <CKEditor
+                        style={{ width: '100%' }}
+                        editor={ClassicEditor}
+                        data={state.data}
+                        onInit={editor => {
+                          // You can store the "editor" and use when it is needed.
 
-                      console.log('Editor is ready to use!', editor);
-                    }}
-                    config={{
-                      toolbar: [
-                        'bold',
-                        'italic',
-                        'bulletedList',
-                        'numberedList',
-                        'blockQuote',
-                        'Heading',
-                        'Link'
-                      ]
-                    }}
-                    onChange={(event, editor) => {
-                      const data = editor.getData();
-                      if (data == '' && !state.open) {
-                        this.setState({
-                          dataError: 'Message is required!'
-                        });
-                      } else {
-                        this.setState({ dataError: null });
-                      }
-                      this.setState({ data });
-                      console.log({ event, editor, data });
-                    }}
-                    onBlur={editor => {
-                      console.log('Blur.', editor);
-                    }}
-                    onFocus={editor => {
-                      console.log('Focus.', editor);
-                    }}
-                  />
-                  <p style={{ color: 'red' }}>{state.dataError}</p>
-                  <br />
-                  <div className='text-center'>
-                    {state.sending ? (
-                      <Spin indicator={antIcon} />
-                    ) : (
-                      <Button type='primary' onClick={this.handleSendMessage}>
-                        Send
-                      </Button>
-                    )}
-                  </div>
+                          console.log('Editor is ready to use!', editor);
+                        }}
+                        config={{
+                          toolbar: [
+                            'bold',
+                            'italic',
+                            'bulletedList',
+                            'numberedList',
+                            'blockQuote',
+                            'Heading',
+                            'Link'
+                          ]
+                        }}
+                        onChange={(event, editor) => {
+                          const data = editor.getData();
+                          if (data == '' && !state.open) {
+                            this.setState({
+                              dataError: 'Message is required!'
+                            });
+                          } else {
+                            this.setState({ dataError: null });
+                          }
+                          this.setState({ data });
+                          console.log({ event, editor, data });
+                        }}
+                        onBlur={editor => {
+                          console.log('Blur.', editor);
+                        }}
+                        onFocus={editor => {
+                          console.log('Focus.', editor);
+                        }}
+                      />
+                      <p style={{ color: 'red' }}>{state.dataError}</p>
+                      <br />
+                      <div className='text-center'>
+                        {state.sending ? (
+                          <Spin indicator={antIcon} />
+                        ) : (
+                          <Button
+                            type='primary'
+                            onClick={this.handleSendMessage}
+                          >
+                            Send
+                          </Button>
+                        )}
+                      </div>
+                    </>
+                  ) : null}
                 </div>
               </div>
             </Card>

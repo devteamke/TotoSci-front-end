@@ -220,15 +220,7 @@ class Notifications extends React.Component {
                   </div>
                 )}
               </TabPane>
-              <TabPane tab='Approval Requests' key='2'>
-                <div className='text-center' style={{ margin: '50px' }}>
-                  <img
-                    src='https://gw.alipayobjects.com/zos/rmsportal/sAuJeJzSKbUmHfBQRzmZ.svg'
-                    alt='not found'
-                  />
-                  <p>You have no new requests</p>
-                </div>
-              </TabPane>
+
               <TabPane tab='Broadcasts' key='3'>
                 {state.broadcasts.length > 0 ? (
                   <List

@@ -497,93 +497,119 @@ class Add extends React.Component {
       return <></>;
     }
     const NestedTable = () => {
+      const expandedRowRender = (row) => {
+        let menu = (
+          <Menu>
+            <Menu.Item style={{ height: "30px" }} onClick={this._handleEdit}>
+              <Icon style={{ fontSize: 15 }} type={"edit"} /> Comment
+            </Menu.Item>
+            <Menu.Item
+              style={{ height: "30px" }}
+              onClick={this.showDeleteConfirm}>
+              <Icon style={{ fontSize: 15 }} type={"delete"} /> Delete
+            </Menu.Item>
+          </Menu>
+        );
+        const columns = [
+          { title: "Week", dataIndex: "week", key: "week" },
+          { title: "Remarks", dataIndex: "remarks", key: "remarks" },
+          {
+            title: "Status",
+            key: "state",
+            render: () => (
+              <span>
+                <Badge status="success" />
+                Paid
+              </span>
+            )
+          },
+
+          {
+            title: "Action",
+            dataIndex: "operation",
+            key: "operation",
+            render: () => (
+              <span className="table-operation">
+                <Dropdown overlay={menu}>
+                  <a href="javascript:;">More</a>
+                </Dropdown>
+              </span>
+            )
+          }
+        ];
+        console.log("Ateended", row.key);
+        const data = [];
+        this.state.studentCourses.map((each, i) => {
+          if (row.key == i) {
+            each.attendance.map((attended, j) => {
+              if (attended.ident == each.key) {
+                data.push({
+                  key: i + j,
+                  week: unKebab(attended.week),
+                  remarks: attended.remarks
+                });
+              }
+            });
+          }
+        });
+
+        return (
+          <>
+            <p 
+            style={{
+             
+              marginBottom: 24,
+              fontWeight: 700,
+                display: 'flex',
+                textAlign:'center',
+                justifyContent: 'center',
+                        display: "inline-block"
+            }}>Attended Classes</p>
+            <Table columns={columns} dataSource={data} pagination={false} />
+          </>
+        );
+      };
+
       const menu = (
         <Menu>
           <Menu.Item>Action 1</Menu.Item>
           <Menu.Item>Action 2</Menu.Item>
         </Menu>
       );
-      const expandedRowRender = () => {
-        const columns = [
-          { title: "Name", dataIndex: "name", key: "name" },
-          { title: "Course", dataIndex: "course", key: "course" },
-          { title: "Charge", dataIndex: "charge", key: "charge" },
-          {
-            title: "Description",
-            dataIndex: "description",
-            key: "description"
-          },
-          { title: "Trainer", dataIndex: "trainer", 
-          key: "trainer" },
-          { title: "Day", dataIndex: "day", key: "day" },
-          { title: "Time", dataIndex: "time", key: "time" },
-          {
-            title: "Action",
-            key: "operation",
-            render: () => <a href="javascript:;">Publish</a>
-          }
-        ];
-        
-        const data = [];
-        this.state.studentCourses.map((each, i) => {
-          data.push({
-            key: each.i,
-            name: capitalize(each.name),
-            course: capitalize(each.course[0].name),
-            charge: each.course[0].charge,
-            desciption: each.course[0].description,
-            trainer:
-              capitalize(each.trainer[0].fname) +
-              " " +
-              capitalize(each.trainer[0].lname),
-            day: capitalize(each.day),
-            time: moment(each.start_time).format("h:mm:ss a")
-          });
-        });
-        return <Table columns={columns} dataSource={data} pagination={false} />;
-      };
 
       const columns = [
-        { title: "Week", dataIndex: "week", key: "week" },
-        { title: "Remarks", dataIndex: "remarks", key: "remarks" },
+        { title: "Name", dataIndex: "name", key: "name" },
+        { title: "Course", dataIndex: "course", key: "course" },
+        { title: "Charge", dataIndex: "charge", key: "charge" },
         {
-          title: "Status",
-          key: "state",
-          render: () => (
-            <span>
-              <Badge status="success" />
-              Paid
-            </span>
-          )
+          title: "Description",
+          dataIndex: "description",
+          key: "description"
         },
-
+        { title: "Trainer", dataIndex: "trainer", key: "trainer" },
+        { title: "Day", dataIndex: "day", key: "day" },
+        { title: "Time", dataIndex: "time", key: "time" },
         {
           title: "Action",
-          dataIndex: "operation",
           key: "operation",
-          render: () => (
-            <span className="table-operation">
-              <a href="javascript:;">Pause</a>
-              <a href="javascript:;">Stop</a>
-              <Dropdown overlay={menu}>
-                <a href="javascript:;">
-                  More <Icon type="down" />
-                </a>
-              </Dropdown>
-            </span>
-          )
+          render: () => <a href="javascript:;">Ask More About</a>
         }
       ];
 
       const data = [];
       this.state.studentCourses.map((each, i) => {
-        console.log("Ateended", i, each.attendance);
-        each.attendance.map((attended, j) => {
-          data.push({
-            key: j,
-            week: unKebab(attended.week),
-            remarks: attended.remarks
-          });
+        data.push({
+          key: i,
+          name: capitalize(each.name),
+          course: capitalize(each.course[0].name),
+          charge: each.course[0].charge,
+          description: each.course[0].description,
+          trainer:
+            capitalize(each.trainer[0].fname) +
+            " " +
+            capitalize(each.trainer[0].lname),
+          day: capitalize(each.day),
+          time: moment(each.start_time).format("h:mm:ss a")
         });
       });
 
@@ -591,8 +617,8 @@ class Add extends React.Component {
         <Table
           className="components-table-demo-nested"
           columns={columns}
-          expandedRowRender={data}
-          dataSource={expandedRowRender}
+          expandedRowRender={expandedRowRender}
+          dataSource={data}
         />
       );
     };
@@ -680,10 +706,7 @@ class Add extends React.Component {
               ) : (
                 <div className="text-center" style={{ height: 300 }}>
                   <p style={{ marginTop: 145 }}>
-                    {" "}
-                    {state.query
-                      ? `No records found matching \" ${state.query}\"`
-                      : "No students yet"}
+                    Student not enrolled in any course or class
                   </p>{" "}
                 </div>
               )}
@@ -729,4 +752,13 @@ export default Form.create({ name: "register" })(
 //form functions
 const hasErrors = (fieldsError) => {
   return Object.keys(fieldsError).some((field) => fieldsError[field]);
+};
+const pStyle = {
+  fontSize: 16,
+  color: "rgba(0,0,0,0.85)",
+  lineHeight: "20px",
+  display: "block",
+  marginBottom: 16,
+  
+
 };

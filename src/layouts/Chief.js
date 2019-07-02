@@ -98,6 +98,9 @@ class Slider extends React.Component {
   callback = key => {
     console.log(key);
   };
+  handleVisibleChange = flag => {
+    this.setState({ visible: flag });
+  };
   _fetchNotifications = () => {
     this.setState({ sending: true });
     const FetchAsync = async () =>
@@ -171,6 +174,7 @@ class Slider extends React.Component {
   render() {
     const role = this.props.global.user.role;
     const { state } = this;
+    const broken = this.state.broken;
     return (
       <Layout style={{ minHeight: '100vh' }}>
         <Sider
@@ -361,13 +365,16 @@ class Slider extends React.Component {
                   />
                 </Menu.Item>
               </SubMenu>
-              <Menu.Item style={{ float: 'right' }}>
+              <Menu.Item
+                style={{ float: 'right', marginRight: broken ? '40px' : '0px' }}
+              >
                 <Dropdown
+                  placement={broken ? 'bottomCenter' : 'bottomLeft'}
                   visible={state.visible}
+                  onVisibleChange={this.handleVisibleChange}
                   onClick={() => {
                     this.setState({ visible: !state.visible });
                   }}
-                  trigger={['click']}
                   overlay={
                     <Menu>
                       <Tabs
@@ -442,11 +449,13 @@ class Slider extends React.Component {
                                         {item.lastMessage.content
                                           .replace(/<[^>]*>?/gm, '')
                                           .replace(/&nbsp;/gi, '')
-                                          .slice(0, 20) + '...'}{' '}
+                                          .slice(0, 10) + '...'}{' '}
+                                      </span>
+                                      <span style={{ float: 'right' }}>
+                                        {' '}
                                         {moment(item.createdAt).fromNow()}
                                       </span>
                                     </span>
-                                    <Divider style={{ margin: 0 }} />
                                   </span>
                                 );
                               })}
@@ -474,12 +483,33 @@ class Slider extends React.Component {
                           </div>
                         </TabPane>
                       </Tabs>
+                      <Menu.Divider />
+                      {/* <Divider style={{ margin: 0 }} />
+                </Menu.Item> */}
+                      <Menu.Item
+                        key='i2'
+                        onClick={() => {
+                          this.setState({
+                            visible: !state.visible
+                          });
+                          this.props.history.push({
+                            pathname: `/${role}/feedback`
+                          });
+                        }}
+                      >
+                        <p style={{ textAlign: 'center' }}>View all</p>
+                      </Menu.Item>
                     </Menu>
                   }
                 >
                   <span className='submenu-title-wrapper'>
                     <Badge count={state.messages.length} overflowCount={9}>
-                      <Icon type='bell' style={{ fontSize: 24 }} />
+                      <Icon
+                        type='bell'
+                        style={{
+                          fontSize: 24
+                        }}
+                      />
                     </Badge>
                   </span>
                 </Dropdown>
