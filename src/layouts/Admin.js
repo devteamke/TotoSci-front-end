@@ -8,6 +8,7 @@ import "perfect-scrollbar/css/perfect-scrollbar.css";
 // @material-ui/core components
 import withStyles from "@material-ui/core/styles/withStyles";
 // core components
+import 'bootstrap-css-only/css/bootstrap.min.css';
 import Navbar from "../components/dcomponents/Navbars/Navbar.jsx";
 import Footer from "../components/dcomponents//Footer/Footer.jsx";
 import Sidebar from "../components/dcomponents//Sidebar/Sidebar.jsx";

@@ -17,6 +17,7 @@ import { withGlobalContext } from '../context/Provider';
 import { Switch, Route, Redirect } from 'react-router-dom';
 import routes from '../routes/chiefRoutes';
 import globals from '../constants/Globals';
+
 //scrollbar
 import PerfectScrollbar from '@opuscapita/react-perfect-scrollbar';
 import moment from 'moment';

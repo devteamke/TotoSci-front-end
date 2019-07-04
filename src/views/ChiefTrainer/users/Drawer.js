@@ -82,7 +82,9 @@ class CustomDrawer extends React.Component {
           act.setState({ updating: true });
           const deleteAsync = async () =>
             await (await fetch(
-              `${globals.BASE_URL}/api/${act.props.global.user.role}/remove_user`,
+              `${globals.BASE_URL}/api/${
+                act.props.global.user.role
+              }/remove_user`,
               {
                 method: "DELETE",
                 mode: "cors", // no-cors, cors, *same-origin
@@ -101,7 +103,7 @@ class CustomDrawer extends React.Component {
             )).json();
 
           deleteAsync()
-            .then(data => {
+            .then((data) => {
               //this.setState({currentPlace:data.results})
               act.setState({
                 open: true,
@@ -124,7 +126,7 @@ class CustomDrawer extends React.Component {
               } else {
               }
             })
-            .catch(error => {
+            .catch((error) => {
               console.log("Got error", error);
               if (error == "TypeError: Failed to fetch") {
                 //   alert('Server is offline')
@@ -190,7 +192,9 @@ class CustomDrawer extends React.Component {
       this.setState({ updating: true });
       const SaveAsync = async () =>
         await (await fetch(
-          `${globals.BASE_URL}/api/${this.props.global.user.role}/update_course`,
+          `${globals.BASE_URL}/api/${
+            this.props.global.user.role
+          }/update_course`,
           {
             method: "PATCH",
             mode: "cors", // no-cors, cors, *same-origin
@@ -209,7 +213,7 @@ class CustomDrawer extends React.Component {
         )).json();
 
       SaveAsync()
-        .then(data => {
+        .then((data) => {
           //this.setState({currentPlace:data.results})
           this.setState({
             open: true,
@@ -234,7 +238,7 @@ class CustomDrawer extends React.Component {
           } else {
           }
         })
-        .catch(error => {
+        .catch((error) => {
           console.log(error);
           if (error == "TypeError: Failed to fetch") {
             //   alert('Server is offline')
@@ -279,7 +283,7 @@ class CustomDrawer extends React.Component {
     });
     this._fetchInstructors();
   };
-  handleAssignOk = e => {
+  handleAssignOk = (e) => {
     const state = this.state;
     console.log(e);
     this.setState({
@@ -291,7 +295,9 @@ class CustomDrawer extends React.Component {
   _addSelectedInstructors = () => {
     const FetchAsync = async () =>
       await (await fetch(
-        `${globals.BASE_URL}/api/${this.props.global.user.role}/assign_instructor_to_trainer`,
+        `${globals.BASE_URL}/api/${
+          this.props.global.user.role
+        }/assign_instructor_to_trainer`,
         {
           method: "post",
           mode: "cors", // no-cors, cors, *same-origin
@@ -312,7 +318,7 @@ class CustomDrawer extends React.Component {
       )).json();
 
     FetchAsync()
-      .then(data => {
+      .then((data) => {
         if (data.success) {
           this._snack({
             type: data.success ? "success" : "warning",
@@ -334,7 +340,7 @@ class CustomDrawer extends React.Component {
         } else {
         }
       })
-      .catch(error => {
+      .catch((error) => {
         console.log(error);
         if (error == "TypeError: Failed to fetch") {
           //   alert('Server is offline')
@@ -350,7 +356,7 @@ class CustomDrawer extends React.Component {
         console.log(error);
       });
   };
-  handleAssignCancel = e => {
+  handleAssignCancel = (e) => {
     console.log(e);
 
     console.log();
@@ -381,7 +387,7 @@ class CustomDrawer extends React.Component {
       )).json();
 
     FetchAsync()
-      .then(data => {
+      .then((data) => {
         if (data.success) {
           if (!inClass) {
             this.setState({
@@ -394,7 +400,7 @@ class CustomDrawer extends React.Component {
         } else {
         }
       })
-      .catch(error => {
+      .catch((error) => {
         console.log(error);
         if (error == "TypeError: Failed to fetch") {
           //   alert('Server is offline')
@@ -423,7 +429,14 @@ class CustomDrawer extends React.Component {
     const { form } = this.props;
     const { getFieldDecorator } = form;
     const { selectedRowKeys } = this.state;
-
+    let isMobile = false;
+    if (
+      /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+        navigator.userAgent
+      )
+    ) {
+      isMobile = true;
+    }
     const rowSelection = {
       selectedRowKeys,
       onChange: this.onSelectChange
@@ -446,9 +459,10 @@ class CustomDrawer extends React.Component {
         </Menu.Item>
       </Menu>
     );
+
     return (
       <Drawer
-        width={640}
+        width={isMobile ? "80%" : "40%"}
         placement="right"
         visible={props.visible}
         closable={false}
@@ -456,8 +470,7 @@ class CustomDrawer extends React.Component {
           this.setState({ editing: false }, () => {
             props.onClose();
           });
-        }}
-      >
+        }}>
         {/*Instructor assign modal*/}
         <Modal
           title="Assign Instructors"
@@ -470,8 +483,7 @@ class CustomDrawer extends React.Component {
                 form="myForm"
                 key="submit"
                 htmlType="submit"
-                onClick={this.handleAssignCancel}
-              >
+                onClick={this.handleAssignCancel}>
                 Cancel
               </Button>
               <Button
@@ -479,13 +491,11 @@ class CustomDrawer extends React.Component {
                 htmlType="submit"
                 onClick={this.handleAssignOk}
                 loading={state.assigningInstructors}
-                disabled={!(state.selectedRowKeys.length > 0)}
-              >
+                disabled={!(state.selectedRowKeys.length > 0)}>
                 Assign instructor(s)
               </Button>
             </>
-          ]}
-        >
+          ]}>
           {this.state.loadingInstructors ? (
             <div className="text-center">
               {" "}
@@ -507,8 +517,7 @@ class CustomDrawer extends React.Component {
               marginBottom: 24,
               fontWeight: 700,
               display: "inline-block"
-            }}
-          >
+            }}>
             Edit User Info
           </p>
           <Dropdown style={{ float: "right" }} overlay={menu}>
@@ -599,7 +608,7 @@ class CustomDrawer extends React.Component {
             {info.role != "chief-trainer" ? (
               <>
                 <p style={{ ...pStyle, fontWeight: 700 }}>School Details</p>
-                <Row></Row>
+                <Row />
                 <Row>
                   <Col span={12}>
                     <DescriptionItem
@@ -710,15 +719,13 @@ class CustomDrawer extends React.Component {
                           htmlType="submit"
                           onClick={() => {
                             this.setState({ editing: false });
-                          }}
-                        >
+                          }}>
                           Cancel
                         </Button>{" "}
                         <Button
                           type="primary"
                           htmlType="submit"
-                          onClick={this.handleSave}
-                        >
+                          onClick={this.handleSave}>
                           Save Changes
                         </Button>
                       </>
@@ -745,12 +752,12 @@ const pStyle = {
   marginBottom: 16
 };
 
-const unKebab = string => {
+const unKebab = (string) => {
   if (string) {
     string = string.replace(/-/g, " ").toLowerCase();
 
     let splitStr = string.toLowerCase().split(" ");
-    string = splitStr.map(str => {
+    string = splitStr.map((str) => {
       return str.charAt(0).toUpperCase() + str.slice(1) + " ";
     });
   }
@@ -758,7 +765,7 @@ const unKebab = string => {
   return string;
 };
 
-const capitalize = str => {
+const capitalize = (str) => {
   if (str) {
     str = str.charAt(0).toUpperCase() + str.slice(1);
   } else {
@@ -776,15 +783,13 @@ const DescriptionItem = ({ title, content }) => (
       marginBottom: 7,
 
       color: "rgba(0,0,0,0.65)"
-    }}
-  >
+    }}>
     <p
       style={{
         marginRight: 8,
         display: "inline-block",
         color: "rgba(0,0,0,0.85)"
-      }}
-    >
+      }}>
       {title}:
     </p>
     {content}

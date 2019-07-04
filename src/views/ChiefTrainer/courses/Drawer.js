@@ -264,6 +264,14 @@ class CustomDrawer extends React.Component {
     console.log("info copy", props.info);
     const { form } = this.props;
     const { getFieldDecorator } = form;
+    let isMobile = false;
+    if (
+      /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+        navigator.userAgent
+      )
+    ) {
+      isMobile = true;
+    }
     if (!props.info) {
       return <> </>;
     }
@@ -279,7 +287,7 @@ class CustomDrawer extends React.Component {
     );
     return (
       <Drawer
-        width={640}
+        width={isMobile ? "80%" : "50%"}
         placement="right"
         visible={props.visible}
         closable={false}

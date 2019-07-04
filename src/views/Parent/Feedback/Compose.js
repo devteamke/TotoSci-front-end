@@ -313,7 +313,7 @@ class AddUser extends React.Component {
     const { classes } = this.props;
     const state = this.state;
     const { getFieldDecorator } = this.props.form;
-
+    console.log('Passed props subject',this.props)
     const { autoCompleteResult } = this.state;
     const formItemLayout = {
       labelCol: {
@@ -450,8 +450,10 @@ class AddUser extends React.Component {
                 )}
                 <Form.Item label='Subject'>
                   {getFieldDecorator('subject', {
+                    initialValue: this.props.subject?this.props.subject +'Class':'',
                     rules: [
                       {
+                        
                         required: true,
                         message: 'Please input subject!'
                       }

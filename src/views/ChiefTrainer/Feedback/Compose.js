@@ -1,20 +1,20 @@
-import React from "react";
+import React from 'react';
 // @material-ui/core components
-import withStyles from "@material-ui/core/styles/withStyles";
+import withStyles from '@material-ui/core/styles/withStyles';
 
 // core components
-import Snackbar from "../../../components/dcomponents/Snackbar/Snackbar.jsx";
-import GridItem from "../../../components/dcomponents/Grid/GridItem.jsx";
-import GridContainer from "../../../components/dcomponents/Grid/GridContainer.jsx";
-import CustomInput from "../../../components/dcomponents/CustomInput/CustomInput.jsx";
+import Snackbar from '../../../components/dcomponents/Snackbar/Snackbar.jsx';
+import GridItem from '../../../components/dcomponents/Grid/GridItem.jsx';
+import GridContainer from '../../../components/dcomponents/Grid/GridContainer.jsx';
+import CustomInput from '../../../components/dcomponents/CustomInput/CustomInput.jsx';
 
-import globals from "../../../constants/Globals";
+import globals from '../../../constants/Globals';
 // @material-ui/icons
-import AddAlert from "@material-ui/icons/AddAlert";
-import { withGlobalContext } from "../../../context/Provider";
+import AddAlert from '@material-ui/icons/AddAlert';
+import { withGlobalContext } from '../../../context/Provider';
 //Markdown editor
-import CKEditor from "@ckeditor/ckeditor5-react";
-import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
+import CKEditor from '@ckeditor/ckeditor5-react';
+import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
 ///antd
 import {
   Form,
@@ -31,30 +31,32 @@ import {
   Card,
   Radio,
   Spin,
-  DatePicker
-} from "antd";
-import moment from "moment";
+  DatePicker,
+  Upload,
+  message
+} from 'antd';
+import moment from 'moment';
 
 const AutoCompleteOption = AutoComplete.Option;
 const { Option } = Select;
-const antIcon = <Icon type="loading" style={{ fontSize: 24 }} spin />;
-const antIconLarge = <Icon type="loading" style={{ fontSize: 40 }} spin />;
+const antIcon = <Icon type='loading' style={{ fontSize: 24 }} spin />;
+const antIconLarge = <Icon type='loading' style={{ fontSize: 40 }} spin />;
 const styles = {
   cardCategoryWhite: {
-    color: "rgba(255,255,255,.62)",
-    margin: "0",
-    fontSize: "14px",
-    marginTop: "0",
-    marginBottom: "0"
+    color: 'rgba(255,255,255,.62)',
+    margin: '0',
+    fontSize: '14px',
+    marginTop: '0',
+    marginBottom: '0'
   },
   cardTitleWhite: {
-    color: "#FFFFFF",
-    marginTop: "0px",
-    minHeight: "auto",
-    fontWeight: "300",
+    color: '#FFFFFF',
+    marginTop: '0px',
+    minHeight: 'auto',
+    fontWeight: '300',
     fontFamily: "'Roboto', 'Helvetica', 'Arial', sans-serif",
-    marginBottom: "3px",
-    textDecoration: "none"
+    marginBottom: '3px',
+    textDecoration: 'none'
   }
 };
 
@@ -66,14 +68,35 @@ class AddUser extends React.Component {
       //other
       addingUser: false,
       open: false,
-      place: "bc",
-      resType: "warning",
+      place: 'bc',
+      resType: 'warning',
       autoCompleteResult: [],
       //markdown
-      data: ""
+      data: ''
     };
   }
+  props = {
+    name: 'file',
+    accept:
+      '.doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    action: this.upload
 
+    // onChange(info) {
+    //   if (info.file.status !== 'uploading') {
+    //     console.log(info.file, info.fileList);
+    //   }
+    //   if (info.file.status === 'done') {
+    //     message.success(`${info.file.name} file uploaded successfully`);
+    //   } else if (info.file.status === 'error') {
+    //     message.error(`${info.file.name} file upload failed.`);
+    //   }
+    // }
+  };
+  upload = ({ file, onSuccess }) => {
+    setTimeout(() => {
+      //   onSuccess('ok');
+    }, 0);
+  };
   _snack = params => {
     if (this.props.location.snack) {
       let snack = this.props.location.snack;
@@ -103,13 +126,13 @@ class AddUser extends React.Component {
   handleSubmit = e => {
     e.preventDefault();
     const state = this.state;
-    if (state.data == "") {
-      this.setState({ dataError: "Message is required!" });
+    if (state.data == '') {
+      this.setState({ dataError: 'Message is required!' });
     }
     this.props.form.validateFieldsAndScroll((err, values) => {
-      if (!err && state.data !== "") {
-        console.log("Received values of form: ", values);
-
+      if (!err && state.data !== '') {
+        console.log('Received values of form: ', values);
+        return;
         let data = {
           type: values.type,
           to: values.to,
@@ -120,24 +143,24 @@ class AddUser extends React.Component {
         this.setState({ sending: true });
         const FetchAsync = async () =>
           await (await fetch(`${globals.BASE_URL}/api/users/send_message`, {
-            method: "post",
-            mode: "cors", // no-cors, cors, *same-origin
-            cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
-            credentials: "same-origin", // include, *same-origin, omit
+            method: 'post',
+            mode: 'cors', // no-cors, cors, *same-origin
+            cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+            credentials: 'same-origin', // include, *same-origin, omit
             headers: {
-              "Content-Type": "application/json",
+              'Content-Type': 'application/json',
               Authorization: this.props.global.token
               // "Content-Type": "application/x-www-form-urlencoded",
             },
-            redirect: "follow", // manual, *follow, error
-            referrer: "no-referrer", // no-referrer, *client
+            redirect: 'follow', // manual, *follow, error
+            referrer: 'no-referrer', // no-referrer, *client
             body: JSON.stringify(data)
           })).json();
 
         FetchAsync()
           .then(data => {
             this._snack({
-              type: data.success ? "success" : "warning",
+              type: data.success ? 'success' : 'warning',
               msg: data.message
             });
             //this.setState({currentPlace:data.results})
@@ -146,7 +169,7 @@ class AddUser extends React.Component {
               this.setState({
                 sending: false,
                 serverRes: data.message,
-                data: "",
+                data: '',
                 dataError: null,
                 selectedRecipient: false,
                 selected: null
@@ -161,15 +184,15 @@ class AddUser extends React.Component {
           })
           .catch(error => {
             console.log(error);
-            if (error == "TypeError: Failed to fetch") {
+            if (error == 'TypeError: Failed to fetch') {
               //   alert('Server is offline')
-            } else if (error.message == "Network request failed") {
+            } else if (error.message == 'Network request failed') {
               // alert('No internet connection')
               this.setState({
-                serverRes: "Network request failed"
+                serverRes: 'Network request failed'
               });
             }
-            this._snack({ type: "warning", msg: error.toString() });
+            this._snack({ type: 'warning', msg: error.toString() });
             this.setState({ sending: false });
             console.log(error);
           });
@@ -178,10 +201,10 @@ class AddUser extends React.Component {
   };
 
   onChange = e => {
-    console.log("radio checked", e.target.value);
+    console.log('radio checked', e.target.value);
     this.props.form.setFields({
       to: {
-        value: ""
+        value: ''
       }
     });
     this.setState({
@@ -190,7 +213,7 @@ class AddUser extends React.Component {
     });
   };
   handleToChange = value => {
-    if (value.length == "5d0231026accc00c57f14281".length) {
+    if (value.length == '5d0231026accc00c57f14281'.length) {
       return;
     }
     let autoCompleteResult;
@@ -206,24 +229,26 @@ class AddUser extends React.Component {
       this.props.form.setFields({
         to: {
           value: value,
-          errors: [new Error("Please select recipient")]
+          errors: [new Error('Please select recipient')]
         }
       });
       const SearchAsync = async () =>
         await (await fetch(
-          `${globals.BASE_URL}/api/${this.props.global.user.role}/search_recipient`,
+          `${globals.BASE_URL}/api/${
+            this.props.global.user.role
+          }/search_recipient`,
           {
-            method: "post",
-            mode: "cors", // no-cors, cors, *same-origin
-            cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
-            credentials: "same-origin", // include, *same-origin, omit
+            method: 'post',
+            mode: 'cors', // no-cors, cors, *same-origin
+            cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+            credentials: 'same-origin', // include, *same-origin, omit
             headers: {
-              "Content-Type": "application/json",
+              'Content-Type': 'application/json',
               Authorization: this.props.global.token
               // "Content-Type": "application/x-www-form-urlencoded",
             },
-            redirect: "follow", // manual, *follow, error
-            referrer: "no-referrer", // no-referrer, *client
+            redirect: 'follow', // manual, *follow, error
+            referrer: 'no-referrer', // no-referrer, *client
             body: JSON.stringify({ query: value })
           }
         )).json();
@@ -243,15 +268,15 @@ class AddUser extends React.Component {
         })
         .catch(error => {
           console.log(error);
-          if (error == "TypeError: Failed to fetch") {
+          if (error == 'TypeError: Failed to fetch') {
             //   alert('Server is offline')
-          } else if (error.message == "Network request failed") {
+          } else if (error.message == 'Network request failed') {
             // alert('No internet connection')
             this.setState({
-              serverRes: "Network request failed"
+              serverRes: 'Network request failed'
             });
           }
-          this._snack({ type: "warning", msg: error.toString() });
+          this._snack({ type: 'warning', msg: error.toString() });
           this.setState({ searching: false });
           console.log(error);
         });
@@ -287,11 +312,11 @@ class AddUser extends React.Component {
         }
       }
     };
-    const prefixSelector = getFieldDecorator("prefix", {
-      initialValue: "254"
+    const prefixSelector = getFieldDecorator('prefix', {
+      initialValue: '254'
     })(
       <Select style={{ width: 90 }}>
-        <Option value="254">+254</Option>
+        <Option value='254'>+254</Option>
       </Select>
     );
 
@@ -302,7 +327,7 @@ class AddUser extends React.Component {
           this.setState({ selectedRecipient: true, selected: each });
         }}
       >
-        {capitalize(each.fname) + " " + capitalize(each.lname)} (
+        {capitalize(each.fname) + ' ' + capitalize(each.lname)} (
         {capitalize(each.role)})
       </AutoCompleteOption>
     ));
@@ -326,35 +351,35 @@ class AddUser extends React.Component {
         />
         <Row gutter={16}>
           <Col span={24}>
-            <Card title="Compose" bordered={false}>
+            <Card title='Compose' bordered={false}>
               <Form {...formItemLayout} onSubmit={this.handleSubmit}>
-                <Form.Item label="Type">
-                  {getFieldDecorator("type", {
+                <Form.Item label='Type'>
+                  {getFieldDecorator('type', {
                     rules: [
                       {
                         required: true,
-                        message: "Please select type!"
+                        message: 'Please select type!'
                       }
                     ]
                   })(
                     <Radio.Group
-                      style={{ float: "left" }}
+                      style={{ float: 'left' }}
                       onChange={this.onChange}
                       value={state.type}
                     >
-                      <Radio value={"individual"}>Individual</Radio>
-                      <Radio value={"broadcast"}>Broadcast</Radio>
+                      <Radio value={'individual'}>Individual</Radio>
+                      <Radio value={'broadcast'}>Broadcast</Radio>
                     </Radio.Group>
                   )}
-                </Form.Item>{" "}
-                {state.type == "broadcast" ? (
-                  <Form.Item label="To">
-                    {getFieldDecorator("to", {
-                      initialValue: "",
+                </Form.Item>{' '}
+                {state.type == 'broadcast' ? (
+                  <Form.Item label='To'>
+                    {getFieldDecorator('to', {
+                      initialValue: '',
                       rules: [
                         {
                           required: true,
-                          message: "Please select recepient!"
+                          message: 'Please select recepient!'
                         }
                       ]
                     })(
@@ -362,69 +387,88 @@ class AddUser extends React.Component {
                         style={{ width: 120 }}
                         onChange={this.handleChangeTo}
                       >
-                        <Option value="trainer">Trainers</Option>
-                        <Option value="instructor">Instructors</Option>
-                        <Option value="parent">Parents</Option>
-                        <Option value="disabled" disabled>
+                        <Option value='trainer'>Trainers</Option>
+                        <Option value='instructor'>Instructors</Option>
+                        <Option value='parent'>Parents</Option>
+                        <Option value='disabled' disabled>
                           All
                         </Option>
                       </Select>
                     )}
                   </Form.Item>
                 ) : (
-                  <Form.Item label="To">
-                    {getFieldDecorator("to", {
+                  <Form.Item label='To'>
+                    {getFieldDecorator('to', {
                       rules: [
                         {
                           required: true,
-                          message: "Please select recipient!"
+                          message: 'Please select recipient!'
                         }
                       ]
                     })(
                       <AutoComplete
                         dataSource={recipientOptions}
                         onChange={this.handleToChange}
-                        placeholder="Recipient..."
+                        placeholder='Recipient...'
                       >
                         <Input />
                       </AutoComplete>
                     )}
                   </Form.Item>
                 )}
-                <Form.Item label="Subject">
-                  {getFieldDecorator("subject", {
+                <Form.Item label='Subject'>
+                  {getFieldDecorator('subject', {
                     rules: [
                       {
                         required: true,
-                        message: "Please input subject!"
+                        message: 'Please input subject!'
                       }
                     ]
                   })(<Input />)}
                 </Form.Item>
-                <Form.Item label="Message">
+                <Form.Item label='Attachment(optional)'>
+                  <Upload
+                    name='file'
+                    accept='*'
+                    action={`${globals.BASE_URL}/api/users/upload`}
+                    headers={{
+                      Authorization: this.props.global.token
+                    }}
+                    onChange={({ file, fileList }) => {
+                      if (file.status !== 'uploading') {
+                        console.log(file, fileList);
+                      }
+                    }}
+                  >
+                    <Button>
+                      <Icon type='upload' /> Click to Upload
+                    </Button>
+                  </Upload>
+                </Form.Item>
+                <Form.Item label='Message'>
                   <CKEditor
                     editor={ClassicEditor}
                     data={state.data}
                     onInit={editor => {
                       // You can store the "editor" and use when it is needed.
 
-                      console.log("Editor is ready to use!", editor);
+                      console.log('Editor is ready to use!', editor);
                     }}
                     config={{
                       toolbar: [
-                        "bold",
-                        "italic",
-                        "bulletedList",
-                        "numberedList",
-                        "blockQuote",
-                        "Heading",
-                        "Link"
+                        'bold',
+                        'italic',
+                        'bulletedList',
+                        'numberedList',
+                        'blockQuote',
+                        'Heading',
+                        'Link'
                       ]
                     }}
                     onChange={(event, editor) => {
                       const data = editor.getData();
-                      if (data == "" && !state.open) {
-                        this.setState({ dataError: "Message is required!" });
+                      if (data == '' && !state.open) {
+                        this.setState({ dataError: 'Message is required!' });
                       } else {
                         this.setState({ dataError: null });
                       }
@@ -432,19 +476,19 @@ class AddUser extends React.Component {
                       console.log({ event, editor, data });
                     }}
                     onBlur={editor => {
-                      console.log("Blur.", editor);
+                      console.log('Blur.', editor);
                     }}
                     onFocus={editor => {
-                      console.log("Focus.", editor);
+                      console.log('Focus.', editor);
                     }}
                   />
-                  <p style={{ color: "red" }}>{state.dataError}</p>
+                  <p style={{ color: 'red' }}>{state.dataError}</p>
                 </Form.Item>
-                <div className="text-center">
+                <div className='text-center'>
                   {state.sending ? (
                     <Spin indicator={antIcon} />
                   ) : (
-                    <Button type="primary" htmlType="submit">
+                    <Button type='primary' htmlType='submit'>
                       Send
                     </Button>
                   )}
@@ -466,11 +510,11 @@ const capitalize = str => {
 };
 const unKebab = string => {
   if (string) {
-    string = string.replace(/-/g, " ").toLowerCase();
+    string = string.replace(/-/g, ' ').toLowerCase();
 
-    let splitStr = string.toLowerCase().split(" ");
+    let splitStr = string.toLowerCase().split(' ');
     string = splitStr.map(str => {
-      return str.charAt(0).toUpperCase() + str.slice(1) + " ";
+      return str.charAt(0).toUpperCase() + str.slice(1) + ' ';
     });
   }
 
@@ -478,13 +522,13 @@ const unKebab = string => {
 };
 
 const center = {
-  position: "absolute",
-  left: "58.3%",
-  top: "50%",
-  "-webkit-transform": "translate(-50%, -50%)",
-  transform: "translate(-50%, -50%)"
+  position: 'absolute',
+  left: '58.3%',
+  top: '50%',
+  '-webkit-transform': 'translate(-50%, -50%)',
+  transform: 'translate(-50%, -50%)'
 };
 
 export default withGlobalContext(
-  Form.create({ name: "register" })(withStyles(styles)(AddUser))
+  Form.create({ name: 'register' })(withStyles(styles)(AddUser))
 );

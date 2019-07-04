@@ -1,4 +1,5 @@
 import React from "react";
+import { Link, Route } from "react-router-dom";
 // @material-ui/core components
 import withStyles from "@material-ui/core/styles/withStyles";
 import CssBaseline from "@material-ui/core/CssBaseline";
@@ -17,16 +18,9 @@ import globals from "../../../constants/Globals";
 // @material-ui/icons
 import AddAlert from "@material-ui/icons/AddAlert";
 import { withGlobalContext } from "../../../context/Provider";
+//Compose Component
 
-import validate from "./validation";
-import {
-  MDBTable,
-  MDBTableBody,
-  MDBTableHead,
-  MDBBtn,
-  MDBIcon,
-  MDBInput
-} from "mdbreact";
+import Compose from "../Feedback/Compose";
 //antd
 import {
   Form,
@@ -498,42 +492,24 @@ class Add extends React.Component {
     }
     const NestedTable = () => {
       const expandedRowRender = (row) => {
-        let menu = (
-          <Menu>
-            <Menu.Item style={{ height: "30px" }} onClick={this._handleEdit}>
-              <Icon style={{ fontSize: 15 }} type={"edit"} /> Comment
-            </Menu.Item>
-            <Menu.Item
-              style={{ height: "30px" }}
-              onClick={this.showDeleteConfirm}>
-              <Icon style={{ fontSize: 15 }} type={"delete"} /> Delete
-            </Menu.Item>
-          </Menu>
-        );
         const columns = [
           { title: "Week", dataIndex: "week", key: "week" },
           { title: "Remarks", dataIndex: "remarks", key: "remarks" },
-          {
-            title: "Status",
-            key: "state",
-            render: () => (
-              <span>
-                <Badge status="success" />
-                Paid
-              </span>
-            )
-          },
 
           {
             title: "Action",
             dataIndex: "operation",
             key: "operation",
             render: () => (
-              <span className="table-operation">
-                <Dropdown overlay={menu}>
-                  <a href="javascript:;">More</a>
-                </Dropdown>
-              </span>
+              <>
+                <Link
+                  onClick={this.props.history.push(
+                    `/${this.props.global.user.role}/feedback/compose`
+                  )}>
+                  Comment
+                </Link>
+                
+              </>
             )
           }
         ];
@@ -555,36 +531,35 @@ class Add extends React.Component {
 
         return (
           <>
-            <p 
-            style={{
-             
-              marginBottom: 24,
-              fontWeight: 700,
-                display: 'flex',
-                textAlign:'center',
-                justifyContent: 'center',
-                        display: "inline-block"
-            }}>Attended Classes</p>
+            <p
+              style={{
+                marginBottom: 24,
+                fontWeight: 700,
+                display: "flex",
+                textAlign: "center",
+                justifyContent: "center",
+                display: "inline-block"
+              }}>
+              Attended Classes
+            </p>
             <Table columns={columns} dataSource={data} pagination={false} />
           </>
         );
       };
-
-      const menu = (
-        <Menu>
-          <Menu.Item>Action 1</Menu.Item>
-          <Menu.Item>Action 2</Menu.Item>
-        </Menu>
-      );
 
       const columns = [
         { title: "Name", dataIndex: "name", key: "name" },
         { title: "Course", dataIndex: "course", key: "course" },
         { title: "Charge", dataIndex: "charge", key: "charge" },
         {
-          title: "Description",
-          dataIndex: "description",
-          key: "description"
+          title: "Status",
+          key: "state",
+          render: () => (
+            <span>
+              <Badge status="success" />
+              Completed
+            </span>
+          )
         },
         { title: "Trainer", dataIndex: "trainer", key: "trainer" },
         { title: "Day", dataIndex: "day", key: "day" },
@@ -603,7 +578,7 @@ class Add extends React.Component {
           name: capitalize(each.name),
           course: capitalize(each.course[0].name),
           charge: each.course[0].charge,
-          description: each.course[0].description,
+
           trainer:
             capitalize(each.trainer[0].fname) +
             " " +
@@ -612,9 +587,21 @@ class Add extends React.Component {
           time: moment(each.start_time).format("h:mm:ss a")
         });
       });
+      let isMobile = false;
 
+      if (
+        /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+          navigator.userAgent
+        )
+      ) {
+        isMobile = true;
+      }
+      let sizeOfTable = "";
+      isMobile ? (sizeOfTable = "small") : (sizeOfTable = "default");
       return (
         <Table
+          size={sizeOfTable}
+          expandRowByClick={true}
           className="components-table-demo-nested"
           columns={columns}
           expandedRowRender={expandedRowRender}
@@ -651,7 +638,7 @@ class Add extends React.Component {
         />
 
         <CssBaseline />
-        <GridContainer>
+        <GridContainer xs={12} sm={12} md={12}>
           <GridItem xs={12} sm={12} md={12}>
             <Card>
               <PageHeader
@@ -758,7 +745,5 @@ const pStyle = {
   color: "rgba(0,0,0,0.85)",
   lineHeight: "20px",
   display: "block",
-  marginBottom: 16,
-  
-
+  marginBottom: 16
 };
