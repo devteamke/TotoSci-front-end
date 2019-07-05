@@ -1231,7 +1231,14 @@ input:-webkit-autofill:focus {
 	width: 100%;
 	height: 100%;
 	overflow: hidden;
+	background: url(images/banner.jpg);
+
 }
+.overlay {
+	background: rgba(53, 56, 56, 0.36);
+	height: 100%;
+	
+  }
 .hero-area.creative .single-layer {
 	position: absolute;
 	background-size: auto auto;
@@ -1241,11 +1248,11 @@ input:-webkit-autofill:focus {
 	width: 100%;
 	height: 100%;
 }
-.hero-area.creative .single-layer.one {
+/* .hero-area.creative .single-layer.one {
 	background-image:url('images/slider/layer1.png');
 	background-position: top 0 left 0;
-}
-.hero-area.creative .single-layer.two {
+} */
+/* .hero-area.creative .single-layer.two {
 	background-image: url('images/slider/layer2.png');
 	background-position: top -40% right 0%;
 }
@@ -1261,7 +1268,7 @@ input:-webkit-autofill:focus {
 
 	background-image: url('images/slider/layer5.png');
 	background-position: right 15px bottom 20%;
-}
+} */
 .hero-area.creative .owl-item.active .single-layer.one{
 	animation: fadeIn 0.8s both 1.2s;
 }

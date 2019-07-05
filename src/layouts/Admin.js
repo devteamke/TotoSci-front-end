@@ -1,39 +1,44 @@
 /* eslint-disable */
-import React from "react";
-import PropTypes from "prop-types";
-import { Switch, Route, Redirect } from "react-router-dom";
+import React from 'react';
+import PropTypes from 'prop-types';
+import { Switch, Route, Redirect } from 'react-router-dom';
 // creates a beautiful scrollbar
-import PerfectScrollbar from "perfect-scrollbar";
-import "perfect-scrollbar/css/perfect-scrollbar.css";
+import PerfectScrollbar from 'perfect-scrollbar';
+import 'perfect-scrollbar/css/perfect-scrollbar.css';
 // @material-ui/core components
-import withStyles from "@material-ui/core/styles/withStyles";
+import withStyles from '@material-ui/core/styles/withStyles';
 // core components
-import 'bootstrap-css-only/css/bootstrap.min.css';
-import Navbar from "../components/dcomponents/Navbars/Navbar.jsx";
-import Footer from "../components/dcomponents//Footer/Footer.jsx";
-import Sidebar from "../components/dcomponents//Sidebar/Sidebar.jsx";
-import FixedPlugin from "../components/dcomponents//FixedPlugin/FixedPlugin.jsx";
 
-import routes from "../routes/adminRoutes";
+import Navbar from '../components/dcomponents/Navbars/Navbar.jsx';
+import Footer from '../components/dcomponents//Footer/Footer.jsx';
+import Sidebar from '../components/dcomponents//Sidebar/Sidebar.jsx';
+import FixedPlugin from '../components/dcomponents//FixedPlugin/FixedPlugin.jsx';
 
-import dashboardStyle from "../assets/jss/material-dashboard-react/layouts/dashboardStyle.jsx";
+import routes from '../routes/adminRoutes';
 
-import image from "../assets/img/sidebar-2.jpg";
-import logo from "../assets/img/totosci.png";
+import dashboardStyle from '../assets/jss/material-dashboard-react/layouts/dashboardStyle.jsx';
+
+import image from '../assets/img/sidebar-2.jpg';
+import logo from '../assets/img/totosci.png';
 
 import { withGlobalContext } from '../context/Provider';
 
-//Modal logout 
-import { MDBBtn, MDBModal, MDBModalHeader, MDBModalBody, MDBModalFooter } from "mdbreact";
-
+//Modal logout
+import {
+  MDBBtn,
+  MDBModal,
+  MDBModalHeader,
+  MDBModalBody,
+  MDBModalFooter
+} from 'mdbreact';
 
 const switchRoutes = (
   <Switch>
     {routes.map((prop, key) => {
-      if (prop.layout === "/admin"  ) {
+      if (prop.layout === '/admin') {
         return (
           <Route
-			exact 
+            exact
             path={prop.layout + prop.path}
             component={prop.component}
             key={key}
@@ -49,21 +54,25 @@ class Dashboard extends React.Component {
     super(props);
     this.state = {
       image: image,
-      color: "blue",
+      color: 'blue',
       hasImage: true,
-      fixedClasses: "dropdown show",
+      fixedClasses: 'dropdown show',
       mobileOpen: false,
-		//
-		logoutModal:false,
+      //
+      logoutModal: false
     };
   }
- //Weed out nested routes
+  //Weed out nested routes
   _lRoutes = () => {
-	  lRoutes =[];
-	 routes.map((r)=>{if(r.type!=='nested'){lRoutes.push(r)}else{}});
-	  console.log(lRoutes);
-	  
-  }
+    lRoutes = [];
+    routes.map(r => {
+      if (r.type !== 'nested') {
+        lRoutes.push(r);
+      } else {
+      }
+    });
+    console.log(lRoutes);
+  };
   handleImageClick = image => {
     this.setState({ image: image });
   };
@@ -71,17 +80,17 @@ class Dashboard extends React.Component {
     this.setState({ color: color });
   };
   handleFixedClick = () => {
-    if (this.state.fixedClasses === "dropdown") {
-      this.setState({ fixedClasses: "dropdown show" });
+    if (this.state.fixedClasses === 'dropdown') {
+      this.setState({ fixedClasses: 'dropdown show' });
     } else {
-      this.setState({ fixedClasses: "dropdown" });
+      this.setState({ fixedClasses: 'dropdown' });
     }
   };
   handleDrawerToggle = () => {
     this.setState({ mobileOpen: !this.state.mobileOpen });
   };
   getRoute() {
-    return this.props.location.pathname !== "/admin/maps";
+    return this.props.location.pathname !== '/admin/maps';
   }
   resizeFunction = () => {
     if (window.innerWidth >= 960) {
@@ -90,18 +99,17 @@ class Dashboard extends React.Component {
   };
 
   handleLogoutModal = () => {
-	this.setState({logoutModal:!this.state.logoutModal});
-  }
+    this.setState({ logoutModal: !this.state.logoutModal });
+  };
 
-  componentWillMount =  () => {
-	  this._lRoutes()
-  }
+  componentWillMount = () => {
+    this._lRoutes();
+  };
   componentDidMount() {
-	
-    if (navigator.platform.indexOf("Win") > -1) {
+    if (navigator.platform.indexOf('Win') > -1) {
       const ps = new PerfectScrollbar(this.refs.mainPanel);
     }
-    window.addEventListener("resize", this.resizeFunction);
+    window.addEventListener('resize', this.resizeFunction);
   }
   componentDidUpdate(e) {
     if (e.history.location.pathname !== e.location.pathname) {
@@ -112,40 +120,45 @@ class Dashboard extends React.Component {
     }
   }
   componentWillUnmount() {
-    window.removeEventListener("resize", this.resizeFunction);
+    window.removeEventListener('resize', this.resizeFunction);
   }
   render() {
     const { classes, ...rest } = this.props;
     return (
       <div className={classes.wrapper}>
-		 <MDBModal isOpen={this.state.logoutModal} toggle={this.handleLogoutModal} centered>
-			  <MDBModalHeader toggle={this.handleLogoutModal}>Logout Confirmation</MDBModalHeader>
-			  <MDBModalBody>
-			   Are you sure you want to logout?
-			  </MDBModalBody>
-			  <MDBModalFooter>
-				<MDBBtn
-					onClick={this.handleLogoutModal}>Cancel</MDBBtn>
-				<MDBBtn color="danger" onClick={this.props.global.onLogout}>Yes</MDBBtn>
-			  </MDBModalFooter>
-		 </MDBModal>	
+        <MDBModal
+          isOpen={this.state.logoutModal}
+          toggle={this.handleLogoutModal}
+          centered
+        >
+          <MDBModalHeader toggle={this.handleLogoutModal}>
+            Logout Confirmation
+          </MDBModalHeader>
+          <MDBModalBody>Are you sure you want to logout?</MDBModalBody>
+          <MDBModalFooter>
+            <MDBBtn onClick={this.handleLogoutModal}>Cancel</MDBBtn>
+            <MDBBtn color='danger' onClick={this.props.global.onLogout}>
+              Yes
+            </MDBBtn>
+          </MDBModalFooter>
+        </MDBModal>
         <Sidebar
           routes={lRoutes}
-          logoText={"Admin"}
+          logoText={'Admin'}
           logo={logo}
           image={this.state.image}
           handleDrawerToggle={this.handleDrawerToggle}
           open={this.state.mobileOpen}
           color={this.state.color}
-		  handleLogoutModal={this.handleLogoutModal}
+          handleLogoutModal={this.handleLogoutModal}
           {...rest}
         />
-        <div className={classes.mainPanel} ref="mainPanel">
+        <div className={classes.mainPanel} ref='mainPanel'>
           <Navbar
-			brandRoutes={routes}  
+            brandRoutes={routes}
             routes={lRoutes}
             handleDrawerToggle={this.handleDrawerToggle}
-			handleLogoutModal={this.handleLogoutModal}
+            handleLogoutModal={this.handleLogoutModal}
             {...rest}
           />
           {/* On the /maps route we want the map to be on full screen - this is not possible if the content and conatiner classes are present because they have some paddings which would make the map smaller */}
@@ -157,7 +170,6 @@ class Dashboard extends React.Component {
             <div className={classes.map}>{switchRoutes}</div>
           )}
           {this.getRoute() ? <Footer /> : null}
-         
         </div>
       </div>
     );

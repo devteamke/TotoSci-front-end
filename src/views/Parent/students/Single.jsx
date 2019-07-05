@@ -497,19 +497,19 @@ class Add extends React.Component {
           { title: "Remarks", dataIndex: "remarks", key: "remarks" },
 
           {
-            title: "Action",
+            title: "Comment Attended class",
             dataIndex: "operation",
             key: "operation",
             render: () => (
-              <>
-                <Link
-                  onClick={this.props.history.push(
+              <Icon
+                type="message"
+                theme="twoTone"
+                onClick={() => {
+                  this.props.history.push(
                     `/${this.props.global.user.role}/feedback/compose`
-                  )}>
-                  Comment
-                </Link>
-                
-              </>
+                  );
+                }}
+              />
             )
           }
         ];
@@ -551,6 +551,15 @@ class Add extends React.Component {
         { title: "Name", dataIndex: "name", key: "name" },
         { title: "Course", dataIndex: "course", key: "course" },
         { title: "Charge", dataIndex: "charge", key: "charge" },
+
+        { title: "Trainer", dataIndex: "trainer", key: "trainer" },
+        { title: "Day", dataIndex: "day", key: "day" },
+        { title: "Time", dataIndex: "time", key: "time" },
+        {
+          title: "Enrolled On",
+          key: "operation",
+          render: () => <a href="javascript:;">Ask More About</a>
+        },
         {
           title: "Status",
           key: "state",
@@ -560,14 +569,6 @@ class Add extends React.Component {
               Completed
             </span>
           )
-        },
-        { title: "Trainer", dataIndex: "trainer", key: "trainer" },
-        { title: "Day", dataIndex: "day", key: "day" },
-        { title: "Time", dataIndex: "time", key: "time" },
-        {
-          title: "Action",
-          key: "operation",
-          render: () => <a href="javascript:;">Ask More About</a>
         }
       ];
 
