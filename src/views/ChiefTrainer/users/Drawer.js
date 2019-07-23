@@ -13,6 +13,7 @@ import {
   Button,
   Spin,
   Radio,
+  notification,
   Menu,
   Dropdown,
   Modal,
@@ -73,10 +74,10 @@ class CustomDrawer extends React.Component {
           console.log('Info  On delete', info.i);
           let data = { role: info.role, _id: info._id };
           if (info.role == 'chief-trainer') {
-            act.props._snack({
-              type: 'warning',
-              msg: 'Not permitted for the operation'
+            notification['error']({
+              message: 'You are not permitted to perform this operation'
             });
+
             return;
           }
           act.setState({ updating: true });
@@ -127,31 +128,11 @@ class CustomDrawer extends React.Component {
               }
             })
             .catch(error => {
+              act.setState({ updating: false });
               console.log('Got error', error);
-              if (error == 'TypeError: Failed to fetch') {
-                //   alert('Server is offline')
-                this.setState({
-                  serverRes: 'Failed to contact server!'
-                });
-              } else if (error.message == 'Network request failed') {
-                // alert('No internet connection')
-                this.setState({
-                  serverRes: 'Network request failed'
-                });
-              }
-
-              act.setState({
-                open: true,
-                savingInfo: false,
-                resType: data.success ? 'success' : 'warning'
+              notification['error']({
+                message: error.toString()
               });
-              reject();
-              setTimeout(
-                function() {
-                  act.setState({ open: false });
-                }.bind(act),
-                9000
-              );
             });
         });
       },
@@ -214,18 +195,10 @@ class CustomDrawer extends React.Component {
       SaveAsync()
         .then(data => {
           //this.setState({currentPlace:data.results})
-          this.setState({
-            open: true,
-            updating: false,
-            serverRes: data.message,
-            resType: data.success ? 'success' : 'warning'
+          let type = data.success ? 'success' : 'error';
+          notification[type]({
+            message: data.message
           });
-          setTimeout(
-            function() {
-              this.setState({ open: false, updating: false });
-            }.bind(this),
-            9000
-          );
 
           if (data.success) {
             console.log('[newStudent]', data.student);
@@ -233,39 +206,20 @@ class CustomDrawer extends React.Component {
               i: state.infoCopy.i,
               obj: data.user
             });
-            this.setState({ editing: false });
+            this.setState({ editing: false, updating: false });
           } else {
           }
         })
         .catch(error => {
           console.log(error);
-          if (error == 'TypeError: Failed to fetch') {
-            //   alert('Server is offline')
-            this.setState({
-              serverRes: 'Failed to contact server!'
-            });
-          } else if (error.message == 'Network request failed') {
-            // alert('No internet connection')
-            this.setState({
-              serverRes: 'Network request failed'
-            });
-          }
-
-          this.setState({
-            open: true,
-            savingInfo: false,
-            resType: data.success ? 'success' : 'warning'
+          this.setState({ updating: false });
+          notification['error']({
+            message: error.toString()
           });
-          setTimeout(
-            function() {
-              this.setState({ open: false });
-            }.bind(this),
-            9000
-          );
         });
     });
   };
-  handleAssign = () => {};
+
   onSelectChange = (selectedRowKeys, selectedRows) => {
     console.log(
       `selectedRowKeys: ${selectedRowKeys}`,
@@ -292,6 +246,7 @@ class CustomDrawer extends React.Component {
     this._addSelectedInstructors();
   };
   _addSelectedInstructors = () => {
+    const state = this.state;
     const FetchAsync = async () =>
       await (await fetch(
         `${globals.BASE_URL}/api/${
@@ -318,41 +273,45 @@ class CustomDrawer extends React.Component {
 
     FetchAsync()
       .then(data => {
+        let type = data.success ? 'success' : 'error';
+
+        notification[type]({
+          message: data.message
+        });
         if (data.success) {
-          this._snack({
-            type: data.success ? 'success' : 'warning',
-            msg: data.message
+          this.props.onUpdateIndex({
+            i: this.props.infoCopy.i,
+            obj: data.newTrainer
+          });
+          this.setState({
+            selectedRowKeys: [],
+            assignModal: false,
+            assigningInstructors: false
           });
           console.log('[new data]', data);
-          let _class = {
-            ...this.state._class,
-            instructors: data.newClass.instructors
-          };
-          this.setState({
-            selectedRowsI: [],
-            assignModal: false,
-            assigningInstructors: false,
-            _class,
-            instructors: data.instructors,
-            reloadingI: true
-          });
+          // let _class = {
+          //   ...this.state._class,
+          //   instructors: data.newClass.instructors
+          // };
+          // this.setState({
+          //   selectedRowsI: [],
+          //   assignModal: false,
+          //   assigningInstructors: false,
+          //   _class,
+          //   instructors: data.instructors,
+          //   reloadingI: true
+          // });
         } else {
+          this.setState({ assigningInstructors: false });
         }
       })
       .catch(error => {
         console.log(error);
-        if (error == 'TypeError: Failed to fetch') {
-          //   alert('Server is offline')
-        } else if (error.message == 'Network request failed') {
-          // alert('No internet connection')
-          this.setState({
-            serverRes: 'Network request failed'
-          });
-        }
-        this.setState({ addingStudents: false });
-        this._snack({ type: 'warning', msg: error.toString() });
 
-        console.log(error);
+        this.setState({ assigningInstructors: false });
+        notification['error']({
+          message: error.toString()
+        });
       });
   };
   handleAssignCancel = e => {
@@ -360,7 +319,8 @@ class CustomDrawer extends React.Component {
 
     console.log();
     this.setState({
-      assignModal: false
+      assignModal: false,
+      assigningInstructors: false
     });
   };
   _fetchInstructors = (inClass = false) => {
@@ -401,15 +361,10 @@ class CustomDrawer extends React.Component {
       })
       .catch(error => {
         console.log(error);
-        if (error == 'TypeError: Failed to fetch') {
-          //   alert('Server is offline')
-        } else if (error.message == 'Network request failed') {
-          // alert('No internet connection')
-          this.setState({
-            serverRes: 'Network request failed'
-          });
-        }
-        this._snack({ type: 'warning', msg: error.toString() });
+
+        notification['error']({
+          message: error.toString()
+        });
 
         console.log(error);
       });
@@ -422,7 +377,7 @@ class CustomDrawer extends React.Component {
     const state = this.state;
     const props = this.props;
     const info = props.info;
-    console.log('SChools', state.schools);
+    // console.log('SChools', state.schools);
     // const isNotChief = info.role == "chief-trainer";
     console.log('info copy', props.info);
     const { form } = this.props;

@@ -102,19 +102,11 @@ class CustomDrawer extends React.Component {
         deleteAsync()
           .then(data => {
             //this.setState({currentPlace:data.results})
-            act.setState({
-              open: true,
-              updating: false,
-              serverRes: data.message,
-              resType: data.success ? 'success' : 'warning'
-            });
-            setTimeout(
-              function() {
-                act.setState({ open: false, updating: false });
-              }.bind(act),
-              9000
-            );
 
+            let type = data.success ? 'success' : 'error';
+            notification[type]({
+              message: data.message
+            });
             if (data.success) {
               console.log('[Course removed]', data);
 
@@ -124,29 +116,10 @@ class CustomDrawer extends React.Component {
           })
           .catch(error => {
             console.log('Got error', error);
-            if (error == 'TypeError: Failed to fetch') {
-              //   alert('Server is offline')
-              this.setState({
-                serverRes: 'Failed to contact server!'
-              });
-            } else if (error.message == 'Network request failed') {
-              // alert('No internet connection')
-              this.setState({
-                serverRes: 'Network request failed'
-              });
-            }
-
-            act.setState({
-              open: true,
-              savingInfo: false,
-              resType: data.success ? 'success' : 'warning'
+            act.setState({  updating: false });
+            notification['error']({
+              message: error.toString()
             });
-            setTimeout(
-              function() {
-                act.setState({ open: false });
-              }.bind(act),
-              9000
-            );
           });
       },
 
@@ -208,18 +181,11 @@ class CustomDrawer extends React.Component {
       SaveAsync()
         .then(data => {
           //this.setState({currentPlace:data.results})
-          this.setState({
-            open: true,
-            updating: false,
-            serverRes: data.message,
-            resType: data.success ? 'success' : 'warning'
+          let type = data.success ? 'success' : 'error';
+
+          notification[type]({
+            message: data.message
           });
-          setTimeout(
-            function() {
-              this.setState({ open: false, updating: false });
-            }.bind(this),
-            9000
-          );
 
           if (data.success) {
             console.log('[newStudent]', data.student);
@@ -227,35 +193,14 @@ class CustomDrawer extends React.Component {
               i: state.infoCopy.i,
               obj: data.student
             });
-            this.setState({ editing: false });
+            this.setState({ editing: false, updating: false });
           } else {
           }
         })
         .catch(error => {
-          console.log(error);
-          if (error == 'TypeError: Failed to fetch') {
-            //   alert('Server is offline')
-            this.setState({
-              serverRes: 'Failed to contact server!'
-            });
-          } else if (error.message == 'Network request failed') {
-            // alert('No internet connection')
-            this.setState({
-              serverRes: 'Network request failed'
-            });
-          }
-
-          this.setState({
-            open: true,
-            savingInfo: false,
-            resType: data.success ? 'success' : 'warning'
+          notification['error']({
+            message: error.toString()
           });
-          setTimeout(
-            function() {
-              this.setState({ open: false });
-            }.bind(this),
-            9000
-          );
         });
     });
   };
@@ -296,14 +241,7 @@ class CustomDrawer extends React.Component {
       })
       .catch(error => {
         console.log(error);
-        if (error == 'TypeError: Failed to fetch') {
-          //   alert('Server is offline')
-        } else if (error.message == 'Network request failed') {
-          // alert('No internet connection')
-          this.setState({
-            serverRes: 'Network request failed'
-          });
-        }
+
         notification['error']({
           message: error.toString()
         });

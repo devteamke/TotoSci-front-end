@@ -32,6 +32,7 @@ import {
   Radio,
   Input,
   Cascader,
+  Switch as SwitchAnt,
   Select,
   Spin,
   AutoComplete,
@@ -106,6 +107,7 @@ class AllStudents extends React.Component {
       currentStudent: '',
       //skip:0,
       //snack
+      showWithoutParents: false,
       open: false,
       place: 'bc',
       resType: 'warning',
@@ -115,6 +117,7 @@ class AllStudents extends React.Component {
       hasPrev: null,
       totalDocs: null,
       //ant table
+      withoutParents: false,
       pagination: { current: 1 },
       columns: [
         {
@@ -152,6 +155,7 @@ class AllStudents extends React.Component {
           ],
           width: '20%'
         },
+
         {
           title: 'More',
           render: (text, user, i) => (
@@ -175,6 +179,7 @@ class AllStudents extends React.Component {
   _fetchUsers = () => {
     let state = this.state;
     let data = {
+      withoutParents: state.withoutParents,
       filters: state.filters,
       sorter: state.sorter,
       limit: state.limit,
@@ -243,18 +248,10 @@ class AllStudents extends React.Component {
       })
       .catch(error => {
         console.log(error);
-        if (error == 'TypeError: Failed to fetch') {
-          this.setState({
-            serverRes: 'Failed to contact server!'
-          });
-        } else if (error.message == 'Network request failed') {
-          // alert('No internet connection')
-          this.setState({
-            serverRes: 'Network request failed'
-          });
-        }
+
         notification['error']({
           message: error.toString(),
+          duration: 0,
           description: (
             <Button
               onClick={() => {
@@ -266,12 +263,14 @@ class AllStudents extends React.Component {
               {' '}
               Retry{' '}
             </Button>
-          ),
-          duration: 0
+          )
         });
       });
   };
-
+  _updateUsers = (index) => {
+    let users = this.state.users.splice(index, 1)
+    this.setState({ users })
+  }
   _handleSearch = event => {
     const pager = { ...this.state.pagination };
     pager.current = 1;
@@ -357,15 +356,9 @@ class AllStudents extends React.Component {
       })
       .catch(error => {
         console.log(error);
-        if (error == 'TypeError: Failed to fetch') {
-          //   alert('Server is offline')
-        } else if (error.message == 'Network request failed') {
-          // alert('No internet connection')
-          this.setState({
-            serverRes: 'Network request failed'
-          });
-        }
-        // this.props._snack({ type: "warning", msg: error.toString() });
+        notification['error']({
+          message: error.toString()
+        });
 
         console.log(error);
       });
@@ -412,7 +405,44 @@ class AllStudents extends React.Component {
     this._fetchSchools();
     this._fetchUsers();
   };
+  onToggleParents = () => {
+    if (!this.state.withoutParents) {
+      this.state.columns.splice(
+        5,
+        0,
+        {
+          title: 'Add',
+          render: (text, user, i) => (
+            <Button
+              type='primary'
+              onClick={() => {
+                this.setState(
+                  { currentStudent: user._id },
+                  () => {
+                    this.showModal();
+                  }
+                );
+              }}
+            >
+              Add Parent
+                                </Button>
+          )
+        }
+      )
+    } else {
+      this.state.columns.splice(5, 1)
+    }
+    this.setState(
+      {
+        withoutParents: !this.state.withoutParents,
+        loading: true
+      },
+      () => {
+        this._fetchUsers();
 
+      }
+    );
+  };
   handleTableChange = (pagination, filters, sorter) => {
     console.log(
       '[pagination]',
@@ -461,6 +491,16 @@ class AllStudents extends React.Component {
     const state = this.state;
     //const { visible, onCancel, onCreate, form } = this.props;
     // const { getFieldDecorator } = form;
+
+    let isMobile = false;
+    if (
+      /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+        navigator.userAgent
+      )
+    ) {
+      isMobile = true;
+    }
+
     if (state.mainLoad) {
       return (
         <div style={center}>
@@ -489,8 +529,10 @@ class AllStudents extends React.Component {
           onCancel={this.handleCancel}
           onCreate={this.handleCreate}
           props={this.props}
+          users={this.state.users}
           student={this.state.currentStudent}
           saveParent={this.saveParent}
+          updateUsers={this._updateUsers}
         />
         <GridContainer>
           <GridItem xs={12} sm={12} md={12}>
@@ -499,12 +541,17 @@ class AllStudents extends React.Component {
                 <GridItem xs={12} sm={12} md={12}>
                   <div
                     style={{
-                      width: '15rem',
+                      width: '100%',
                       marginTop: '3px',
                       marginBottom: '3px',
                       float: 'left'
                     }}
                   />
+                  <div style={{ width: '15rem', float: 'left' }}>
+                    <SwitchAnt size='small' onChange={this.onToggleParents} />{' '}
+                    Show without Parents Only
+                  </div>
+
                   <div style={{ width: '15rem', float: 'right' }}>
                     <Input
                       value={state.query}
@@ -522,8 +569,9 @@ class AllStudents extends React.Component {
                   </div>
                 </GridItem>
               </GridContainer>
-              <Table 
-              size="middle"
+              <Table
+                scroll={{ x: '100%' }}
+                size='middle'
                 columns={this.state.columns}
                 rowKey={record => record._id}
                 dataSource={state.users}
@@ -737,7 +785,7 @@ const CollectionCreateForm = Form.create({ name: 'form_in_modal' })(
       const SearchAsync = async () =>
         await (await fetch(
           `${globals.BASE_URL}/api/${
-            this.props.global.user.role
+          this.props.global.user.role
           }/search_parent`,
           {
             method: 'post',
@@ -759,6 +807,7 @@ const CollectionCreateForm = Form.create({ name: 'form_in_modal' })(
         .then(data => {
           //this.setState({currentPlace:data.results})
           if (data.success) {
+
             this.setState({
               parentList: data.parents,
               searching: false
@@ -768,14 +817,7 @@ const CollectionCreateForm = Form.create({ name: 'form_in_modal' })(
         })
         .catch(error => {
           console.log(error);
-          if (error == 'TypeError: Failed to fetch') {
-            //   alert('Server is offline')
-          } else if (error.message == 'Network request failed') {
-            // alert('No internet connection')
-            this.setState({
-              serverRes: 'Network request failed'
-            });
-          }
+
           notification['error']({
             message: error.toString()
           });
@@ -803,7 +845,7 @@ const CollectionCreateForm = Form.create({ name: 'form_in_modal' })(
         const SearchAsync = async () =>
           await (await fetch(
             `${globals.BASE_URL}/api/${
-              this.props.props.global.user.role
+            this.props.props.global.user.role
             }/search_parent`,
             {
               method: 'post',
@@ -836,14 +878,7 @@ const CollectionCreateForm = Form.create({ name: 'form_in_modal' })(
           })
           .catch(error => {
             console.log(error);
-            if (error == 'TypeError: Failed to fetch') {
-              //   alert('Server is offline')
-            } else if (error.message == 'Network request failed') {
-              // alert('No internet connection')
-              this.setState({
-                serverRes: 'Network request failed'
-              });
-            }
+
             notification['error']({
               message: error.toString()
             });
@@ -896,7 +931,7 @@ const CollectionCreateForm = Form.create({ name: 'form_in_modal' })(
           const save = async () =>
             await (await fetch(
               `${globals.BASE_URL}/api/${
-                this.props.props.global.user.role
+              this.props.props.global.user.role
               }/add_parent`,
               {
                 method: 'post',
@@ -923,27 +958,23 @@ const CollectionCreateForm = Form.create({ name: 'form_in_modal' })(
               });
               //this.setState({currentPlace:data.results})
               if (data.success) {
+                let students = this.props.users;
+                let index = students.findIndex(each => each._id === this.props.student);
+                this.props.updateUsers(index)
                 this.props.form.resetFields();
-                this.setState({ saving: true });
+                this.setState({ saving: false });
                 this.props.onCancel();
               } else {
                 this.setState({
                   adding: false,
-
+                  saving: false,
                   serverRes: data.message
                 });
               }
             })
             .catch(error => {
               console.log(error);
-              if (error == 'TypeError: Failed to fetch') {
-                //   alert('Server is offline')
-              } else if (error.message == 'Network request failed') {
-                // alert('No internet connection')
-                this.setState({
-                  serverRes: 'Network request failed'
-                });
-              }
+              this.setState({ updating: false });
               notification['error']({
                 message: error.toString()
               });
@@ -1031,67 +1062,67 @@ const CollectionCreateForm = Form.create({ name: 'form_in_modal' })(
                     ) : null}
                   </>
                 ) : (
-                  <>
-                    <Form.Item label='First Name'>
-                      {getFieldDecorator('fname', {
-                        rules: [
-                          {
-                            required: true,
-                            message: 'Please input first name!'
-                          }
-                        ]
-                      })(<Input />)}
-                    </Form.Item>
-                    <Form.Item label='Last Name'>
-                      {getFieldDecorator('lname', {
-                        rules: [
-                          {
-                            required: true,
-                            message: 'Please input  last  name!'
-                          }
-                        ]
-                      })(<Input />)}
-                    </Form.Item>
-                    <Form.Item label='Email'>
-                      {getFieldDecorator('email', {
-                        rules: [
-                          {
-                            required: true,
-                            message: 'Please input email'
-                          }
-                        ]
-                      })(<Input />)}
-                    </Form.Item>
-                    <Form.Item label='Phone Number'>
-                      {getFieldDecorator('phone_number', {
-                        rules: [
-                          {
-                            required: true,
-                            message: 'Please input phone Number'
-                          }
-                        ]
-                      })(<Input />)}
-                    </Form.Item>
-                    <Form.Item label='Gender'>
-                      {getFieldDecorator('gender', {
-                        rules: [
-                          {
-                            required: true,
-                            message: 'Please select the students gender!'
-                          }
-                        ]
-                      })(
-                        <Radio.Group
-                          style={{ float: 'left' }}
-                          onChange={this.onChangeG}
-                        >
-                          <Radio value={'male'}>Male</Radio>
-                          <Radio value={'female'}>Female</Radio>
-                        </Radio.Group>
-                      )}
-                    </Form.Item>
-                  </>
-                )}
+                    <>
+                      <Form.Item label='First Name'>
+                        {getFieldDecorator('fname', {
+                          rules: [
+                            {
+                              required: true,
+                              message: 'Please input first name!'
+                            }
+                          ]
+                        })(<Input />)}
+                      </Form.Item>
+                      <Form.Item label='Last Name'>
+                        {getFieldDecorator('lname', {
+                          rules: [
+                            {
+                              required: true,
+                              message: 'Please input  last  name!'
+                            }
+                          ]
+                        })(<Input />)}
+                      </Form.Item>
+                      <Form.Item label='Email'>
+                        {getFieldDecorator('email', {
+                          rules: [
+                            {
+                              required: true,
+                              message: 'Please input email'
+                            }
+                          ]
+                        })(<Input />)}
+                      </Form.Item>
+                      <Form.Item label='Phone Number'>
+                        {getFieldDecorator('phone_number', {
+                          rules: [
+                            {
+                              required: true,
+                              message: 'Please input phone Number'
+                            }
+                          ]
+                        })(<Input />)}
+                      </Form.Item>
+                      <Form.Item label='Gender'>
+                        {getFieldDecorator('gender', {
+                          rules: [
+                            {
+                              required: true,
+                              message: 'Please select the students gender!'
+                            }
+                          ]
+                        })(
+                          <Radio.Group
+                            style={{ float: 'left' }}
+                            onChange={this.onChangeG}
+                          >
+                            <Radio value={'male'}>Male</Radio>
+                            <Radio value={'female'}>Female</Radio>
+                          </Radio.Group>
+                        )}
+                      </Form.Item>
+                    </>
+                  )}
               </Form>
             </Spin>
           </Modal>

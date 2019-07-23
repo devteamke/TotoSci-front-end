@@ -1,8 +1,6 @@
-import React from "react";
+import React from 'react';
 import {
   Drawer,
-  List,
-  Avatar,
   Divider,
   Col,
   Row,
@@ -12,18 +10,19 @@ import {
   Select,
   Button,
   Spin,
+  notification,
   Radio,
   Menu,
   Dropdown,
   InputNumber,
   Modal
-} from "antd";
+} from 'antd';
 
-import { withGlobalContext } from "../../../context/Provider";
-import globals from "../../../constants/Globals";
+import { withGlobalContext } from '../../../context/Provider';
+import globals from '../../../constants/Globals';
 const { Option } = Select;
-const antIcon = <Icon type="loading" style={{ fontSize: 24 }} spin />;
-const antIconLarge = <Icon type="loading" style={{ fontSize: 40 }} spin />;
+const antIcon = <Icon type='loading' style={{ fontSize: 24 }} spin />;
+const antIconLarge = <Icon type='loading' style={{ fontSize: 40 }} spin />;
 const confirm = Modal.confirm;
 const { TextArea } = Input;
 let count = 0;
@@ -61,32 +60,34 @@ class CustomDrawer extends React.Component {
     const act = this;
     const state = this.state;
     confirm({
-      title: "Are you sure you want to delete?",
+      title: 'Are you sure you want to delete?',
 
-      okText: "Yes",
-      okType: "danger",
-      cancelText: "No",
+      okText: 'Yes',
+      okType: 'danger',
+      cancelText: 'No',
       onOk() {
-        console.log("Info  On delete", info.i);
+        console.log('Info  On delete', info.i);
         let data = { _id: info._id };
 
         act.setState({ updating: true });
         const deleteAsync = async () =>
           await (await fetch(
-            `${globals.BASE_URL}/api/${act.props.global.user.role}/delete_course`,
+            `${globals.BASE_URL}/api/${
+              act.props.global.user.role
+            }/delete_course`,
             {
-              method: "DELETE",
-              mode: "cors", // no-cors, cors, *same-origin
-              cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
-              credentials: "same-origin", // include, *same-origin, omit
+              method: 'DELETE',
+              mode: 'cors', // no-cors, cors, *same-origin
+              cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+              credentials: 'same-origin', // include, *same-origin, omit
               headers: {
-                "Content-Type": "application/json",
+                'Content-Type': 'application/json',
                 Authorization: act.props.global.token,
-                "Access-Control-Allow-Origin": `${globals.BASE_URL}`
+                'Access-Control-Allow-Origin': `${globals.BASE_URL}`
                 // "Content-Type": "application/x-www-form-urlencoded",
               },
-              redirect: "follow", // manual, *follow, error
-              referrer: "no-referrer", // no-referrer, *client
+              redirect: 'follow', // manual, *follow, error
+              referrer: 'no-referrer', // no-referrer, *client
               body: JSON.stringify(data)
             }
           )).json();
@@ -94,56 +95,33 @@ class CustomDrawer extends React.Component {
         deleteAsync()
           .then(data => {
             //this.setState({currentPlace:data.results})
+            let type = data.success ? 'success' : 'error';
+            notification[type]({
+              message: data.message
+            });
             act.setState({
               open: true,
-              updating: false,
-              serverRes: data.message,
-              resType: data.success ? "success" : "warning"
+              updating: false
             });
-            setTimeout(
-              function() {
-                act.setState({ open: false, updating: false });
-              }.bind(act),
-              9000
-            );
 
             if (data.success) {
-              console.log("[Course removed]", data);
+              console.log('[Course removed]', data);
 
               act.props.onRemoveIndex(info.i, data);
             } else {
             }
           })
           .catch(error => {
-            console.log("Got error", error);
-            if (error == "TypeError: Failed to fetch") {
-              //   alert('Server is offline')
-              this.setState({
-                serverRes: "Failed to contact server!"
-              });
-            } else if (error.message == "Network request failed") {
-              // alert('No internet connection')
-              this.setState({
-                serverRes: "Network request failed"
-              });
-            }
-
-            act.setState({
-              open: true,
-              savingInfo: false,
-              resType: data.success ? "success" : "warning"
+            console.log('Got error', error);
+            act.setState({ updating: false });
+            notification['error']({
+              message: error.toString()
             });
-            setTimeout(
-              function() {
-                act.setState({ open: false });
-              }.bind(act),
-              9000
-            );
           });
       },
 
       onCancel() {
-        console.log("Cancel");
+        console.log('Cancel');
       }
     });
   };
@@ -152,7 +130,7 @@ class CustomDrawer extends React.Component {
     // console.log(values);
     this.props.form.validateFields((err, values) => {
       if (err) {
-        console.log("This is err", err);
+        console.log('This is err', err);
         return;
       }
       let originalData = {
@@ -162,8 +140,8 @@ class CustomDrawer extends React.Component {
         // sub_county: this.state.infoCopy.sub_county
         // role: this.infoCopy.sub_county
       };
-      console.log("Received values of form: ", values);
-      console.log("ReceivedOriginal: ", originalData);
+      console.log('Received values of form: ', values);
+      console.log('ReceivedOriginal: ', originalData);
 
       if (JSON.stringify(values) == JSON.stringify(originalData)) {
         return;
@@ -174,24 +152,26 @@ class CustomDrawer extends React.Component {
         charge: values.charge,
         description: values.description
       };
-      console.log("Changed data", data);
+      console.log('Changed data', data);
       this.setState({ updating: true });
       const SaveAsync = async () =>
         await (await fetch(
-          `${globals.BASE_URL}/api/${this.props.global.user.role}/update_course`,
+          `${globals.BASE_URL}/api/${
+            this.props.global.user.role
+          }/update_course`,
           {
-            method: "PATCH",
-            mode: "cors", // no-cors, cors, *same-origin
-            cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
-            credentials: "same-origin", // include, *same-origin, omit
+            method: 'PATCH',
+            mode: 'cors', // no-cors, cors, *same-origin
+            cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+            credentials: 'same-origin', // include, *same-origin, omit
             headers: {
-              "Content-Type": "application/json",
+              'Content-Type': 'application/json',
               Authorization: this.props.global.token,
-              "Access-Control-Allow-Origin": `${globals.BASE_URL}`
+              'Access-Control-Allow-Origin': `${globals.BASE_URL}`
               // "Content-Type": "application/x-www-form-urlencoded",
             },
-            redirect: "follow", // manual, *follow, error
-            referrer: "no-referrer", // no-referrer, *client
+            redirect: 'follow', // manual, *follow, error
+            referrer: 'no-referrer', // no-referrer, *client
             body: JSON.stringify(data)
           }
         )).json();
@@ -199,21 +179,17 @@ class CustomDrawer extends React.Component {
       SaveAsync()
         .then(data => {
           //this.setState({currentPlace:data.results})
+          let type = data.success ? 'success' : 'error';
+          notification[type]({
+            message: data.message
+          });
           this.setState({
             open: true,
-            updating: false,
-            serverRes: data.message,
-            resType: data.success ? "success" : "warning"
+            updating: false
           });
-          setTimeout(
-            function() {
-              this.setState({ open: false, updating: false });
-            }.bind(this),
-            9000
-          );
 
           if (data.success) {
-            console.log("[newStudent]", data.student);
+            console.log('[newStudent]', data.student);
             this.props.onUpdateIndex({
               i: state.infoCopy.i,
               obj: data.course
@@ -224,29 +200,10 @@ class CustomDrawer extends React.Component {
         })
         .catch(error => {
           console.log(error);
-          if (error == "TypeError: Failed to fetch") {
-            //   alert('Server is offline')
-            this.setState({
-              serverRes: "Failed to contact server!"
-            });
-          } else if (error.message == "Network request failed") {
-            // alert('No internet connection')
-            this.setState({
-              serverRes: "Network request failed"
-            });
-          }
-
-          this.setState({
-            open: true,
-            savingInfo: false,
-            resType: data.success ? "success" : "warning"
+          this.setState({ updating: false });
+          notification['error']({
+            message: error.toString()
           });
-          setTimeout(
-            function() {
-              this.setState({ open: false });
-            }.bind(this),
-            9000
-          );
         });
     });
   };
@@ -259,9 +216,9 @@ class CustomDrawer extends React.Component {
     const state = this.state;
     const props = this.props;
     const info = props.info;
-    console.log("SChools", state.schools);
+    console.log('SChools', state.schools);
     // const isNotChief = info.role == "chief-trainer";
-    console.log("info copy", props.info);
+    console.log('info copy', props.info);
     const { form } = this.props;
     const { getFieldDecorator } = form;
     let isMobile = false;
@@ -277,18 +234,18 @@ class CustomDrawer extends React.Component {
     }
     let menu = (
       <Menu>
-        <Menu.Item style={{ height: "30px" }} onClick={this._handleEdit}>
-          <Icon style={{ fontSize: 15 }} type={"edit"} /> Edit
+        <Menu.Item style={{ height: '30px' }} onClick={this._handleEdit}>
+          <Icon style={{ fontSize: 15 }} type={'edit'} /> Edit
         </Menu.Item>
-        <Menu.Item style={{ height: "30px" }} onClick={this.showDeleteConfirm}>
-          <Icon style={{ fontSize: 15 }} type={"delete"} /> Delete
+        <Menu.Item style={{ height: '30px' }} onClick={this.showDeleteConfirm}>
+          <Icon style={{ fontSize: 15 }} type={'delete'} /> Delete
         </Menu.Item>
       </Menu>
     );
     return (
       <Drawer
-        width={isMobile ? "80%" : "50%"}
-        placement="right"
+        width={isMobile ? '80%' : '50%'}
+        placement='right'
         visible={props.visible}
         closable={false}
         onClose={() => {
@@ -297,31 +254,31 @@ class CustomDrawer extends React.Component {
           });
         }}
       >
-        <div style={{ display: "block", width: "100%  " }}>
+        <div style={{ display: 'block', width: '100%  ' }}>
           <p
             style={{
               ...pStyle,
               marginBottom: 24,
               fontWeight: 700,
-              display: "inline-block"
+              display: 'inline-block'
             }}
           >
             Course Details
           </p>
-          <Dropdown style={{ float: "right" }} overlay={menu}>
-            <span style={{ float: "right" }}>
-              Actions <Icon type="down" />
+          <Dropdown style={{ float: 'right' }} overlay={menu}>
+            <span style={{ float: 'right' }}>
+              Actions <Icon type='down' />
             </span>
-          </Dropdown>{" "}
-        </div>{" "}
+          </Dropdown>{' '}
+        </div>{' '}
         {!state.editing ? (
           <>
             <Row>
               <Col span={12}>
-                <DescriptionItem title="Name" content={capitalize(info.name)} />{" "}
+                <DescriptionItem title='Name' content={capitalize(info.name)} />{' '}
               </Col>
               <Col span={12}>
-                <DescriptionItem title="Charge" content={info.charge} />{" "}
+                <DescriptionItem title='Charge' content={info.charge} />{' '}
               </Col>
             </Row>
 
@@ -339,17 +296,17 @@ class CustomDrawer extends React.Component {
             <Row>
               <Col span={12}>
                 <DescriptionItem
-                  title="Name"
+                  title='Name'
                   content={
                     capitalize(info.addedBy[0].fname) +
-                    " " +
+                    ' ' +
                     capitalize(info.addedBy[0].lname)
                   }
                 />
               </Col>
               <Col span={12}>
                 <DescriptionItem
-                  title="Email"
+                  title='Email'
                   content={capitalize(info.addedBy[0].email)}
                 />
               </Col>
@@ -357,7 +314,7 @@ class CustomDrawer extends React.Component {
             <Row>
               <Col span={12}>
                 <DescriptionItem
-                  title="Role"
+                  title='Role'
                   content={capitalize(info.addedBy[0].role)}
                 />
               </Col>
@@ -366,70 +323,70 @@ class CustomDrawer extends React.Component {
         ) : (
           <>
             {state.infoCopy ? (
-              <Form layout="vertical">
-                <Form.Item label="Name">
-                  {getFieldDecorator("name", {
+              <Form layout='vertical'>
+                <Form.Item label='Name'>
+                  {getFieldDecorator('name', {
                     initialValue: state.infoCopy.name,
                     rules: [
                       {
-                        type: "string",
+                        type: 'string',
                         required: true,
-                        message: "Please input Course name!"
+                        message: 'Please input Course name!'
                       }
                     ]
                   })(<Input />)}
                 </Form.Item>
-                <Form.Item label="Charge">
-                  {getFieldDecorator("charge", {
+                <Form.Item label='Charge'>
+                  {getFieldDecorator('charge', {
                     initialValue: state.infoCopy.charge,
                     rules: [
                       {
-                        type: "number"
+                        type: 'number'
                       },
                       {
                         required: true,
-                        message: "Please input session charge!"
+                        message: 'Please input session charge!'
                       }
                     ]
                   })(<InputNumber />)}
                 </Form.Item>
-                <Form.Item label="Description">
-                  {getFieldDecorator("description", {
+                <Form.Item label='Description'>
+                  {getFieldDecorator('description', {
                     initialValue: state.infoCopy.description,
                     rules: [
                       {
-                        type: "string",
+                        type: 'string',
                         required: true,
-                        message: "Please input course description!"
+                        message: 'Please input course description!'
                       }
                     ]
                   })(
                     <TextArea
-                      placeholder="Describe the course here..."
+                      placeholder='Describe the course here...'
                       autosize={{ minRows: 3, maxRows: 6 }}
                     />
                   )}
                 </Form.Item>
 
                 <Form.Item>
-                  <div className="text-center">
+                  <div className='text-center'>
                     {state.updating ? (
                       <Spin indicator={antIcon} />
                     ) : (
                       <>
                         <Button
-                          form="myForm"
-                          key="submit"
-                          htmlType="submit"
+                          form='myForm'
+                          key='submit'
+                          htmlType='submit'
                           onClick={() => {
                             this.setState({ editing: false });
                           }}
                         >
                           Cancel
-                        </Button>{" "}
+                        </Button>{' '}
                         <Button
-                          type="primary"
-                          htmlType="submit"
+                          type='primary'
+                          htmlType='submit'
                           onClick={this.handleSave}
                         >
                           Save Changes
@@ -448,23 +405,23 @@ class CustomDrawer extends React.Component {
 }
 
 export default withGlobalContext(
-  Form.create({ name: "form_in_modal" })(CustomDrawer)
+  Form.create({ name: 'form_in_modal' })(CustomDrawer)
 );
 const pStyle = {
   fontSize: 16,
-  color: "rgba(0,0,0,0.85)",
-  lineHeight: "24px",
-  display: "block",
+  color: 'rgba(0,0,0,0.85)',
+  lineHeight: '24px',
+  display: 'block',
   marginBottom: 16
 };
 
 const unKebab = string => {
   if (string) {
-    string = string.replace(/-/g, " ").toLowerCase();
+    string = string.replace(/-/g, ' ').toLowerCase();
 
-    let splitStr = string.toLowerCase().split(" ");
+    let splitStr = string.toLowerCase().split(' ');
     string = splitStr.map(str => {
-      return str.charAt(0).toUpperCase() + str.slice(1) + " ";
+      return str.charAt(0).toUpperCase() + str.slice(1) + ' ';
     });
   }
 
@@ -482,17 +439,17 @@ const DescriptionItem = ({ title, content }) => (
   <div
     style={{
       fontSize: 14,
-      lineHeight: "22px",
+      lineHeight: '22px',
       marginBottom: 7,
 
-      color: "rgba(0,0,0,0.65)"
+      color: 'rgba(0,0,0,0.65)'
     }}
   >
     <p
       style={{
         marginRight: 8,
-        display: "inline-block",
-        color: "rgba(0,0,0,0.85)"
+        display: 'inline-block',
+        color: 'rgba(0,0,0,0.85)'
       }}
     >
       {title}:
