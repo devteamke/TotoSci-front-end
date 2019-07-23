@@ -90,6 +90,7 @@ export class GlobalContextProvider extends React.Component {
       token: token,
       user: parseUser(user)
     });
+
     this._storeData(token);
 
     //this.setState({isAuthenticated:true})
@@ -116,7 +117,16 @@ export class GlobalContextProvider extends React.Component {
 
     if (token) {
       const user = parseUser(jwt_decode(token));
-      this.onLogin(token, user);
+
+      console.log(user.exp, ' vs ', Date.now() / 1000)
+      if (user.exp < Date.now() / 1000) {
+
+        this.onLogout()
+      } else {
+
+        this.onLogin(token, user);
+      }
+
     }
     this.setState({ loadingState: false });
   };

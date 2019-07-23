@@ -7,7 +7,7 @@ import Snackbar from '../../../components/dcomponents/Snackbar/Snackbar.jsx';
 import GridItem from '../../../components/dcomponents/Grid/GridItem.jsx';
 import GridContainer from '../../../components/dcomponents/Grid/GridContainer.jsx';
 import CustomInput from '../../../components/dcomponents/CustomInput/CustomInput.jsx';
-
+import { TweenOneGroup } from 'rc-tween-one';
 import globals from '../../../constants/Globals';
 // @material-ui/icons
 import AddAlert from '@material-ui/icons/AddAlert';
@@ -19,7 +19,7 @@ import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
 import {
   Form,
   Input,
-  Tooltip,
+  Tag,
   Icon,
   Cascader,
   Select,
@@ -72,30 +72,78 @@ class AddUser extends React.Component {
       resType: 'warning',
       autoCompleteResult: [],
       //markdown
-      data: ''
+      data: '',
+      fileList: [],
+      //tags
+      tRecipients: [],
+      inputVisible: false,
+      inputValue: ''
     };
   }
-  props = {
-    name: 'file',
-    accept:
-      '.doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-    action: this.upload
+  // props = {
+  //   name: 'file',
+  //   accept:
+  //     '.doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  //   action: this.upload
 
-    // onChange(info) {
-    //   if (info.file.status !== 'uploading') {
-    //     console.log(info.file, info.fileList);
-    //   }
-    //   if (info.file.status === 'done') {
-    //     message.success(`${info.file.name} file uploaded successfully`);
-    //   } else if (info.file.status === 'error') {
-    //     message.error(`${info.file.name} file upload failed.`);
-    //   }
-    // }
+  //   // onChange(info) {
+  //   //   if (info.file.status !== 'uploading') {
+  //   //     console.log(info.file, info.fileList);
+  //   //   }
+  //   //   if (info.file.status === 'done') {
+  //   //     message.success(`${info.file.name} file uploaded successfully`);
+  //   //   } else if (info.file.status === 'error') {
+  //   //     message.error(`${info.file.name} file upload failed.`);
+  //   //   }
+  //   // }
+  // };
+  //tags
+  handleClose = removedTag => {
+    const tags = this.state.tRecipients.filter(tag => tag !== removedTag);
+    console.log(tags);
+    this.setState({ tRecipients: tags });
   };
-  upload = ({ file, onSuccess }) => {
-    setTimeout(() => {
-      //   onSuccess('ok');
-    }, 0);
+  showInput = () => {
+    this.setState({ inputVisible: true }, () => this.input.focus());
+  };
+
+  handleRecipientConfirm = newR => {
+    // console.log('[newR]', newR);
+    // const { inputValue } = this.state;
+    let { tRecipients } = this.state;
+    //console.log('[has newR]', );
+    if (newR && !tRecipients.some(el => el._id === newR._id)) {
+      tRecipients.push(newR);
+      // tRecipients = [...tRecipients, newR];
+    }
+    console.log(tRecipients);
+    this.setState({
+      tRecipients,
+      inputVisible: false,
+      inputValue: ''
+    });
+  };
+
+  saveInputRef = input => (this.input = input);
+
+  forMap = tag => {
+    const tagElem = (
+      <Tag
+        closable
+        onClose={e => {
+          e.preventDefault();
+          this.handleClose(tag);
+        }}
+      >
+        {capitalize(tag.fname) + ' ' + capitalize(tag.lname)} (
+        {capitalize(tag.role)})
+      </Tag>
+    );
+    return (
+      <span key={tag._id} style={{ display: 'inline-block' }}>
+        {tagElem}
+      </span>
+    );
   };
   _snack = params => {
     if (this.props.location.snack) {
@@ -129,15 +177,20 @@ class AddUser extends React.Component {
     if (state.data == '') {
       this.setState({ dataError: 'Message is required!' });
     }
+    if (state.tRecipients.length == 0) {
+      this.setState({ recipientError: 'Please select recipient!' });
+    }
     this.props.form.validateFieldsAndScroll((err, values) => {
-      if (!err && state.data !== '') {
+      if (!err && state.data !== '' && state.tRecipients.length > 0) {
         console.log('Received values of form: ', values);
-        return;
+        console.log('file list values of form: ', state.fileList);
+
         let data = {
           type: values.type,
-          to: values.to,
+          to: state.tRecipients,
           subject: values.subject.trim().toLowerCase(),
-          message: state.data
+          message: state.data,
+          attachments: state.fileList
         };
 
         this.setState({ sending: true });
@@ -169,6 +222,7 @@ class AddUser extends React.Component {
               this.setState({
                 sending: false,
                 serverRes: data.message,
+                tRecipients: [],
                 data: '',
                 dataError: null,
                 selectedRecipient: false,
@@ -288,12 +342,13 @@ class AddUser extends React.Component {
     const { classes } = this.props;
     const state = this.state;
     const { getFieldDecorator } = this.props.form;
-
+    const { tRecipients, inputVisible, inputValue } = this.state;
+    const tagChild = tRecipients.map(this.forMap);
     const { autoCompleteResult } = this.state;
     const formItemLayout = {
       labelCol: {
         xs: { span: 24 },
-        sm: { span: 8 }
+        sm: { span: 4 }
       },
       wrapperCol: {
         xs: { span: 24 },
@@ -324,7 +379,8 @@ class AddUser extends React.Component {
       <AutoCompleteOption
         key={each._id}
         onClick={() => {
-          this.setState({ selectedRecipient: true, selected: each });
+          this.setState({ recipientError: null });
+          this.handleRecipientConfirm(each);
         }}
       >
         {capitalize(each.fname) + ' ' + capitalize(each.lname)} (
@@ -398,22 +454,70 @@ class AddUser extends React.Component {
                   </Form.Item>
                 ) : (
                   <Form.Item label='To'>
-                    {getFieldDecorator('to', {
-                      rules: [
-                        {
-                          required: true,
-                          message: 'Please select recipient!'
-                        }
-                      ]
-                    })(
-                      <AutoComplete
-                        dataSource={recipientOptions}
-                        onChange={this.handleToChange}
-                        placeholder='Recipient...'
+                    <div style={{ marginBottom: 0 }}>
+                      <TweenOneGroup
+                        enter={{
+                          scale: 0.8,
+                          opacity: 0,
+                          type: 'from',
+                          duration: 100,
+                          onComplete: e => {
+                            e.target.style = '';
+                          }
+                        }}
+                        leave={{
+                          opacity: 0,
+                          width: 0,
+                          scale: 0,
+                          duration: 200
+                        }}
+                        appear={false}
                       >
-                        <Input />
-                      </AutoComplete>
+                        {tagChild}
+                      </TweenOneGroup>
+                    </div>
+                    {inputVisible && (
+                      <>
+                        {getFieldDecorator('to', {
+                          rules: [
+                            {
+                              required: true,
+                              message: 'Please select recipient!'
+                            }
+                          ]
+                        })(
+                          <AutoComplete
+                            dataSource={recipientOptions}
+                            onChange={this.handleToChange}
+                            placeholder='Search recipient by name...'
+                          >
+                            <Input ref={this.saveInputRef} />
+                          </AutoComplete>
+                        )}
+
+                        {state.searchStr &&
+                        state.autoCompleteResult.length == 0 &&
+                        !state.searching ? (
+                          <p style={{ margin: '10px' }}>
+                            No user found matching "{state.searchStr}"
+                          </p>
+                        ) : null}
+                        {state.searching ? (
+                          <div className='text-center'>
+                            <Spin indicator={antIcon} />
+                          </div>
+                        ) : null}
+                      </>
                     )}
+                    {!inputVisible && (
+                      <Tag
+                        onClick={this.showInput}
+                        style={{ background: '#fff', borderStyle: 'dashed' }}
+                      >
+                        <Icon type='plus' /> New Recipient
+                      </Tag>
+                    )}
+                    <p style={{ color: 'red' }}>{state.recipientError}</p>
                   </Form.Item>
                 )}
                 <Form.Item label='Subject'>
@@ -430,13 +534,15 @@ class AddUser extends React.Component {
                   <Upload
                     name='file'
                     accept='*'
+                    //fileList={state.fileList}
                     action={`${globals.BASE_URL}/api/users/upload`}
                     headers={{
                       Authorization: this.props.global.token
                     }}
                     onChange={({ file, fileList }) => {
                       if (file.status !== 'uploading') {
-                        console.log(file, fileList);
+                        console.log('[file]', file, fileList);
+                        this.setState({ fileList: [...fileList] });
                       }
                     }}
                   >

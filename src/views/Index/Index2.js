@@ -1,5 +1,6 @@
 import React from 'react';
 import {Helmet} from "react-helmet";
+
 // import "./style.css"
 // // import "./css/bootstrap.min.css"
 // // import "./css/theme-plugins.css"
@@ -8,10 +9,13 @@ import {Helmet} from "react-helmet";
 // // import "./css/skin/skin1.css"
 import globals from '../../constants/Globals';
 import validate from "./validation";
-import { Spin, Icon,Result} from 'antd';
+import { Spin, Icon,Result, Button} from 'antd';
+import {MDBIcon} from 'mdbreact';
 import { Link } from "react-router-dom";
+import { Map, GoogleApiWrapper, Marker } from 'google-maps-react';
 const antIconLarge = <Icon type='loading' style={{ fontSize: 40 }} spin />;
 class Index extends React.Component {
+   
     state={
         loading:true,
         name:'',
@@ -54,9 +58,9 @@ class Index extends React.Component {
                 }
             
                 console.log('values from contact',data)
-                this.setState({ submitting:true, submitted:true});
+                this.setState({ submitting:true, });
                 const LoginAsync = async () =>
-                  await (await fetch(`${globals.BASE_URL}/api/users/login`, {
+                  await (await fetch(`${globals.BASE_URL}/api/website/contact_us`, {
                     method: "post",
                     mode: "cors", // no-cors, cors, *same-origin
                     cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
@@ -74,10 +78,10 @@ class Index extends React.Component {
                   .then(data => {
                     //this.setState({currentPlace:data.results})
                     if (data.success) {
-                    
+                        this.setState({submitted:true})
                       // this.props.global._logoutHelper(user.exp - user.iat);
                     } else {
-                     
+                     this.setState({failed:true})
                     }
                   })
                   .catch(error => {
@@ -93,7 +97,7 @@ class Index extends React.Component {
                         serverRes: "Network request failed"
                       });
                     }
-                    this.setState({ submitting: false });
+                    this.setState({ failed: true });
                     console.log(error);
                   });
               }
@@ -106,11 +110,53 @@ class Index extends React.Component {
            //send email
     }
 
-    componentDidMount= ()=>{
-    setTimeout(()=>{this.setState({loading:false})},1000)
+    componentDidMount= async()=>{
+        let   script = document.createElement("script");
+        script.type = 'text/javascript';
+        script.src =`${globals.PUBLIC_URL}/js/jquery.min.js`
+        script.async = true;
+        document.body.appendChild(script)
+      
+       script = document.createElement("script")
+      script.type = 'text/javascript';
+      script.src = `${globals.PUBLIC_URL}/js/bootstrap.min.js`;
+      script.async = true;
+      document.body.appendChild(script)
+    
+      script = document.createElement("script")
+      script.type = 'text/javascript';
+      script.src =`${globals.PUBLIC_URL}/js/modernizr.min.js`
+      script.async = true;
+      document.body.appendChild(script)
+    
+      script = document.createElement("script")
+      script.type = 'text/javascript';
+      script.src =`${globals.PUBLIC_URL}/js/theme-plugins.js`
+      script.async = true;
+      document.body.appendChild(script)
+        
+      setTimeout (() =>{
+        script = document.createElement("script")
+        script.type = 'text/javascript';
+        script.src =`${globals.PUBLIC_URL}/js/main.js`
+        script.async = true;
+        document.body.appendChild(script)
+      },100)
+     
+   
+      
+ 
+     
+
+    setTimeout(()=>{
+      
+        this.setState({loading:false})},2500)
+
+
     }
 
     render= () =>{
+      
         const {state}= this;
         // if (this.state.loading) {
         //     return (
@@ -121,7 +167,7 @@ class Index extends React.Component {
         //   }
         return (
             
-            <span class="no-js" lang="en">
+            <>
                     <Helmet>
         
         
@@ -173,25 +219,25 @@ class Index extends React.Component {
         height:'100%',	zIndex: 9999, display:state.loading?'':'none'}}>
                 <Spin  style={center} indicator={antIconLarge} />
             </div>
-            <body className="box-bg" >
+      
             
             <div className="boxed-layout"  >
             {/* <!-- Start Header --> */}
-                <header id="header" class="header style2 onepage">
+                <header id="header" className="header style2 onepage">
                     {/* <!-- Topbar --> */}
-                    <div class="topbar">
-                        <div class="container">
-                            <div class="row">
-                                <div class="col-md-12 col-sm-12 col-xs-12">
-                                    <div class="topbar-inner">
-                                        <div class="row">
-                                            <div class="col-md-12 col-sm-12 col-xs-12">
+                    <div className="topbar">
+                        <div className="container">
+                            <div className="row">
+                                <div className="col-md-12 col-sm-12 col-xs-12">
+                                    <div className="topbar-inner">
+                                        <div className="row">
+                                            <div className="col-md-12 col-sm-12 col-xs-12">
                                                 {/* <!-- Contact --> */}
-                                                <ul class="contact" style={{height:'27px'}}>
+                                                <ul className="contact" style={{height:'27px'}}>
                                             
-                                                    <li><i class="fa fa-phone"></i>+254 707 571 682 | +254 723 081 406</li>
-                                                    <li><i class="fa fa-envelope"></i> <a href="mailto:totosci.academy@gmail.com">totosci.academy@gmail.com   </a></li>
-                                                    <li><i class="fa fa-map"></i> Nairobi National Museum at Heri-Hub   </li>
+                                                    <li><i className="fa fa-phone"></i>+254 707 571 682 | +254 723 081 406</li>
+                                                    <li><i className="fa fa-envelope"></i> <a href="mailto:totosci.academy@gmail.com">totosci.academy@gmail.com   </a></li>
+                                                    <li><i className="fa fa-map"></i> Nairobi National Museum at Heri-Hub   </li>
                                                 </ul>
                                                 {/* <!--/ End Contact --> */}
                                             </div>
@@ -203,24 +249,24 @@ class Index extends React.Component {
                         </div>
                     </div>
                     {/* <!--/ End Topbar --> */}
-                    <div class="header-inner">
-                        <div class="container">
-                            <div class="row">
-                                <div class="col-md-2 col-sm-12 col-xs-12">
+                    <div className="header-inner">
+                        <div className="container">
+                            <div className="row">
+                                <div className="col-md-2 col-sm-12 col-xs-12">
                                     {/* <!-- Logo --> */}
-                                    <div class="logo" style={{padding:'10px'}}>
-                                        <a href="index.html"><img src="https://totosci.smartbeaver.co.ke/assets/img/logos/black-logo.png" alt="logo"/></a>
+                                    <div className="logo" style={{padding:'10px', marginTop:'10px'}}>
+                                        <a href="index.html"><img src="images/logo.png" alt="logo"/></a>
                                     </div>
                                     {/* <!--/ End Logo --> */}
-                                    <div class="mobile-nav"></div>
+                                    <div className="mobile-nav"></div>
                                 </div>
-                                <div class="col-md-10 col-sm-12 col-xs-12">
-                                    <div class="nav-area">
+                                <div className="col-md-10 col-sm-12 col-xs-12">
+                                    <div className="nav-area">
                                         {/* <!-- Main Menu --> */}
-                                        <nav class="mainmenu">
-                                            <div class="collapse navbar-collapse">	
-                                                <ul class="nav navbar-nav">
-                                                    <li class="active"><a href="#header">Home</a></li>
+                                        <nav className="mainmenu">
+                                            <div className="collapse navbar-collapse">	
+                                                <ul className="nav navbar-nav">
+                                                    <li className="active"><a href="#header">Home</a></li>
                                                     <li><a href="#about-us">Who we are</a></li>
                                                     <li><a href="#services">Our programs</a></li>
                                                     {/* <li><a href="#projects">Projects</a></li> */}
@@ -617,8 +663,12 @@ class Index extends React.Component {
                             </div>
                         </div>
                     </div>
+                    
                     <div className="row">
-                        <div className="col-md-4 col-sm-6 col-xs-12">
+                        <div  style={{margin:'0 auto'} }
+                        className="col-md-7 col-sm-8 col-xs-12">
+                        <div className="col-md-6 col-sm-6 col-xs-12">
+
                             {/* <!-- Single Team --> */}
                             <div className="single-team one default">
                                 {/* <!-- Team Head --> */}
@@ -644,7 +694,7 @@ class Index extends React.Component {
                             </div>
                             {/* <!-- End Single Team --> */}
                         </div>		
-                        <div className="col-md-4 col-sm-6 col-xs-12">
+                        <div className="col-md-6 col-sm-6 col-xs-12">
                             {/* <!-- Single Team --> */}
                             <div className="single-team two default">
                                 {/* <!-- Team Head --> */}
@@ -670,32 +720,8 @@ class Index extends React.Component {
                             </div>
                             {/* <!-- End Single Team --> */}
                         </div>	
-                        <div className="col-md-4 col-sm-6 col-xs-12">
-                            {/* <!-- Single Team --> */}
-                            <div className="single-team three default">
-                                {/* <!-- Team Head --> */}
-                                <div className="t-head">
-                                    <img src="https://totosci.smartbeaver.co.ke/assets/img/avatar/ZeddyTotoSci.jpg" alt="#"/ >
-                                    {/* <div className="t-hover">
-                                        <ul className="t-social">
-                                            <li><a href="#"><i className="fa fa-facebook"></i></a></li>
-                                            <li><a href="#"><i className="fa fa-twitter"></i></a></li>
-                                            <li><a href="#"><i className="fa fa-behance"></i></a></li>
-                                            <li><a href="#"><i className="fa fa-dribbble"></i></a></li>				
-                                        </ul>
-                                    </div> */}
-                                </div>
-                                {/* <!-- Team Bottom --> */}
-                                <div className="t-bottom">
-                                    <div className="t-icon">
-                                        <a href="#team3"><i className="fa fa-plus"></i></a>
-                                    </div>
-                                    <h2 className="t-name">Zeddy Zeitun</h2>
-                                    <p className="what">Assistant Administration</p>
-                                </div>
-                            </div>
-                            {/* <!-- End Single Team --> */}
-                        </div>		
+                     	
+                        </div>
                     
                     </div>
                     {/* <!-- Team Detailes One --> */}
@@ -786,32 +812,7 @@ class Index extends React.Component {
                     </div>
                     {/* <!--/ End Team Detailes two -->
                     <!-- Team Detailes Three --> */}
-                    <div id="team3"  style={{zIndex:500}} className="team-details three">
-                        <a href="#team3" className="cross"><i className="fa fa-remove"></i></a>
-                        <div className="row">
-                            <div className="col-md-12 col-sm-12 col-xs-12">
-                                <div className="single-team default">
-                                    {/* <div className="t-head">
-                                        <img src="http://via.placeholder.com/360x400" alt="#"/>
-                                        <div className="t-hover">
-                                            <ul className="t-social">
-                                                <li><a href="#"><i className="fa fa-facebook"></i></a></li>
-                                                <li><a href="#"><i className="fa fa-twitter"></i></a></li>
-                                                <li><a href="#"><i className="fa fa-behance"></i></a></li>
-                                                <li><a href="#"><i className="fa fa-dribbble"></i></a></li>				
-                                            </ul>
-                                        </div>
-                                    </div> */}
-                                </div>
-                            </div>	
-                            <div className="col-md-12 col-sm-12 col-xs-12">
-                                <h2>Zeddy Zeitun</h2>
-                                <p>Bachelor of Science - Kenyatta University.</p>
-                            
-                                
-                            </div>
-                        </div>	
-                    </div>
+                   
                     {/* <!--/ End Team Detailes Three -->*/}
                 
                 </div>
@@ -877,11 +878,18 @@ class Index extends React.Component {
                         {/* <!-- Contact Form --> */}
                          
                         <div className="col-md-8 col-sm-6 col-xs-12">
-                            {state.submitted?(
-                                     <>
-                                    <Result  status='success'   title="Great, you message was sent!" subTitle="We will get back to you as soon as possible." />
-                                    <Result  status='false'   title="Submission Failedt!" subTitle="Please try again." />
-                                     <>
+                            {state.failed?(
+                                   <Result  status='error'   title="An error occurred" subTitle="Please try again."  extra={
+                                    <Button type="primary" onClick={()=>{this.setState({failed:false, submitting:false})}}>
+                                    Try again
+                                    </Button>
+                                  } />
+                            ):state.submitted?(
+                                     
+                                   
+                                    <Result  status='success'   title="Great, your message was sent!" subTitle="We will get back to you as soon as possible." />
+                                   
+                                     
                             ):(   <Spin tip="Sending message..." spinning={this.state.submitting} >
                             <form className="form"  >
                                 <div className="row">
@@ -936,7 +944,7 @@ class Index extends React.Component {
                                     <!-- Single Address --> */}
                                     <div className="single-address">
                                         <span><i className="fa fa-envelope"></i>Email</span>
-                                        <p><p><a href="mailto:info@youremail.com">totosci.academy@gmail.com</a></p></p>
+                                        <p><a href="mailto:info@youremail.com" style={{textTransform:'lowercase'}}> totosci.academy@gmail.com</a></p>
                                     </div>
                                     {/* <!--/ End Single Address -->
                                     <!--/ End Single Address --> */}
@@ -956,9 +964,22 @@ class Index extends React.Component {
             {/* <!--/ End Contact -->
             
             <!-- Map Section --> */}
-            <div className="map-section">
-                <div id="myMap"></div>
+            <section className="map-section">
+            <div  style={{height:'350px',position:'relative',}}>
+                <Map
+                google={this.props.google}
+                zoom={14}
+                style={{
+                    position:'relative',
+                    width: '100%',
+                    height: '350px',
+                  }}
+                initialCenter={{ lat: -1.274257, lng: 36.814393}}
+                >
+                <Marker  title={'TotoSci Academy'} name={'TotoSci Academy'} position={{ lat: -1.274257, lng: 36.814393}} />
+                </Map>
             </div>
+            </section>
             {/* <!--/ End Map Section -->
             
             <!-- Start Call-To-Action --> */}
@@ -995,46 +1016,15 @@ class Index extends React.Component {
                 </div>
             </footer>
             </div>
-            <Helmet>
-                {/* <!-- Jquery --> */}
-                <script
-                    src={`${globals.PUBLIC_URL}/js/jquery.min.js`}
-                    type="text/javascript"
-                    ></script>
-                    {/* <!-- Bootstrap JS --> */}
-                    <script
-                    src={`${globals.PUBLIC_URL}/js/bootstrap.min.js`}
-                    type="text/javascript"
-                    ></script>
-                    {/* <!-- Modernizer JS --> */}
-                    <script
-                    src={`${globals.PUBLIC_URL}/js/modernizr.min.js`}
-                    type="text/javascript"
-                    ></script>
-                    {/* <!-- Tromas Plugins --> */}
-                    <script
-                    src={`${globals.PUBLIC_URL}/js/theme-plugins.js`}
-                    type="text/javascript"
-                    ></script>
-                    {/* <!-- Google Map JS --> */}
-                    <script
-                    src={`${globals.PUBLIC_URL}/js/googlemapapi.js`}
-                    type="text/javascript"
-                    ></script>
-                    {/* <!-- Main JS --> */}
-                    <script
-                    src={`${globals.PUBLIC_URL}/js/main.js`}
-                    type="text/javascript"
-                    ></script>
-            
-            </Helmet>
-            </body>
-            </span>
+         
+                       </>
         )
     }
 }
 
-export default Index;
+export default  GoogleApiWrapper({
+  apiKey:'AIzaSyD-dDXT3_ovgGRfe7Gb3khE1_jv-eWR7k4'
+})(Index);
 const center = {
   position: 'absolute',
   left: '50%',

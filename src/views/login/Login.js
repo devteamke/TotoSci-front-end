@@ -189,10 +189,10 @@ class App extends React.Component {
                 {' '}
                 <div
                   className='h5 text-center mb-4'
-                  style={{ marginTop: '10px' }}
+                  style={{ marginTop: '25px' }}
                 >
                   <img
-                    src={require('../../assets/img/totosci.png')}
+                    src={globals.PUBLIC_URL + '/images/logo.png'}
                     style={{ height: '50px' }}
                   />
                 </div>
@@ -238,7 +238,11 @@ class App extends React.Component {
                   valuePropName: 'checked',
                   initialValue: true
                 })(<Checkbox>Remember me</Checkbox>)}
-                <Link className='login-form-forgot' to={`/reset`}>
+                <Link
+                  style={{ float: 'right' }}
+                  className='login-form-forgot'
+                  to={`/reset`}
+                >
                   Forgot password
                 </Link>
               </Form.Item>
@@ -336,7 +340,7 @@ const center = {
   position: 'absolute',
   left: '50%',
   top: '50%',
-  '-webkit-transform': 'translate(-50%, -50%)',
+  WebkitTransform: 'translate(-50%, -50%)',
   transform: 'translate(-50%, -50%)'
 };
 

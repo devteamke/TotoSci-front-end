@@ -412,13 +412,13 @@ class Slider extends React.Component {
                                         this.props.history.push({
                                           pathname: `/${
                                             this.props.global.user.role
-                                          }/feedback/`
+                                            }/feedback/`
                                         });
                                         setTimeout(() => {
                                           this.props.history.push({
                                             pathname: `/${
                                               this.props.global.user.role
-                                            }/feedback/single`,
+                                              }/feedback/single`,
                                             data: item
                                           });
                                         }, 10);
@@ -461,17 +461,17 @@ class Slider extends React.Component {
                               })}
                             </span>
                           ) : (
-                            <div
-                              className='text-center'
-                              style={{ margin: '50px' }}
-                            >
-                              <img
-                                src='https://gw.alipayobjects.com/zos/rmsportal/sAuJeJzSKbUmHfBQRzmZ.svg'
-                                alt='not found'
-                              />
-                              <p>You have no new messages</p>
-                            </div>
-                          )}
+                              <div
+                                className='text-center'
+                                style={{ margin: '50px' }}
+                              >
+                                <img
+                                  src='https://gw.alipayobjects.com/zos/rmsportal/sAuJeJzSKbUmHfBQRzmZ.svg'
+                                  alt='not found'
+                                />
+                                <p>You have no new messages</p>
+                              </div>
+                            )}
                         </TabPane>
                         <TabPane tab='Broadcasts' key='2'>
                           <div className='text-center'>
@@ -485,7 +485,7 @@ class Slider extends React.Component {
                       </Tabs>
                       <Menu.Divider />
                       {/* <Divider style={{ margin: 0 }} />
-                </Menu.Item> */}
+                  </Menu.Item> */}
                       <Menu.Item
                         key='i2'
                         onClick={() => {
@@ -516,127 +516,127 @@ class Slider extends React.Component {
               </Menu.Item>
 
               {/* <SubMenu
-             
-                title={
-                  <span className='submenu-title-wrapper'>
-                    <Badge count={state.messages.length} overflowCount={9}>
-                      <Icon type='bell' style={{ fontSize: 24 }} />
-                    </Badge>
-                  </span>
-                }
-              >
-                <Tabs
-                  defaultActiveKey='1'
-                  onChange={this.callback}
-                  style={{ width: '20rem' }}
+              
+                  title={
+                    <span className='submenu-title-wrapper'>
+                      <Badge count={state.messages.length} overflowCount={9}>
+                        <Icon type='bell' style={{ fontSize: 24 }} />
+                      </Badge>
+                    </span>
+                  }
                 >
-                  <TabPane tab='Messages' key='1'>
-                    {state.messages.length > 0 ? (
-                      <span>
-                        {' '}
-                        {state.messages.map(item => {
-                          let sender;
-                          if (
-                            item.lastMessage.sender == item.participants[0]._id
-                          ) {
-                            sender = item.participants[0];
-                          } else {
-                            sender = item.participants[1];
-                          }
-                          return (
-                            <span key={item._id}>
-                              <span
-                                className='notifs'
-                                style={{
-                                  width: '100%',
-                                  padding: '1rem',
-                                  display: 'block'
-                                }}
-                                onClick={e => {
-                                  e.stopPropagation();
-                                  this.props.history.push({
-                                    pathname: `/${
-                                      this.props.global.user.role
-                                    }/feedback/`
-                                  });
-                                  setTimeout(() => {
+                  <Tabs
+                    defaultActiveKey='1'
+                    onChange={this.callback}
+                    style={{ width: '20rem' }}
+                  >
+                    <TabPane tab='Messages' key='1'>
+                      {state.messages.length > 0 ? (
+                        <span>
+                          {' '}
+                          {state.messages.map(item => {
+                            let sender;
+                            if (
+                              item.lastMessage.sender == item.participants[0]._id
+                            ) {
+                              sender = item.participants[0];
+                            } else {
+                              sender = item.participants[1];
+                            }
+                            return (
+                              <span key={item._id}>
+                                <span
+                                  className='notifs'
+                                  style={{
+                                    width: '100%',
+                                    padding: '1rem',
+                                    display: 'block'
+                                  }}
+                                  onClick={e => {
+                                    e.stopPropagation();
                                     this.props.history.push({
                                       pathname: `/${
                                         this.props.global.user.role
-                                      }/feedback/single`,
-                                      data: item
+                                      }/feedback/`
                                     });
-                                  }, 10);
-                                }}
-                              >
-                                <span style={{}}>
-                                  <span
-                                    style={{
-                                      marginRight: '15px',
-                                      fontWeight: 500,
-                                      width: '100px',
-                                      color: 'black'
-                                    }}
-                                  >
-                                    {capitalize(sender.fname) +
-                                      ' ' +
-                                      capitalize(sender.lname)}
+                                    setTimeout(() => {
+                                      this.props.history.push({
+                                        pathname: `/${
+                                          this.props.global.user.role
+                                        }/feedback/single`,
+                                        data: item
+                                      });
+                                    }, 10);
+                                  }}
+                                >
+                                  <span style={{}}>
+                                    <span
+                                      style={{
+                                        marginRight: '15px',
+                                        fontWeight: 500,
+                                        width: '100px',
+                                        color: 'black'
+                                      }}
+                                    >
+                                      {capitalize(sender.fname) +
+                                        ' ' +
+                                        capitalize(sender.lname)}
+                                    </span>
+                                    <span
+                                      style={{
+                                        fontWeight: 500,
+                                        color: 'black'
+                                      }}
+                                    >
+                                      {capitalize(item.subject)}
+                                    </span>{' '}
+                                    -{' '}
+                                    {item.lastMessage.content
+                                      .replace(/<[^>]*>?/gm, '')
+                                      .replace(/&nbsp;/gi, '')
+                                      .slice(0, 20) + '...'}{' '}
+                                    {moment(item.createdAt).fromNow()}
                                   </span>
-                                  <span
-                                    style={{
-                                      fontWeight: 500,
-                                      color: 'black'
-                                    }}
-                                  >
-                                    {capitalize(item.subject)}
-                                  </span>{' '}
-                                  -{' '}
-                                  {item.lastMessage.content
-                                    .replace(/<[^>]*>?/gm, '')
-                                    .replace(/&nbsp;/gi, '')
-                                    .slice(0, 20) + '...'}{' '}
-                                  {moment(item.createdAt).fromNow()}
                                 </span>
+                                <Divider style={{ margin: 0 }} />
                               </span>
-                              <Divider style={{ margin: 0 }} />
-                            </span>
-                          );
-                        })}
-                      </span>
-                    ) : (
-                      <div className='text-center' style={{ margin: '50px' }}>
+                            );
+                          })}
+                        </span>
+                      ) : (
+                        <div className='text-center' style={{ margin: '50px' }}>
+                          <img
+                            src='https://gw.alipayobjects.com/zos/rmsportal/sAuJeJzSKbUmHfBQRzmZ.svg'
+                            alt='not found'
+                          />
+                          <p>You have no new messages</p>
+                        </div>
+                      )}
+                    </TabPane>
+                    <TabPane tab='Approval Requests' key='2'>
+                      <div className='text-center'>
                         <img
                           src='https://gw.alipayobjects.com/zos/rmsportal/sAuJeJzSKbUmHfBQRzmZ.svg'
                           alt='not found'
                         />
-                        <p>You have no new messages</p>
+                        <p>You have no new requests</p>
                       </div>
-                    )}
-                  </TabPane>
-                  <TabPane tab='Approval Requests' key='2'>
-                    <div className='text-center'>
-                      <img
-                        src='https://gw.alipayobjects.com/zos/rmsportal/sAuJeJzSKbUmHfBQRzmZ.svg'
-                        alt='not found'
-                      />
-                      <p>You have no new requests</p>
-                    </div>
-                  </TabPane>
-                </Tabs>
-                <Menu.Item key='tabs'>
-                  <Divider style={{ margin: 0 }} />
-                </Menu.Item>
-                <Menu.Item
-                  key='i2'
-                  onClick={() => {
-                    this.props.history.push({
-                      pathname: `/${role}/feedback`
-                    });
-                  }}
-                >
-                  <p style={{ textAlign: 'center' }}>View all</p>
-                </Menu.Item>
-              </SubMenu> */}
+                    </TabPane>
+                  </Tabs>
+                  <Menu.Item key='tabs'>
+                    <Divider style={{ margin: 0 }} />
+                  </Menu.Item>
+                  <Menu.Item
+                    key='i2'
+                    onClick={() => {
+                      this.props.history.push({
+                        pathname: `/${role}/feedback`
+                      });
+                    }}
+                  >
+                    <p style={{ textAlign: 'center' }}>View all</p>
+                  </Menu.Item>
+                </SubMenu> */}
             </Menu>
           </Header>
           <Content style={{ margin: '24px 16px 0' }}>
@@ -659,6 +659,22 @@ class Slider extends React.Component {
                   );
                 }
               })}
+              <Route
+                exact
+                path='/**/'
+                render={(props) => {
+                  let prop = routes[0];
+                  return (
+                    <prop.component
+                      {...props}
+                      broken={this.state.broken}
+                      socket={socket}
+                    />
+                  )
+                }}
+
+                key={111}
+              />
             </Switch>
           </Content>
           <Footer style={{ textAlign: 'center' }}>©2019 TotoSci Devs</Footer>

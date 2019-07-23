@@ -1,21 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <!--   <link rel="shortcut icon" href="%PUBLIC_URL%/favicon.ico" />-->
-    <link
-      rel="shortcut icon"
-      href="https://totosci.smartbeaver.co.ke/assets/img/favicon.ico"
-      type="image/x-icon"
-    />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#000000" />
-    <!--
+
+<head>
+  <meta charset="utf-8" />
+    <link rel="shortcut icon" href="%PUBLIC_URL%/favicon.png" />
+  <link href="https://fonts.googleapis.com/css?family=Roboto+Condensed&display=swap" rel="stylesheet">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="theme-color" content="#000000" />
+  <!--
       manifest.json provides metadata used when your web app is installed on a
       user's mobile device or desktop. See https://developers.google.com/web/fundamentals/web-app-manifest/
     -->
-    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
-    <!--
+  <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+  <!--
       Notice the use of %PUBLIC_URL% in the tags above.
       It will be replaced with the URL of the `public` folder during the build.
       Only files inside the `public` folder can be referenced from the HTML.
@@ -24,112 +22,106 @@
       work correctly both with client-side routing and a non-root public URL.
       Learn how to configure a non-root public URL by running `npm run build`.
     -->
-    <title>TotoSci Academy</title>
-    <style>
-      .ant-spin-spinning {
-        position: static;
-        display: inline-block;
-        opacity: 1;
-      }
+  <title>TotoSci Academy</title>
+  <style>
+    .ant-spin-spinning {
+      position: static;
+      display: inline-block;
+      opacity: 1;
+    }
 
-      .ant-spin {
-        -webkit-box-sizing: border-box;
-        box-sizing: border-box;
-        margin: 0;
-        padding: 0;
-        color: rgba(0, 0, 0, 0.65);
-        font-size: 14px;
-        font-variant: tabular-nums;
-        line-height: 1.5;
-        list-style: none;
-        -webkit-font-feature-settings: 'tnum';
-        font-feature-settings: 'tnum', 'tnum';
-        position: absolute;
-        display: none;
-        color: #1890ff;
-        text-align: center;
-        vertical-align: middle;
-        opacity: 0;
-        -webkit-transition: -webkit-transform 0.3s
-          cubic-bezier(0.78, 0.14, 0.15, 0.86);
-        transition: -webkit-transform 0.3s cubic-bezier(0.78, 0.14, 0.15, 0.86);
-        transition: transform 0.3s cubic-bezier(0.78, 0.14, 0.15, 0.86);
-        transition: transform 0.3s cubic-bezier(0.78, 0.14, 0.15, 0.86),
-          -webkit-transform 0.3s cubic-bezier(0.78, 0.14, 0.15, 0.86);
-      }
-      .ant-spin-dot {
-        position: relative;
-        display: inline-block;
-        font-size: 20px;
-        width: 1em;
-        height: 1em;
-      }
+    body {
+      font-family: 'BlinkMacSystemFont';
+    }
 
-      .anticon {
-        display: inline-block;
-        color: inherit;
-        font-style: normal;
-        line-height: 0;
-        text-align: center;
-        text-transform: none;
-        vertical-align: -0.125em;
-        text-rendering: optimizeLegibility;
-        -webkit-font-smoothing: antialiased;
-        -moz-osx-font-smoothing: grayscale;
-      }
-      svg:not(:root) {
-        overflow: hidden;
-      }
-      .anticon svg {
-        display: inline-block;
-      }
-      .anticon > * {
-        line-height: 1;
-      }
-      svg {
-        overflow: hidden;
-        vertical-align: middle;
-      }
-      .anticon-spin {
-        display: inline-block;
-        -webkit-animation: loadingCircle 1s infinite linear;
-        animation: loadingCircle 1s infinite linear;
-      }
-    </style>
-  </head>
-  <body>
-    <noscript>You need to enable JavaScript to access this site.</noscript>
-    <div
-      class="all-spinner"
-      style="position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 100%; background: rgb(255, 255, 255); height: 100%; z-index: 9999;"
-    >
-      <div
-        class="ant-spin ant-spin-spinning"
-        style="position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);"
-      >
-        <i
-          aria-label="icon: loading"
-          class="anticon anticon-loading ant-spin-dot"
-          style="font-size: 40px;"
-          ><svg
-            style="font-size: 40px;"
-            viewBox="0 0 1024 1024"
-            focusable="false"
-            class="anticon-spin"
-            data-icon="loading"
-            width="1em"
-            height="1em"
-            fill="currentColor"
-            aria-hidden="true"
-          >
-            <path
-              d="M988 548c-19.9 0-36-16.1-36-36 0-59.4-11.6-117-34.6-171.3a440.45 440.45 0 0 0-94.3-139.9 437.71 437.71 0 0 0-139.9-94.3C629 83.6 571.4 72 512 72c-19.9 0-36-16.1-36-36s16.1-36 36-36c69.1 0 136.2 13.5 199.3 40.3C772.3 66 827 103 874 150c47 47 83.9 101.8 109.7 162.7 26.7 63.1 40.2 130.2 40.2 199.3.1 19.9-16 36-35.9 36z"
-            ></path></svg
-        ></i>
-      </div>
+    .ant-spin {
+      -webkit-box-sizing: border-box;
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      color: rgba(0, 0, 0, 0.65);
+      font-size: 14px;
+      font-variant: tabular-nums;
+      line-height: 1.5;
+      list-style: none;
+      -webkit-font-feature-settings: 'tnum';
+      font-feature-settings: 'tnum', 'tnum';
+      position: absolute;
+      display: none;
+      color: #1890ff;
+      text-align: center;
+      vertical-align: middle;
+      opacity: 0;
+      -webkit-transition: -webkit-transform 0.3s cubic-bezier(0.78, 0.14, 0.15, 0.86);
+      transition: -webkit-transform 0.3s cubic-bezier(0.78, 0.14, 0.15, 0.86);
+      transition: transform 0.3s cubic-bezier(0.78, 0.14, 0.15, 0.86);
+      transition: transform 0.3s cubic-bezier(0.78, 0.14, 0.15, 0.86),
+        -webkit-transform 0.3s cubic-bezier(0.78, 0.14, 0.15, 0.86);
+    }
+
+    .ant-spin-dot {
+      position: relative;
+      display: inline-block;
+      font-size: 20px;
+      width: 1em;
+      height: 1em;
+    }
+
+    .anticon {
+      display: inline-block;
+      color: inherit;
+      font-style: normal;
+      line-height: 0;
+      text-align: center;
+      text-transform: none;
+      vertical-align: -0.125em;
+      text-rendering: optimizeLegibility;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    svg:not(:root) {
+      overflow: hidden;
+    }
+
+    .anticon svg {
+      display: inline-block;
+    }
+
+    .anticon>* {
+      line-height: 1;
+    }
+
+    svg {
+      overflow: hidden;
+      vertical-align: middle;
+    }
+
+    .anticon-spin {
+      display: inline-block;
+      -webkit-animation: loadingCircle 1s infinite linear;
+      animation: loadingCircle 1s infinite linear;
+    }
+  </style>
+</head>
+
+<body>
+  <noscript>You need to enable JavaScript to access this site.</noscript>
+  <div class="all-spinner"
+    style="position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 100%; background: rgb(255, 255, 255); height: 100%; z-index: 9999;">
+    <div class="ant-spin ant-spin-spinning"
+      style="position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);">
+      <i aria-label="icon: loading" class="anticon anticon-loading ant-spin-dot" style="font-size: 40px;"><svg
+          style="font-size: 40px;" viewBox="0 0 1024 1024" focusable="false" class="anticon-spin" data-icon="loading"
+          width="1em" height="1em" fill="currentColor" aria-hidden="true">
+          <path
+            d="M988 548c-19.9 0-36-16.1-36-36 0-59.4-11.6-117-34.6-171.3a440.45 440.45 0 0 0-94.3-139.9 437.71 437.71 0 0 0-139.9-94.3C629 83.6 571.4 72 512 72c-19.9 0-36-16.1-36-36s16.1-36 36-36c69.1 0 136.2 13.5 199.3 40.3C772.3 66 827 103 874 150c47 47 83.9 101.8 109.7 162.7 26.7 63.1 40.2 130.2 40.2 199.3.1 19.9-16 36-35.9 36z">
+          </path>
+        </svg></i>
     </div>
-    <div id="root"></div>
-    <!--
+  </div>
+  <div id="root"></div>
+  <!--
       This HTML file is a template.
       If you open it directly in the browser, you will see an empty page.
 
@@ -140,18 +132,16 @@
       To create a production bundle, use `npm run build` or `yarn build`.
     -->
 
-    <!-- Jquery -->
+  <!-- Jquery -->
 
-    <script
-      src="http://35.246.149.29:3000/js/jquery.min.js"
-      type="text/javascript"
-    ></script>
+  <script src="http://35.246.149.29:3000/js/jquery.min.js" type="text/javascript"></script>
 
-    <script>
-      $(window).load(function() {
-        // Animate loader off screen
-        $('.all-spinner').fadeOut('slow');
-      });
-    </script>
-  </body>
+  <script>
+    $(window).load(function () {
+      // Animate loader off screen
+      $('.all-spinner').fadeOut('slow');
+    });
+  </script>
+</body>
+
 </html>

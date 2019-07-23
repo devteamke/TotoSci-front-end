@@ -67,10 +67,13 @@ class Add extends React.Component {
       countyError: null,
       sub_county: "",
       sub_countyError: null,
+      schoolType: '',
+      schoolTypeError: null,
       //other
       adding: false,
       open: false,
       place: "bc",
+
       resType: "warning"
     };
   }
@@ -80,7 +83,7 @@ class Add extends React.Component {
       let snack = this.props.location.snack;
       this.setState({ open: true, resType: snack.type, serverRes: snack.msg });
       setTimeout(
-        function() {
+        function () {
           this.setState({ open: false });
         }.bind(this),
         9000
@@ -93,7 +96,7 @@ class Add extends React.Component {
         serverRes: params.msg
       });
       setTimeout(
-        function() {
+        function () {
           this.setState({ open: false });
         }.bind(this),
         9000
@@ -105,6 +108,12 @@ class Add extends React.Component {
     console.log("value", event.target.value);
     this.setState({ [event.target.name]: event.target.value });
   };
+  onChange = e => {
+    console.log('radio checked', e.target.value);
+    this.setState({
+      schoolType: e.target.value,
+    });
+  };
 
   handleSubmit = e => {
     e.preventDefault();
@@ -113,11 +122,29 @@ class Add extends React.Component {
       if (!err) {
         console.log("Received values of form: ", values);
         this.setState({ adding: true });
-        let data = {
+        let data = [];
+        let contact = {};
+        let school = {
+          school_type: state.schoolType,
           name: values.name,
           county: values.county,
           sub_county: values.sub_county
         };
+        if (school.school_type == 'school-based') {
+          school = { ...school, school_code: values.school_code }
+          contact = {
+            fname: values.fname,
+            lname: values.lname,
+            email: values.email,
+            phone_number: {
+              main: values.phone, alt: ''
+            }
+          }
+          data.push(school);
+          data.push(contact)
+        } else {
+          data.push(school)
+        }
         console.log(data);
         this.setState({ adding: true });
         const AddAsync = async () =>
@@ -229,52 +256,133 @@ class Add extends React.Component {
           close
         />
         <GridContainer>
-          <GridItem xs={12} sm={12} md={9}>
+          <GridItem xs={12} sm={12} md={12}>
             <Card title="Add a new school" style={{ width: "100%" }}>
-              <GridItem xs={12} sm={12} md={12}>
-                <Form {...formItemLayout} onSubmit={this.handleSubmit}>
-                  <Form.Item label="Name">
-                    {getFieldDecorator("name", {
-                      rules: [
-                        {
-                          required: true,
-                          message: "Please input  school name!"
-                        }
-                      ]
-                    })(<Input />)}
-                  </Form.Item>
-                  <Form.Item label="County">
-                    {getFieldDecorator("county", {
-                      rules: [
-                        {
-                          required: true,
-                          message: "Please input county!"
-                        }
-                      ]
-                    })(<Input />)}
-                  </Form.Item>
-                  <Form.Item label="Sub County">
-                    {getFieldDecorator("sub_county", {
-                      rules: [
-                        {
-                          required: true,
-                          message: "Please input sub county!"
-                        }
-                      ]
-                    })(<Input />)}
-                  </Form.Item>
 
-                  <div className="text-center">
-                    {state.adding ? (
-                      <Spin indicator={antIcon} />
-                    ) : (
-                      <Button type="primary" htmlType="submit">
-                        Add School
+              <Form {...formItemLayout} onSubmit={this.handleSubmit}>
+                <Row gutter={48}>
+                  <Col span={12}>
+                    <Form.Item label='School Type'>
+                      <Radio.Group onChange={this.onChange} value={this.state.schoolType}>
+                        <Radio value={'supervised'}>Supervised</Radio>
+                        <Radio value={'unsupervised'}>Unsupervised </Radio>
+                        <Radio value={'school-based'}>School Based</Radio>
+
+                      </Radio.Group>
+                    </Form.Item>
+                    <Form.Item label="Name">
+                      {getFieldDecorator("name", {
+                        rules: [
+                          {
+                            required: true,
+                            message: "Please input  school name!"
+                          }
+                        ]
+                      })(<Input />)}
+                    </Form.Item>
+                    <Form.Item label="County">
+                      {getFieldDecorator("county", {
+                        rules: [
+                          {
+                            required: true,
+                            message: "Please input county!"
+                          }
+                        ]
+                      })(<Input />)}
+                    </Form.Item>
+                    <Form.Item label="Sub County">
+                      {getFieldDecorator("sub_county", {
+                        rules: [
+                          {
+                            required: true,
+                            message: "Please input sub county!"
+                          }
+                        ]
+                      })(<Input />)}
+                    </Form.Item>
+                    {this.state.schoolType == 'school-based' ? (
+                      <>
+                        <Form.Item label="School Code">
+                          {getFieldDecorator("school_code", {
+                            rules: [
+                              {
+                                required: true,
+                                message: "Please input schol code!"
+                              }
+                            ]
+                          })(<Input />)}
+                        </Form.Item>
+                      </>
+                    ) : (<></>)}
+                  </Col>
+                  <Col span={12} >
+                    {this.state.schoolType == 'school-based' ? (
+                      <>
+                        <h5 style={{ textAlign: 'center' }}> Contact Person</h5>
+                        <span style={{ left: "50%", right: "50%" }}></span>
+                        <Form.Item label="First Name">
+                          {getFieldDecorator("fname", {
+                            rules: [
+                              {
+                                required: true,
+                                message: "Please input  first name!"
+                              }
+                            ]
+                          })(<Input />)}
+                        </Form.Item>
+                        <Form.Item label="Last  Name">
+                          {getFieldDecorator("lname", {
+                            rules: [
+                              {
+                                required: true,
+                                message: "Please input  last name!"
+                              }
+                            ]
+                          })(<Input />)}
+                        </Form.Item>
+                        <Form.Item label="E-mail">
+                          {getFieldDecorator("email", {
+                            rules: [
+                              {
+                                required: true,
+                                message: "Please input  email!"
+                              }
+                            ]
+                          })(<Input />)}
+                        </Form.Item>
+                        <Form.Item label="Phone Number">
+                          {getFieldDecorator("phone", {
+                            rules: [
+                              {
+                                required: true,
+                                message: "Please input phone Number!"
+                              }
+                            ]
+                          })(<Input />)}
+                        </Form.Item>
+
+                      </>
+
+                    ) : (<></>)}
+                  </Col>
+                </Row>
+                <Row>
+                  {this.state.schoolType != '' ? (
+                    <>
+                      <div className="text-center">
+                        {state.adding ? (
+                          <Spin indicator={antIcon} />
+                        ) : (
+                            <Button type="primary" htmlType="submit">
+                              Add School
                       </Button>
-                    )}
-                  </div>
-                </Form>
-              </GridItem>
+                          )}
+                      </div>
+                    </>
+                  ) : (<></>)}
+                </Row>
+              </Form>
+
             </Card>
           </GridItem>
 

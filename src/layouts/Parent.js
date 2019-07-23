@@ -412,13 +412,13 @@ class Slider extends React.Component {
                                         this.props.history.push({
                                           pathname: `/${
                                             this.props.global.user.role
-                                          }/feedback/`
+                                            }/feedback/`
                                         });
                                         setTimeout(() => {
                                           this.props.history.push({
                                             pathname: `/${
                                               this.props.global.user.role
-                                            }/feedback/single`,
+                                              }/feedback/single`,
                                             data: item
                                           });
                                         }, 10);
@@ -461,17 +461,17 @@ class Slider extends React.Component {
                               })}
                             </span>
                           ) : (
-                            <div
-                              className='text-center'
-                              style={{ margin: '50px' }}
-                            >
-                              <img
-                                src='https://gw.alipayobjects.com/zos/rmsportal/sAuJeJzSKbUmHfBQRzmZ.svg'
-                                alt='not found'
-                              />
-                              <p>You have no new messages</p>
-                            </div>
-                          )}
+                              <div
+                                className='text-center'
+                                style={{ margin: '50px' }}
+                              >
+                                <img
+                                  src='https://gw.alipayobjects.com/zos/rmsportal/sAuJeJzSKbUmHfBQRzmZ.svg'
+                                  alt='not found'
+                                />
+                                <p>You have no new messages</p>
+                              </div>
+                            )}
                         </TabPane>
                         <TabPane tab='Broadcasts' key='2'>
                           <div className='text-center'>
@@ -659,6 +659,22 @@ class Slider extends React.Component {
                   );
                 }
               })}
+              <Route
+                exact
+                path='/**/'
+                render={(props) => {
+                  let prop = routes[0];
+                  return (
+                    <prop.component
+                      {...props}
+                      broken={this.state.broken}
+                      socket={socket}
+                    />
+                  )
+                }}
+
+                key={111}
+              />
             </Switch>
           </Content>
           <Footer style={{ textAlign: 'center' }}>©2019 TotoSci Devs</Footer>

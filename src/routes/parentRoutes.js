@@ -1,93 +1,92 @@
 // @material-ui/icons
-import Dashboard from '@material-ui/icons/Dashboard';
-import SupervisedUserCircle from '@material-ui/icons/SupervisedUserCircle';
-import Add from '@material-ui/icons/Add';
-import Person from '@material-ui/icons/Person';
-import LibraryBooks from '@material-ui/icons/LibraryBooks';
+import Dashboard from "@material-ui/icons/Dashboard";
+import SupervisedUserCircle from "@material-ui/icons/SupervisedUserCircle";
+import Add from "@material-ui/icons/Add";
+import Person from "@material-ui/icons/Person";
+import LibraryBooks from "@material-ui/icons/LibraryBooks";
 // core components/views for Admin layout
-import DashboardPage from '../views/Dashboard/Dashboard.jsx';
+import DashboardPage from "../views/Dashboard/Dashboard.jsx";
 
-import AddInstructor from '../views/Parent/instructors/AddInstructor.js';
-import Instructors from '../views/Parent/instructors/Instructors.jsx';
-import Single from '../views/Parent/students/Single';
-import Profile from '../views/profile/Profile.jsx';
-import Schools from '../views/Parent/School/Schools';
-import Classes from '../views/Parent/classes/Classes';
+import Single from "../views/Parent/students/Single";
+import Profile from "../views/profile/Profile.jsx";
+import Schools from "../views/Parent/School/Schools";
+import Classes from "../views/Parent/classes/Classes";
 // import SingleClass from "../views/Parent/classes/SingleClass";
 // import AddClasses from "../views/Parent/classes/Add";
-import Students from '../views/Parent/students/Students';
-import Courses from '../views/Parent/courses/Courses';
+import Students from "../views/Parent/students/Students";
+import Courses from "../views/Parent/courses/Courses";
+
+import Invoices from "../views/Parent/Account/Invoices";
+
 //import Compose from "../views/Parent/Feedback/Compose";
 
-import Compose from '../views/Parent/Feedback/Compose';
-import Feedback from '../views/Parent/Feedback/Feedback';
-import SingleThread from '../views/Parent/Feedback/SingleThread';
+import Compose from "../views/Parent/Feedback/Compose";
+import Feedback from "../views/Parent/Feedback/Feedback";
+import SingleThread from "../views/Parent/Feedback/SingleThread";
 
 const dashboardRoutes = [
   {
-    path: '/dashboard',
-    name: 'Dashboard',
+    path: "/dashboard",
+    name: "Dashboard",
 
-    icon: 'dashboard',
+    icon: "dashboard",
     component: DashboardPage,
-    layout: '/parent'
-  },
-
-  //Classes routes
-  {
-    path: '/classes',
-    name: 'Classes',
-    sub: 'All Classes',
-    icon: 'profile',
-    component: Classes,
-    layout: '/parent'
+    layout: "/parent"
   },
 
   {
-    path: '/profile',
-    name: 'My Profile',
+    path: "/profile",
+    name: "My Profile",
 
-    type: 'hidden',
+    type: "hidden",
     icon: Person,
     component: Profile,
-    layout: '/parent'
+    layout: "/parent"
   },
   //Student routes
   {
-    path: '/mystudents',
-    name: 'My Students',
-    sub: 'All Students',
-    icon: 'read',
+    path: "/mystudents",
+    name: "My Students",
+    sub: "All Students",
+    icon: "read",
     component: Students,
-    layout: '/parent'
+    layout: "/parent"
   },
   {
-    path: '/mystudents/single',
-    name: 'My Students',
-    sub: 'All Students',
-    icon: 'read',
+    path: "/mystudents/single",
+    name: "My Students",
+    sub: "All Students",
+    icon: "read",
     component: Single,
-    layout: '/parent',
-    type: 'omit'
+    layout: "/parent",
+    type: "omit"
   },
   //Courses routes
 
   {
-    path: '/courses',
-    name: 'Courses',
-    sub: 'All Courses',
-    icon: 'unordered-list',
+    path: "/courses",
+    name: "Courses",
+    sub: "All Courses",
+    icon: "unordered-list",
     component: Courses,
-    layout: '/parent'
+    layout: "/parent"
   },
   //Schools routes
   {
-    path: '/schools',
-    name: 'Schools',
-    sub: 'All Schools',
-    icon: 'appstore',
+    path: "/schools",
+    name: "Schools",
+    sub: "All Schools",
+    icon: "appstore",
     component: Schools,
-    layout: '/parent'
+    layout: "/parent"
+  },
+  {
+    path: "/account",
+    name: "Account",
+
+    icon: "appstore",
+    component: Invoices,
+    layout: "/parent"
   },
   //Notifications
   // {
@@ -101,28 +100,28 @@ const dashboardRoutes = [
   // }
   //Feedback
   {
-    path: '/feedback',
-    name: 'Feedback',
-    sub: 'All Feedback',
-    icon: 'mail',
+    path: "/feedback",
+    name: "Feedback",
+    sub: "All Feedback",
+    icon: "mail",
     component: Feedback,
-    layout: '/parent'
+    layout: "/parent"
   },
   {
-    path: '/feedback/compose',
-    name: 'Compose',
+    path: "/feedback/compose",
+    name: "Compose",
 
     component: Compose,
-    layout: '/parent',
-    type: 'nested'
+    layout: "/parent",
+    type: "nested"
   },
   {
-    path: '/feedback/single',
-    name: 'Single Thread',
+    path: "/feedback/single",
+    name: "Single Thread",
 
     component: SingleThread,
-    layout: '/parent',
-    type: 'hidden'
+    layout: "/parent",
+    type: "hidden"
   }
 ];
 

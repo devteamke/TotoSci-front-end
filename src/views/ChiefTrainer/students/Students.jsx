@@ -1,17 +1,17 @@
-import React from "react";
+import React from 'react';
 // @material-ui/core components
-import withStyles from "@material-ui/core/styles/withStyles";
+import withStyles from '@material-ui/core/styles/withStyles';
 // core components
-import Snackbar from "../../../components/dcomponents/Snackbar/Snackbar.jsx";
-import GridItem from "../../../components/dcomponents/Grid/GridItem.jsx";
-import GridContainer from "../../../components/dcomponents/Grid/GridContainer.jsx";
 
-import CardHeader from "../../../components/dcomponents/Card/CardHeader.jsx";
-import CardBody from "../../../components/dcomponents/Card/CardBody.jsx";
-import globals from "../../../constants/Globals";
+import GridItem from '../../../components/dcomponents/Grid/GridItem.jsx';
+import GridContainer from '../../../components/dcomponents/Grid/GridContainer.jsx';
+
+import CardHeader from '../../../components/dcomponents/Card/CardHeader.jsx';
+import CardBody from '../../../components/dcomponents/Card/CardBody.jsx';
+import globals from '../../../constants/Globals';
 // @material-ui/icons
-import AddAlert from "@material-ui/icons/AddAlert";
-import { Switch, Route, Redirect } from "react-router-dom";
+import AddAlert from '@material-ui/icons/AddAlert';
+import { Switch, Route, Redirect } from 'react-router-dom';
 import {
   MDBTable,
   MDBTableBody,
@@ -19,82 +19,155 @@ import {
   MDBBtn,
   MDBIcon,
   MDBInput
-} from "mdbreact";
-import { withGlobalContext } from "../../../context/Provider";
+} from 'mdbreact';
+import { withGlobalContext } from '../../../context/Provider';
 import {
   Icon,
+  Alert,
   Card,
   Button,
   Modal,
   Form,
+  notification,
+  Radio,
   Input,
   Cascader,
   Select,
-  Spin
-} from "antd";
+  Spin,
+  AutoComplete,
+  Table
+} from 'antd';
 //Drawer
-import CustomDrawer from "./Drawer";
-const antIcon = <Icon type="loading" style={{ fontSize: 24 }} spin />;
-const antIconLarge = <Icon type="loading" style={{ fontSize: 40 }} spin />;
+import CustomDrawer from './Drawer';
+const antIcon = <Icon type='loading' style={{ fontSize: 24 }} spin />;
+const AutoCompleteOption = AutoComplete.Option;
+const antIconLarge = <Icon type='loading' style={{ fontSize: 40 }} spin />;
 const styles = {
   cardCategoryWhite: {
-    "&,& a,& a:hover,& a:focus": {
-      color: "rgba(255,255,255,.62)",
-      margin: "0",
-      fontSize: "14px",
-      marginTop: "0",
-      marginBottom: "0"
+    '&,& a,& a:hover,& a:focus': {
+      color: 'rgba(255,255,255,.62)',
+      margin: '0',
+      fontSize: '14px',
+      marginTop: '0',
+      marginBottom: '0'
     },
-    "& a,& a:hover,& a:focus": {
-      color: "#FFFFFF"
+    '& a,& a:hover,& a:focus': {
+      color: '#FFFFFF'
     }
   },
   cardTitleWhite: {
-    color: "#FFFFFF",
-    marginTop: "0px",
-    minHeight: "auto",
-    fontWeight: "300",
+    color: '#FFFFFF',
+    marginTop: '0px',
+    minHeight: 'auto',
+    fontWeight: '300',
     fontFamily: "'Roboto', 'Helvetica', 'Arial', sans-serif",
-    marginBottom: "3px",
-    textDecoration: "none",
-    "& small": {
-      color: "#777",
-      fontSize: "65%",
-      fontWeight: "400",
-      lineHeight: "1"
+    marginBottom: '3px',
+    textDecoration: 'none',
+    '& small': {
+      color: '#777',
+      fontSize: '65%',
+      fontWeight: '400',
+      lineHeight: '1'
     }
   },
   btnBg: {
-    backgroundColor: "#01afc4!important"
+    backgroundColor: '#01afc4!important'
   }
 };
+const formItemLayout = {
+  labelCol: {
+    xs: { span: 24 },
+    sm: { span: 8 }
+  },
+  wrapperCol: {
+    xs: { span: 24 },
+    sm: { span: 16 }
+  }
+};
+
 class AllStudents extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      serverRes: "",
+      serverRes: '',
       loading: true,
       mainLoad: true,
       loaded: false,
       users: [],
       page: 1,
       limit: 10,
+      parentExisting: false,
       //drawer
       dvisible: false,
       currentInfo: null,
-
+      modalVisible: false,
       //modal
       visible: false,
+      currentStudent: '',
       //skip:0,
       //snack
       open: false,
-      place: "bc",
-      resType: "warning",
-      query: "",
+      place: 'bc',
+      resType: 'warning',
+      query: '',
       totalPages: null,
       hasNext: null,
       hasPrev: null,
-      totalDocs: null
+      totalDocs: null,
+      //ant table
+      pagination: { current: 1 },
+      columns: [
+        {
+          title: 'Ref Id',
+          dataIndex: 'refID',
+          render: refID => (refID ? refID : 'NA'),
+          sorter: true
+        },
+        {
+          title: 'First Name',
+          dataIndex: 'fname',
+          sorter: true
+        },
+        {
+          title: 'Last Name',
+          dataIndex: 'lname',
+          sorter: true
+        },
+        {
+          title: 'School',
+          dataIndex: 'school',
+          render: school => capitalize(school[0].name),
+          sorter: true,
+          filters: [],
+          width: '20%'
+        },
+        {
+          title: 'Gender',
+          dataIndex: 'gender',
+          sorter: true,
+          render: gender => capitalize(gender),
+          filters: [
+            { text: 'Male', value: 'male' },
+            { text: 'Female', value: 'female' }
+          ],
+          width: '20%'
+        },
+        {
+          title: 'More',
+          render: (text, user, i) => (
+            <span
+              onClick={() => {
+                let current = { ...user, i };
+                this.setState({ currentInfo: current }, () => {
+                  this.showDrawer();
+                });
+              }}
+            >
+              <Icon type='select' />
+            </span>
+          )
+        }
+      ]
     };
     this.myRef = React.createRef();
   }
@@ -102,44 +175,65 @@ class AllStudents extends React.Component {
   _fetchUsers = () => {
     let state = this.state;
     let data = {
+      filters: state.filters,
+      sorter: state.sorter,
       limit: state.limit,
-      page: state.page,
+      page: state.pagination.current,
       query: state.query
     };
     const FetchAsync = async () =>
       await (await fetch(
         `${globals.BASE_URL}/api/${this.props.global.user.role}/all_students`,
         {
-          method: "post",
-          mode: "cors", // no-cors, cors, *same-origin
-          cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
-          credentials: "same-origin", // include, *same-origin, omit
+          method: 'post',
+          mode: 'cors', // no-cors, cors, *same-origin
+          cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+          credentials: 'same-origin', // include, *same-origin, omit
           headers: {
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json',
             Authorization: this.props.global.token
             // "Content-Type": "application/x-www-form-urlencoded",
           },
-          redirect: "follow", // manual, *follow, error
-          referrer: "no-referrer", // no-referrer, *client
+          redirect: 'follow', // manual, *follow, error
+          referrer: 'no-referrer', // no-referrer, *client
           body: JSON.stringify(data)
         }
       )).json();
 
     FetchAsync()
-      .then((data) => {
+      .then(data => {
         //this.setState({currentPlace:data.results})
         if (data.success) {
-          console.log("[users]", data);
+          //ant design
+          const pagination = { ...this.state.pagination };
+          pagination.total = data.students.totalDocs;
+          console.log('[users]', data);
           this.setState({
-            users: data.result.docs,
-            page: data.result.page,
-            totalPages: data.result.totalPages,
-            totalDocs: data.result.totalDocs,
-            hasNext: data.result.hasNextPage,
-            hasPrev: data.result.hasPrevPage
+            users: data.students.docs,
+            page: data.students.page,
+            totalPages: data.students.totalPages,
+            totalDocs: data.students.totalDocs,
+            hasNext: data.students.hasNextPage,
+            hasPrev: data.students.hasPrevPage,
+            pagination
           });
         } else {
-          this._snack({ type: "warning", msg: data.message });
+          notification['error']({
+            message: data.message,
+            description: (
+              <Button
+                onClick={() => {
+                  this.setState({ loading: true });
+                  this._fetchUsers();
+                  notification.destroy();
+                }}
+              >
+                {' '}
+                Retry{' '}
+              </Button>
+            ),
+            duration: 0
+          });
         }
         this.setState({
           loading: false,
@@ -147,99 +241,61 @@ class AllStudents extends React.Component {
           loaded: true
         });
       })
-      .catch((error) => {
+      .catch(error => {
         console.log(error);
-        if (error == "TypeError: Failed to fetch") {
+        if (error == 'TypeError: Failed to fetch') {
           this.setState({
-            serverRes: "Failed to contact server!"
+            serverRes: 'Failed to contact server!'
           });
-        } else if (error.message == "Network request failed") {
+        } else if (error.message == 'Network request failed') {
           // alert('No internet connection')
           this.setState({
-            serverRes: "Network request failed"
+            serverRes: 'Network request failed'
           });
         }
-
-        console.log(error);
-        this.setState({
-          open: true,
-          resType: data.success ? "success" : "warning"
+        notification['error']({
+          message: error.toString(),
+          description: (
+            <Button
+              onClick={() => {
+                this.setState({ loading: true });
+                this._fetchUsers();
+                notification.destroy();
+              }}
+            >
+              {' '}
+              Retry{' '}
+            </Button>
+          ),
+          duration: 0
         });
-        setTimeout(
-          function() {
-            this.setState({ open: false });
-          }.bind(this),
-          6000 * 9999
-        );
       });
   };
-  _handlePrevious = () => {
-    this.setState(
-      {
-        page: this.state.page - 1,
-        loading: true,
-        loaded: false
-      },
-      () => {
-        this._fetchUsers();
-      }
-    );
-  };
-  _handleNext = () => {
-    // console.log('[offset]',-this.myRef.current.offsetTop)
-    //  window.scrollTo(0, -this.myRef.current.offsetTop);
-    this.myN.scrollIntoView({ block: "start" });
-    this.setState(
-      {
-        page: this.state.page + 1,
-        loading: true,
-        loaded: false
-      },
-      () => {
-        this._fetchUsers();
-      }
-    );
-  };
-  _handleSearch = (event) => {
+
+  _handleSearch = event => {
+    const pager = { ...this.state.pagination };
+    pager.current = 1;
     this.setState(
       {
         query: event.target.value,
         loading: true,
-        loaded: false
+        loaded: false,
+        pagination: pager
       },
       () => {
         this._fetchUsers();
       }
     );
   };
-  _snack = (params) => {
-    if (this.props.location.snack) {
-      let snack = this.props.location.snack;
-      this.setState({ open: true, resType: snack.type, serverRes: snack.msg });
-      setTimeout(
-        function() {
-          this.setState({ open: false });
-        }.bind(this),
-        9000
-      );
-    } else if (params) {
-      this.setState({
-        open: true,
-        resType: params.type,
-        serverRes: params.msg
-      });
-      setTimeout(
-        function() {
-          this.setState({ open: false });
-        }.bind(this),
-        9000
-      );
-    }
-  };
+
   //Ant Modal
 
   showModal = () => {
-    console.log("show Modal");
+    console.log('show Modal');
+    this.setState({ visible: true });
+  };
+
+  showModal = () => {
     this.setState({ visible: true });
   };
 
@@ -247,47 +303,153 @@ class AllStudents extends React.Component {
     this.setState({ visible: false });
   };
 
-  componentDidMount = () => {
-    this._fetchUsers();
-    this._snack();
+  handleCreate = () => {
+    const { form } = this.formRef.props;
+    form.validateFields((err, values) => {
+      if (err) {
+        return;
+      }
+
+      console.log('Received values of form: ', values);
+      form.resetFields();
+      this.setState({ visible: false });
+    });
+  };
+  _fetchSchools = () => {
+    const FetchAsync = async () =>
+      await (await fetch(
+        `${globals.BASE_URL}/api/${this.props.global.user.role}/fetch_schools`,
+        {
+          method: 'post',
+          mode: 'cors', // no-cors, cors, *same-origin
+          cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+          credentials: 'same-origin', // include, *same-origin, omit
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: this.props.global.token
+            // "Content-Type": "application/x-www-form-urlencoded",
+          },
+          redirect: 'follow', // manual, *follow, error
+          referrer: 'no-referrer', // no-referrer, *client
+          body: JSON.stringify({ data: 'hello server' })
+        }
+      )).json();
+
+    FetchAsync()
+      .then(data => {
+        //this.setState({currentPlace:data.results})
+        if (data.success) {
+          let schools = data.schools.map(each => {
+            return { value: each._id, text: unKebab(each.name).join() };
+          });
+
+          let columns = [...this.state.columns];
+          columns[3].filters = schools;
+          console.log('[columns]', columns);
+          console.log('Filter Schools', schools);
+          this.setState({
+            schools: schools,
+            loading: false,
+            columns
+          });
+        } else {
+        }
+      })
+      .catch(error => {
+        console.log(error);
+        if (error == 'TypeError: Failed to fetch') {
+          //   alert('Server is offline')
+        } else if (error.message == 'Network request failed') {
+          // alert('No internet connection')
+          this.setState({
+            serverRes: 'Network request failed'
+          });
+        }
+        // this.props._snack({ type: "warning", msg: error.toString() });
+
+        console.log(error);
+      });
   };
   removeIndex = (i, data) => {
-    this.setState((prevState) => {
+    this.setState(prevState => {
       let courses = [...prevState.users];
-      console.log("Before Deleting", courses);
+      console.log('Before Deleting', courses);
       courses.splice(i, 1);
       let total = prevState.totalDocs;
       total--;
-      console.log("After Deleting", total);
+      console.log('After Deleting', total);
       return {
         users: courses,
         totalDocs: total
       };
     });
+    // saveFormRef = formRef => {
+    //   this.formRef = formRef;
+    // };
     this.onClose();
-    this._snack({
-      type: data.success ? "success" : "warning",
-      msg: data.message
+    notification[data.success ? 'success' : 'error']({
+      message: data.message
     });
   };
   showDrawer = () => {
     const state = this.state;
-    console.log("open drawer");
+    console.log('open drawer');
 
     this.setState({
       dvisible: true
     });
   };
+  setModalVisible(modalVisible) {
+    this.setState({ modalVisible });
+  }
+
   onClose = () => {
     this.setState({
       dvisible: false
     });
   };
+  componentDidMount = () => {
+    this._fetchSchools();
+    this._fetchUsers();
+  };
+
+  handleTableChange = (pagination, filters, sorter) => {
+    console.log(
+      '[pagination]',
+      pagination,
+      ' [filters]',
+      filters,
+      '[sorter]',
+      sorter
+    );
+    const pager = { ...this.state.pagination };
+    this.myN.scrollIntoView({ block: 'start' });
+    pager.current = pagination.current;
+    this.setState(
+      {
+        filters,
+        sorter,
+        pagination: pager,
+        loading: true
+      },
+      () => {
+        this._fetchUsers();
+      }
+    );
+
+    // this.fetch({
+    //   results: pagination.pageSize,
+    //   page: pagination.current,
+    //   sortField: sorter.field,
+    //   sortOrder: sorter.order,
+    //   ...filters
+    // });
+  };
   updateIndex = ({ i, obj }) => {
-    this.setState((prevState) => {
+    this.setState(prevState => {
       let users = [...prevState.users];
       users[i] = { ...obj, addedBy: users[i].addedBy, i };
-      console.log("new user", users[i]);
+      console.log('new user', users[i]);
       return {
         users: users,
         currentInfo: users[i]
@@ -297,6 +459,8 @@ class AllStudents extends React.Component {
   render = () => {
     const { classes } = this.props;
     const state = this.state;
+    //const { visible, onCancel, onCreate, form } = this.props;
+    // const { getFieldDecorator } = form;
     if (state.mainLoad) {
       return (
         <div style={center}>
@@ -306,18 +470,10 @@ class AllStudents extends React.Component {
     }
     return (
       <div
-        ref={(el) => {
+        ref={el => {
           this.myN = el;
-        }}>
-        <Snackbar
-          place={this.state.place}
-          color={state.resType}
-          icon={AddAlert}
-          message={state.serverRes}
-          open={this.state.open}
-          closeNotification={() => this.setState({ open: false })}
-          close
-        />
+        }}
+      >
         <CustomDrawer
           broken={this.props.broken}
           visible={this.state.dvisible}
@@ -327,42 +483,90 @@ class AllStudents extends React.Component {
           onUpdateIndex={this.updateIndex}
           onRemoveIndex={this.removeIndex}
         />
-
+        <CollectionCreateForm
+          wrappedComponentRef={this.saveFormRef}
+          visible={this.state.visible}
+          onCancel={this.handleCancel}
+          onCreate={this.handleCreate}
+          props={this.props}
+          student={this.state.currentStudent}
+          saveParent={this.saveParent}
+        />
         <GridContainer>
           <GridItem xs={12} sm={12} md={12}>
-            <Card title="All Students" style={{ width: "100%" }}>
+            <Card title='All Students' style={{ width: '100%' }}>
               <GridContainer>
                 <GridItem xs={12} sm={12} md={12}>
                   <div
                     style={{
-                      width: "15rem",
-                      marginTop: "3px",
-                      marginBottom: "3px",
-                      float: "left"
+                      width: '15rem',
+                      marginTop: '3px',
+                      marginBottom: '3px',
+                      float: 'left'
                     }}
                   />
-                  <div style={{ width: "15rem", float: "right" }}>
+                  <div style={{ width: '15rem', float: 'right' }}>
                     <Input
                       value={state.query}
                       onChange={this._handleSearch}
                       suffix={
                         <Button
-                          className="search-btn"
+                          className='search-btn'
                           style={{ marginRight: -12 }}
-                          type="primary">
-                          <Icon type="search" />
+                          type='primary'
+                        >
+                          <Icon type='search' />
                         </Button>
                       }
                     />
                   </div>
                 </GridItem>
               </GridContainer>
+              <Table 
+              size="middle"
+                columns={this.state.columns}
+                rowKey={record => record._id}
+                dataSource={state.users}
+                expandedRowRender={record => {
+                  console.log('[record]', record);
+                  let parent = record.parent[0];
+                  if (parent) {
+                    return (
+                      <>
+                        <p style={{ margin: 0 }}>
+                          <b>Parent: </b> {capitalize(parent.fname)}{' '}
+                          {capitalize(parent.lname)}
+                        </p>
+                        <p style={{ margin: 0 }}>
+                          <b>Email: </b> {parent.email}
+                        </p>
+                      </>
+                    );
+                  } else {
+                    return (
+                      <p style={{ margin: 0 }}>
+                        No additional information available.
+                      </p>
+                    );
+                  }
+                }}
+                pagination={this.state.pagination}
+                loading={this.state.loading}
+                onChange={this.handleTableChange}
+              />
+              <div className='text-center' style={{ marginTop: '-43px' }}>
+                <p style={{ color: 'grey' }}>
+                  (Showing {state.users.length} of {state.totalDocs} records){' '}
+                </p>
+              </div>
+              {/* 
               {state.loading ? (
                 <GridContainer>
                   <GridItem xs={12} sm={12} md={12}>
                     <div
-                      className="text-center"
-                      style={{ height: 300, marginTop: "9.2rem" }}>
+                      className='text-center'
+                      style={{ height: 300, marginTop: '9.2rem' }}
+                    >
                       <Spin indicator={antIcon} />
                     </div>
                   </GridItem>
@@ -377,7 +581,8 @@ class AllStudents extends React.Component {
                           <th>First Name</th>
                           <th>Last Name</th>
                           <th>School</th>
-                          <th style={{ textAlign: "center", width: "100px" }} />
+                          <th />
+                          <th style={{ textAlign: 'center', width: '100px' }} />
                         </tr>
                       </MDBTableHead>
                       <MDBTableBody>
@@ -388,7 +593,26 @@ class AllStudents extends React.Component {
                             <td>
                               {user.school[0]
                                 ? unKebab(user.school[0].name)
-                                : ""}
+                                : ''}
+                            </td>
+                            <td>
+                              {user.parent.length == 0 && user.isSponsored ? (
+                                <Button
+                                  type='primary'
+                                  onClick={() => {
+                                    this.setState(
+                                      { currentStudent: user._id },
+                                      () => {
+                                        this.showModal();
+                                      }
+                                    );
+                                  }}
+                                >
+                                  Add Parent
+                                </Button>
+                              ) : (
+                                <></>
+                              )}
                             </td>
                             <td
                               onClick={() => {
@@ -398,55 +622,58 @@ class AllStudents extends React.Component {
                                 });
                               }}
                               style={{
-                                textAlign: "center",
-                                width: "100px",
-                                fontsize: "1.3rem"
-                              }}>
-                              <Icon type="select" />
+                                textAlign: 'center',
+                                width: '100px',
+                                fontsize: '1.3rem'
+                              }}
+                            >
+                              <Icon type='select' />
                             </td>
                           </tr>
                         ))}
                       </MDBTableBody>
                     </MDBTable>
                   ) : (
-                    <div className="text-center" style={{ height: 300 }}>
+                    <div className='text-center' style={{ height: 300 }}>
                       <p style={{ marginTop: 145 }}>
-                        {" "}
+                        {' '}
                         {state.query
                           ? `No records found matching \" ${state.query}\"`
-                          : "No students yet"}
-                      </p>{" "}
+                          : 'No students yet'}
+                      </p>{' '}
                     </div>
                   )}
                 </>
               )}
               {state.loaded && state.users.length > 0 ? (
-                <div className="text-center">
+                <div className='text-center'>
                   {state.hasPrev ? (
                     <Button
-                      type="primary"
-                      style={{ display: "inline-block" }}
-                      onClick={this._handlePrevious}>
-                      <MDBIcon size="2x" icon="angle-double-left" />
+                      type='primary'
+                      style={{ display: 'inline-block' }}
+                      onClick={this._handlePrevious}
+                    >
+                      <MDBIcon size='2x' icon='angle-double-left' />
                     </Button>
                   ) : null}
-                  <h4 style={{ display: "inline-block", margin: "25px 30px" }}>
+                  <h4 style={{ display: 'inline-block', margin: '25px 30px' }}>
                     {state.page} of {state.totalPages}
                   </h4>
                   {state.hasNext ? (
                     <Button
-                      type="primary"
-                      style={{ display: "inline-block" }}
-                      onClick={this._handleNext}>
-                      <MDBIcon size="2x" icon="angle-double-right" />
+                      type='primary'
+                      style={{ display: 'inline-block' }}
+                      onClick={this._handleNext}
+                    >
+                      <MDBIcon size='2x' icon='angle-double-right' />
                     </Button>
                   ) : null}
 
-                  <p style={{ color: "grey" }}>
-                    (Showing {state.users.length} of {state.totalDocs} records){" "}
+                  <p style={{ color: 'grey' }}>
+                    (Showing {state.users.length} of {state.totalDocs} records){' '}
                   </p>
                 </div>
-              ) : null}
+              ) : null} */}
             </Card>
           </GridItem>
         </GridContainer>
@@ -460,28 +687,416 @@ export default withGlobalContext(withStyles(styles)(AllStudents));
 const { Option } = Select;
 
 const center = {
-  position: "absolute",
-  left: "58.5%",
-  top: "50%",
-  WebkitTransform: "translate(-50%, -50%)",
-  transform: "translate(-50%, -50%)"
+  position: 'absolute',
+  left: '58.5%',
+  top: '50%',
+  WebkitTransform: 'translate(-50%, -50%)',
+  transform: 'translate(-50%, -50%)'
 };
-const unKebab = (string) => {
+const unKebab = string => {
   if (string) {
-    string = string.replace(/-/g, " ").toLowerCase();
+    string = string.replace(/-/g, ' ').toLowerCase();
 
-    let splitStr = string.toLowerCase().split(" ");
-    string = splitStr.map((str) => {
-      return str.charAt(0).toUpperCase() + str.slice(1) + " ";
+    let splitStr = string.toLowerCase().split(' ');
+    string = splitStr.map(str => {
+      return str.charAt(0).toUpperCase() + str.slice(1) + ' ';
     });
   }
 
   return string;
 };
 
-const capitalize = (str) => {
+const capitalize = str => {
   if (str) {
     str = str.charAt(0).toUpperCase() + str.slice(1);
   }
   return str;
 };
+const CollectionCreateForm = Form.create({ name: 'form_in_modal' })(
+  // eslint-disable-next-line
+
+  class AddParent extends React.Component {
+    constructor(props) {
+      super(props);
+      console.log('This props', props);
+
+      this.state = {
+        saving: false,
+        selected: '',
+        gender: '',
+        parentExisting: false,
+        searching: false,
+        searchStr: '',
+        existingSelected: false,
+        autoCompleteResult: []
+      };
+    }
+
+    _handleSearch = () => {
+      this.setState({ searching: true });
+      const SearchAsync = async () =>
+        await (await fetch(
+          `${globals.BASE_URL}/api/${
+            this.props.global.user.role
+          }/search_parent`,
+          {
+            method: 'post',
+            mode: 'cors', // no-cors, cors, *same-origin
+            cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+            credentials: 'same-origin', // include, *same-origin, omit
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: this.props.global.token
+              // "Content-Type": "application/x-www-form-urlencoded",
+            },
+            redirect: 'follow', // manual, *follow, error
+            referrer: 'no-referrer', // no-referrer, *client
+            body: JSON.stringify({ query: this.state.searchStr })
+          }
+        )).json();
+
+      SearchAsync()
+        .then(data => {
+          //this.setState({currentPlace:data.results})
+          if (data.success) {
+            this.setState({
+              parentList: data.parents,
+              searching: false
+            });
+          } else {
+          }
+        })
+        .catch(error => {
+          console.log(error);
+          if (error == 'TypeError: Failed to fetch') {
+            //   alert('Server is offline')
+          } else if (error.message == 'Network request failed') {
+            // alert('No internet connection')
+            this.setState({
+              serverRes: 'Network request failed'
+            });
+          }
+          notification['error']({
+            message: error.toString()
+          });
+          this.setState({ searching: false });
+          console.log(error);
+        });
+    };
+    handleParentChange = value => {
+      if (value.length == '5d0231026accc00c57f14281'.length) {
+        return;
+      }
+      console.log('Typing Something');
+      console.log(this.props);
+      // console.log(this.props.global.user.role)
+      let autoCompleteResult;
+      if (!value) {
+        autoCompleteResult = [];
+      } else {
+        this.setState({
+          searching: true,
+          searchStr: value,
+          existingSelected: false,
+          selected: null
+        });
+        const SearchAsync = async () =>
+          await (await fetch(
+            `${globals.BASE_URL}/api/${
+              this.props.props.global.user.role
+            }/search_parent`,
+            {
+              method: 'post',
+              mode: 'cors', // no-cors, cors, *same-origin
+              cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+              credentials: 'same-origin', // include, *same-origin, omit
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: this.props.props.global.token
+                // "Content-Type": "application/x-www-form-urlencoded",
+              },
+              redirect: 'follow', // manual, *follow, error
+              referrer: 'no-referrer', // no-referrer, *client
+              body: JSON.stringify({ query: value })
+            }
+          )).json();
+
+        SearchAsync()
+          .then(data => {
+            //this.setState({currentPlace:data.results})
+            if (data.success) {
+              autoCompleteResult = data.parents;
+              this.setState({
+                autoCompleteResult,
+                searching: false,
+                plength: data.parents.length
+              });
+            } else {
+            }
+          })
+          .catch(error => {
+            console.log(error);
+            if (error == 'TypeError: Failed to fetch') {
+              //   alert('Server is offline')
+            } else if (error.message == 'Network request failed') {
+              // alert('No internet connection')
+              this.setState({
+                serverRes: 'Network request failed'
+              });
+            }
+            notification['error']({
+              message: error.toString()
+            });
+            this.setState({ searching: false });
+            console.log(error);
+          });
+      }
+    };
+    onChangeG = e => {
+      console.log('radio checked', e.target.value);
+      this.setState({
+        value: e.target.value,
+        gender: e.target.value
+      });
+    };
+    onChange = e => {
+      console.log('radio checked', e.target.value);
+      this.setState({
+        parentExisting: e.target.value
+      });
+    };
+    saveParent = async () => {
+      const { form } = this.props;
+      form.validateFields(async (err, values) => {
+        if (err) {
+          // console.log(err)
+          return;
+        } else {
+          let data = {};
+          if (!this.state.parentExisting) {
+            console.log('Mwanaza', this.props.student);
+            data = {
+              _id: this.props.student,
+              existing: false,
+              parent: {
+                fname: values.fname,
+                lname: values.lname,
+                email: values.email,
+                gender: values.gender
+              }
+            };
+          } else {
+            data = {
+              _id: this.props.student,
+              existing: true,
+              parent: values.psearch
+            };
+          }
+          this.setState({ saving: true });
+          const save = async () =>
+            await (await fetch(
+              `${globals.BASE_URL}/api/${
+                this.props.props.global.user.role
+              }/add_parent`,
+              {
+                method: 'post',
+                mode: 'cors', // no-cors, cors, *same-origin
+                cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+                credentials: 'same-origin', // include, *same-origin, omit
+                headers: {
+                  'Content-Type': 'application/json',
+                  Authorization: this.props.props.global.token
+                  // "Content-Type": "application/x-www-form-urlencoded",
+                },
+                redirect: 'follow', // manual, *follow, error
+                referrer: 'no-referrer', // no-referrer, *client
+                body: JSON.stringify(data)
+              }
+            )).json();
+
+          save()
+            .then(data => {
+              let type = data.success ? 'success' : 'error';
+
+              notification[type]({
+                message: data.message
+              });
+              //this.setState({currentPlace:data.results})
+              if (data.success) {
+                this.props.form.resetFields();
+                this.setState({ saving: true });
+                this.props.onCancel();
+              } else {
+                this.setState({
+                  adding: false,
+
+                  serverRes: data.message
+                });
+              }
+            })
+            .catch(error => {
+              console.log(error);
+              if (error == 'TypeError: Failed to fetch') {
+                //   alert('Server is offline')
+              } else if (error.message == 'Network request failed') {
+                // alert('No internet connection')
+                this.setState({
+                  serverRes: 'Network request failed'
+                });
+              }
+              notification['error']({
+                message: error.toString()
+              });
+              // this._snack({ type: "warning", msg:  });
+              this.setState({ adding: false });
+              console.log(error);
+            });
+        }
+      });
+    };
+
+    render() {
+      const { autoCompleteResult } = this.state;
+      const parentOptions = autoCompleteResult.map(parent => (
+        <AutoCompleteOption
+          key={parent._id}
+          onClick={() => {
+            this.setState({ existingSelected: true, selected: parent });
+            console.log(this.state.parent);
+          }}
+        >
+          {capitalize(parent.fname) + ' ' + capitalize(parent.lname)}
+        </AutoCompleteOption>
+      ));
+      const { visible, onCancel, onCreate, form } = this.props;
+      const { getFieldDecorator } = form;
+      const state = this.state;
+      return (
+        <div>
+          <Modal
+            visible={visible}
+            title='Add Parent To student'
+            okText='Save'
+            onCancel={onCancel}
+            onOk={this.saveParent}
+          >
+            <Spin indicator={antIcon} spinning={state.saving}>
+              <Form {...formItemLayout} onSubmit={this.handleSubmit}>
+                <Form.Item label='School Type'>
+                  <Radio.Group
+                    onChange={this.onChange}
+                    value={this.state.parentExisting}
+                  >
+                    <Radio value={false}>New Parent</Radio>
+                    <Radio value={true}>Existing </Radio>
+                  </Radio.Group>
+                </Form.Item>
+                {this.state.parentExisting ? (
+                  <>
+                    <Form.Item label='Search Parent'>
+                      {getFieldDecorator('psearch', {
+                        rules: [
+                          {
+                            required: true,
+                            message: 'Please search and select parent!'
+                          }
+                        ]
+                      })(
+                        <AutoComplete
+                          dataSource={parentOptions}
+                          onChange={this.handleParentChange}
+                          placeholder='parent'
+                        >
+                          <Input />
+                        </AutoComplete>
+                      )}
+                    </Form.Item>
+                    {state.searching ? (
+                      <div className='text-center'>
+                        <Spin indicator={antIcon} />
+                      </div>
+                    ) : state.searchStr && state.plength == 0 ? (
+                      <div
+                        className='text-center'
+                        style={{
+                          marginRight: '1rem',
+                          marginTop: '-1.5rem'
+                        }}
+                      >
+                        <p style={{ marginTop: 50 }}>
+                          {' '}
+                          No parent found matching "{state.searchStr}"
+                        </p>{' '}
+                      </div>
+                    ) : null}
+                  </>
+                ) : (
+                  <>
+                    <Form.Item label='First Name'>
+                      {getFieldDecorator('fname', {
+                        rules: [
+                          {
+                            required: true,
+                            message: 'Please input first name!'
+                          }
+                        ]
+                      })(<Input />)}
+                    </Form.Item>
+                    <Form.Item label='Last Name'>
+                      {getFieldDecorator('lname', {
+                        rules: [
+                          {
+                            required: true,
+                            message: 'Please input  last  name!'
+                          }
+                        ]
+                      })(<Input />)}
+                    </Form.Item>
+                    <Form.Item label='Email'>
+                      {getFieldDecorator('email', {
+                        rules: [
+                          {
+                            required: true,
+                            message: 'Please input email'
+                          }
+                        ]
+                      })(<Input />)}
+                    </Form.Item>
+                    <Form.Item label='Phone Number'>
+                      {getFieldDecorator('phone_number', {
+                        rules: [
+                          {
+                            required: true,
+                            message: 'Please input phone Number'
+                          }
+                        ]
+                      })(<Input />)}
+                    </Form.Item>
+                    <Form.Item label='Gender'>
+                      {getFieldDecorator('gender', {
+                        rules: [
+                          {
+                            required: true,
+                            message: 'Please select the students gender!'
+                          }
+                        ]
+                      })(
+                        <Radio.Group
+                          style={{ float: 'left' }}
+                          onChange={this.onChangeG}
+                        >
+                          <Radio value={'male'}>Male</Radio>
+                          <Radio value={'female'}>Female</Radio>
+                        </Radio.Group>
+                      )}
+                    </Form.Item>
+                  </>
+                )}
+              </Form>
+            </Spin>
+          </Modal>
+        </div>
+      );
+    }
+  }
+);

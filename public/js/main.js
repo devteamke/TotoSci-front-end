@@ -361,61 +361,61 @@ End Loader
 		/*=====================================
 		22. Google Map
 		======================================*/ 
-		if ($('#myMap').length > 0) {
-			//set your google maps parameters
-			var $latitude = 40.716304, //If you unable to find latitude and longitude of your address. Please visit http://www.latlong.net/convert-address-to-lat-long.html you can easily generate.
-				$longitude = -73.995763,
-				$map_zoom = 16 /* ZOOM SETTING */
+		// if ($('#myMap').length > 0) {
+		// 	//set your google maps parameters
+		// 	var $latitude = 40.716304, //If you unable to find latitude and longitude of your address. Please visit http://www.latlong.net/convert-address-to-lat-long.html you can easily generate.
+		// 		$longitude = -73.995763,
+		// 		$map_zoom = 16 /* ZOOM SETTING */
 
-			//google map custom marker icon 
-			var $marker_url = 'images/pin.png';
+		// 	//google map custom marker icon 
+		// 	var $marker_url = 'images/pin.png';
 
-			//we define here the style of the map
-			var style = [{
-				"stylers": [{
-					"hue": "#000"
-				}, {
-					"saturation": -70
-				}, {
-					"gamma": 2.15
-				}, {
-					"lightness": 12
-				}]
-			}];
+		// 	//we define here the style of the map
+		// 	var style = [{
+		// 		"stylers": [{
+		// 			"hue": "#000"
+		// 		}, {
+		// 			"saturation": -70
+		// 		}, {
+		// 			"gamma": 2.15
+		// 		}, {
+		// 			"lightness": 12
+		// 		}]
+		// 	}];
 
-			//set google map options
-			var map_options = {
-				center: new google.maps.LatLng($latitude, $longitude),
-				zoom: $map_zoom,
-				panControl: true,
-				zoomControl: true,
-				mapTypeControl: true,
-				streetViewControl: true,
-				mapTypeId: google.maps.MapTypeId.ROADMAP,
-				scrollwheel: false,
-				styles: style
-			}
-			//inizialize the map
-			var map = new google.maps.Map(document.getElementById('myMap'), map_options);
-			//add a custom marker to the map                
-			var marker = new google.maps.Marker({
-				position: new google.maps.LatLng($latitude, $longitude),
-				map: map,
-				visible: true,
-				icon: $marker_url
-			});
+		// 	//set google map options
+		// 	var map_options = {
+		// 		center: new google.maps.LatLng($latitude, $longitude),
+		// 		zoom: $map_zoom,
+		// 		panControl: true,
+		// 		zoomControl: true,
+		// 		mapTypeControl: true,
+		// 		streetViewControl: true,
+		// 		mapTypeId: google.maps.MapTypeId.ROADMAP,
+		// 		scrollwheel: false,
+		// 		styles: style
+		// 	}
+		// 	//inizialize the map
+		// 	var map = new google.maps.Map(document.getElementById('myMap'), map_options);
+		// 	//add a custom marker to the map                
+		// 	var marker = new google.maps.Marker({
+		// 		position: new google.maps.LatLng($latitude, $longitude),
+		// 		map: map,
+		// 		visible: true,
+		// 		icon: $marker_url
+		// 	});
 
-			var contentString = '<div id="mapcontent">' + '<p>Tromas World, 123 Folsom Ave, San Francisco.</p></div>';
-			var infowindow = new google.maps.InfoWindow({
-				maxWidth: 320,
-				content: contentString
-			});
+		// 	var contentString = '<div id="mapcontent">' + '<p>Tromas World, 123 Folsom Ave, San Francisco.</p></div>';
+		// 	var infowindow = new google.maps.InfoWindow({
+		// 		maxWidth: 320,
+		// 		content: contentString
+		// 	});
 
-			google.maps.event.addListener(marker, 'click', function() {
-				infowindow.open(map, marker);
-			});
+		// 	google.maps.event.addListener(marker, 'click', function() {
+		// 		infowindow.open(map, marker);
+		// 	});
 		   
-		};
+		// };
 
 		/*====================================
 		23. Extra JS

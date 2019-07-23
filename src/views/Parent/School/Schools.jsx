@@ -424,9 +424,10 @@ class AllStudents extends React.Component {
           visible={this.state.dvisible}
           onClose={this.onClose}
           info={this.state.currentInfo}
-          infoCopy={this.state.currentInfo}
+          infoCopy={this.state.currentInfo}  
           onUpdateIndex={this.updateIndex}
           onRemoveIndex={this.removeIndex}
+          _snack={this._snack}
         />
 
         <CollectionCreateForm

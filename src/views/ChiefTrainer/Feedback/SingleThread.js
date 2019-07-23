@@ -12,34 +12,22 @@ import globals from '../../../constants/Globals';
 // @material-ui/icons
 import AddAlert from '@material-ui/icons/AddAlert';
 import { withGlobalContext } from '../../../context/Provider';
-
+import ReactPlayer from 'react-player';
 //antd
 import {
   Form,
   Input,
-  Tooltip,
   Icon,
-  Cascader,
   Select,
   Row,
   Col,
-  Checkbox,
   Button,
-  AutoComplete,
   Card,
-  Radio,
-  InputNumber,
-  TimePicker,
   Spin,
-  Descriptions,
-  Table,
-  Menu,
-  Dropdown,
   Modal,
-  Divider,
-  Steps,
   List,
-  Avatar
+  Avatar,
+  Collapse
 } from 'antd';
 import moment from 'moment';
 //Markdown editor
@@ -50,8 +38,8 @@ import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
 import './Thread.css';
 const ReactMarkdown = require('react-markdown');
 const format = 'HH:mm';
-const { Step } = Steps;
-const { Column, ColumnGroup } = Table;
+
+const { Panel } = Collapse;
 const { Option } = Select;
 const { TextArea } = Input;
 const antIcon = <Icon type='loading' style={{ fontSize: 24 }} spin />;
@@ -354,6 +342,7 @@ class Add extends React.Component {
                   <span style={{ display: 'inline', marginLeft: '12px' }}>
                     {capitalize(state.conversation.subject)}{' '}
                   </span>
+                  <Icon style={{ float: 'right' }} type='more' />
                 </span>
               }
               bordered={false}
@@ -389,7 +378,7 @@ class Add extends React.Component {
 
                     return (
                       <>
-                        <List.Item className='threads'>
+                        <List.Item>
                           <List.Item.Meta
                             avatar={
                               <Avatar
@@ -434,10 +423,101 @@ class Add extends React.Component {
                                     escapeHtml={false}
                                   />
                                 </span>
+                                <div>
+                                  {item.attachments ? (
+                                    <>
+                                      {item.attachments.map(each => {
+                                        let rjsx;
+                                        if (each.type !== 'video/x-matroska') {
+                                          rjsx = (
+                                            <div
+                                              style={{ marginBottom: '10px' }}
+                                            >
+                                              {' '}
+                                              <a
+                                                href={`${
+                                                  globals.BASE_URL
+                                                }/uploads/${each.file}`}
+                                              >
+                                                {' '}
+                                                <Icon
+                                                  style={{ fontSize: '18px' }}
+                                                  type='paper-clip'
+                                                />{' '}
+                                                <p
+                                                  style={{ display: 'inline' }}
+                                                >
+                                                  {each.name}
+                                                </p>
+                                              </a>
+                                            </div>
+                                          );
+                                        }
+                                        return rjsx;
+                                      })}
+
+                                      <Collapse
+                                        accordion
+                                        style={{
+                                          marginLeft: this.props.broken
+                                            ? '-3rem'
+                                            : '-0.5rem',
+                                          width: this.props.broken
+                                            ? '110%'
+                                            : '55%',
+                                          marginBottom: '10px',
+                                          display: state.showCollapse
+                                            ? 'block'
+                                            : 'none'
+                                        }}
+                                      >
+                                        {item.attachments.map((each, i) => {
+                                          let rjsx;
+                                          if (each.type == 'video/x-matroska') {
+                                            if (!state.showCollapse) {
+                                              this.setState({
+                                                showCollapse: true
+                                              });
+                                            }
+                                            rjsx = (
+                                              <Panel
+                                                style={{ padding: 0 }}
+                                                expandIcon={panelProps => (
+                                                  <Icon type='paper-clip' />
+                                                )}
+                                                header={each.name}
+                                                key={i}
+                                              >
+                                                <ReactPlayer
+                                                  url={`${
+                                                    globals.BASE_URL
+                                                  }/uploads/${each.file}`}
+                                                  style={{ marginLeft: '14px' }}
+                                                  controls
+                                                  width='90%'
+                                                  height='50%'
+                                                />
+                                              </Panel>
+                                            );
+                                          }
+                                          return rjsx;
+                                        })}
+                                      </Collapse>
+                                    </>
+                                  ) : null}
+                                </div>
                               </span>
                             }
                           />
-                          <div style={{ fontSize: '0.8rem' }}>
+
+                          <div
+                            style={{
+                              fontSize: '0.8rem',
+                              position: 'absolute',
+                              right: 0,
+                              bottom: 0
+                            }}
+                          >
                             {moment(item.createdAt).format(
                               'MMMM Do YYYY, hh:mm a'
                             )}{' '}

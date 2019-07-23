@@ -30,6 +30,9 @@ import Compose from "../views/ChiefTrainer/Feedback/Compose";
 import Feedback from "../views/ChiefTrainer/Feedback/Feedback";
 import SingleThread from "../views/ChiefTrainer/Feedback/SingleThread";
 
+
+import AddInvoice from "../views/ChiefTrainer/Invoices/AddInvoice";
+import InvoiceDetails from "../views/ChiefTrainer/Invoices/InvoiceDetails";
 import Profile from "../views/profile/Profile.jsx";
 
 const dashboardRoutes = [
@@ -156,6 +159,16 @@ const dashboardRoutes = [
     type: "hidden",
 
     component: Notifications,
+    layout: "/chief-trainer"
+  },
+  //Invoice generation
+  //Notifications
+  {
+    path: "/invoices",
+    name: "Invoices",
+
+    icon: AccountBalance,
+    component: AddInvoice,
     layout: "/chief-trainer"
   }
 ];

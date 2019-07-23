@@ -5,7 +5,12 @@ import App from "./App";
 import * as serviceWorker from "./serviceWorker";
 import { GlobalContextProvider } from "./context/Provider";
 import { Spin, Icon } from "antd";
-
+import WebFont from 'webfontloader';
+WebFont.load({
+  google: {
+    families: ['Titillium Web:300,400,700', 'sans-serif']
+  }
+});
 Spin.setDefaultIndicator(<Icon type="loading" style={{ fontSize: 24 }} spin />);
 ReactDOM.render(
   <GlobalContextProvider>
