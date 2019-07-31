@@ -12,7 +12,7 @@ import {
   Select,
   Button,
   Spin,
-  Menu,
+  Menu, notification,
   Dropdown,
   Modal
 } from "antd";
@@ -68,7 +68,7 @@ class CustomDrawer extends React.Component {
         const deleteAsync = async () =>
           await (await fetch(
             `${globals.BASE_URL}/api/${
-              act.props.global.user.role
+            act.props.global.user.role
             }/delete_school`,
             {
               method: "DELETE",
@@ -97,7 +97,7 @@ class CustomDrawer extends React.Component {
               resType: data.success ? "success" : "warning"
             });
             setTimeout(
-              function() {
+              function () {
                 act.setState({ open: false, updating: false });
               }.bind(act),
               9000
@@ -130,7 +130,7 @@ class CustomDrawer extends React.Component {
               resType: data.success ? "success" : "warning"
             });
             setTimeout(
-              function() {
+              function () {
                 act.setState({ open: false });
               }.bind(act),
               9000
@@ -170,7 +170,7 @@ class CustomDrawer extends React.Component {
       const SaveAsync = async () =>
         await (await fetch(
           `${globals.BASE_URL}/api/${
-            this.props.global.user.role
+          this.props.global.user.role
           }/update_school`,
           {
             method: "PATCH",
@@ -198,8 +198,13 @@ class CustomDrawer extends React.Component {
             serverRes: data.message,
             resType: data.success ? "success" : "warning"
           });
+          let type = data.success ? 'success' : 'error';
+
+          notification[type]({
+            message: data.message
+          });
           setTimeout(
-            function() {
+            function () {
               this.setState({ open: false, updating: false });
             }.bind(this),
             9000
@@ -228,14 +233,18 @@ class CustomDrawer extends React.Component {
               serverRes: "Network request failed"
             });
           }
+          let type = data.success ? 'success' : 'error';
 
+          notification[this.state.resType]({
+            message: error.toString()
+          });
           this.setState({
             open: true,
             savingInfo: false,
             resType: data.success ? "success" : "warning"
           });
           setTimeout(
-            function() {
+            function () {
               this.setState({ open: false });
             }.bind(this),
             9000
@@ -270,7 +279,8 @@ class CustomDrawer extends React.Component {
           let schools = data.schools.map((each) => {
             return { value: each._id, label: unKebab(each.name) };
           });
-          console.log("mapped schools", schools);
+          //  console.log("mapped schools", schools);
+
           this.setState({
             schools: schools,
             loading: false
@@ -384,82 +394,82 @@ class CustomDrawer extends React.Component {
                 <DescriptionItem
                   title="Name"
                   content={
-                    capitalize(info.addedBy[0].fname) +
-                    " " +
-                    capitalize(info.addedBy[0].lname)
+                    info.addedBy[0] ? capitalize(info.addedBy[0].fname) +
+                      " " +
+                      capitalize(info.addedBy[0].lname) : 'N/A'
                   }
                 />
               </Col>
             </Row>
           </>
         ) : (
-          <>
-            {state.infoCopy ? (
-              <Form layout="vertical">
-                <Form.Item label="Name">
-                  {getFieldDecorator("name", {
-                    initialValue: unKebab(state.infoCopy.name),
-                    rules: [
-                      {
-                        required: true,
-                        message: "Please input schoolname!"
-                      }
-                    ]
-                  })(<Input />)}
-                </Form.Item>
-                <Form.Item label="County">
-                  {getFieldDecorator("county", {
-                    initialValue: state.infoCopy.county,
-                    rules: [
-                      {
-                        required: true,
-                        message: "Please input county name!"
-                      }
-                    ]
-                  })(<Input />)}
-                </Form.Item>
+            <>
+              {state.infoCopy ? (
+                <Form layout="vertical">
+                  <Form.Item label="Name">
+                    {getFieldDecorator("name", {
+                      initialValue: unKebab(state.infoCopy.name),
+                      rules: [
+                        {
+                          required: true,
+                          message: "Please input schoolname!"
+                        }
+                      ]
+                    })(<Input />)}
+                  </Form.Item>
+                  <Form.Item label="County">
+                    {getFieldDecorator("county", {
+                      initialValue: state.infoCopy.county,
+                      rules: [
+                        {
+                          required: true,
+                          message: "Please input county name!"
+                        }
+                      ]
+                    })(<Input />)}
+                  </Form.Item>
 
-                <Form.Item label="Sub County">
-                  {getFieldDecorator("sub_county", {
-                    initialValue: state.infoCopy.sub_county,
-                    rules: [
-                      {
-                        type: "string",
-                        required: true,
-                        message: "Please select sub county!"
-                      }
-                    ]
-                  })(<Input />)}
-                </Form.Item>
-                <Form.Item>
-                  <div className="text-center">
-                    {state.updating ? (
-                      <Spin indicator={antIcon} />
-                    ) : (
-                      <>
-                        <Button
-                          form="myForm"
-                          key="submit"
-                          htmlType="submit"
-                          onClick={() => {
-                            this.setState({ editing: false });
-                          }}>
-                          Cancel
+                  <Form.Item label="Sub County">
+                    {getFieldDecorator("sub_county", {
+                      initialValue: state.infoCopy.sub_county,
+                      rules: [
+                        {
+                          type: "string",
+                          required: true,
+                          message: "Please select sub county!"
+                        }
+                      ]
+                    })(<Input />)}
+                  </Form.Item>
+                  <Form.Item>
+                    <div className="text-center">
+                      {state.updating ? (
+                        <Spin indicator={antIcon} />
+                      ) : (
+                          <>
+                            <Button
+                              form="myForm"
+                              key="submit"
+                              htmlType="submit"
+                              onClick={() => {
+                                this.setState({ editing: false });
+                              }}>
+                              Cancel
                         </Button>{" "}
-                        <Button
-                          type="primary"
-                          htmlType="submit"
-                          onClick={this.handleSave}>
-                          Save Changes
+                            <Button
+                              type="primary"
+                              htmlType="submit"
+                              onClick={this.handleSave}>
+                              Save Changes
                         </Button>
-                      </>
-                    )}
-                  </div>
-                </Form.Item>
-              </Form>
-            ) : null}
-          </>
-        )}
+                          </>
+                        )}
+                    </div>
+                  </Form.Item>
+                </Form>
+              ) : null}
+            </>
+          )}
       </Drawer>
     );
   };

@@ -14,12 +14,11 @@ import {
   Icon,
   Card,
   Button,
-  Modal,
-  Form,
+
   Input,
   notification,
   Table,
-  Select,
+
   Spin
 } from 'antd';
 import CustomDrawer from './Drawer';
@@ -103,11 +102,7 @@ class AllStudents extends React.Component {
       dataIndex: 'email',
       sorter: true
     },
-    {
-      title: 'Email',
-      dataIndex: 'email',
-      sorter: true
-    },
+
     {
       title: 'Gender',
       dataIndex: 'gender',
@@ -123,9 +118,10 @@ class AllStudents extends React.Component {
       title: 'More',
       render: (text, user, i) => (
         <span
-          onClick={() => {
-            let current = { ...user, i };
-            this.setState({ currentInfo: current }, () => {
+          onClick={async () => {
+            let gotclasses = await this._fetchClass(instructor._id);
+            let current = { ...user, i, gotclasses };
+            this.setState({ currentInfo: current, fetchClass: false }, () => {
               this.showDrawer();
             });
           }}
@@ -312,41 +308,21 @@ class AllStudents extends React.Component {
     );
   };
   _handleSearch = event => {
+    const pager = { ...this.state.pagination };
+    pager.current = 1;
     this.setState(
       {
         query: event.target.value,
         loading: true,
-        loaded: false
+        loaded: false,
+        pagination: pager
       },
       () => {
         this._fetchUsers();
       }
     );
   };
-  _snack = params => {
-    if (this.props.location.snack) {
-      let snack = this.props.location.snack;
-      this.setState({ open: true, resType: snack.type, serverRes: snack.msg });
-      setTimeout(
-        function() {
-          this.setState({ open: false });
-        }.bind(this),
-        9000
-      );
-    } else if (params) {
-      this.setState({
-        open: true,
-        resType: params.type,
-        serverRes: params.msg
-      });
-      setTimeout(
-        function() {
-          this.setState({ open: false });
-        }.bind(this),
-        9000
-      );
-    }
-  };
+
   //Ant Modal
   showDrawer = () => {
     const state = this.state;
@@ -492,14 +468,38 @@ class AllStudents extends React.Component {
       };
     });
     this.onClose();
-    this._snack({
-      type: data.success ? 'success' : 'warning',
-      msg: data.message
+    notification[data.success ? 'success' : 'error']({
+      message: data.message
     });
   };
+
+  handleTableChange = (pagination, filters, sorter) => {
+    console.log(
+      '[pagination]',
+      pagination,
+      ' [filters]',
+      filters,
+      '[sorter]',
+      sorter
+    );
+    const pager = { ...this.state.pagination };
+    this.myN.scrollIntoView({ block: 'start' });
+    pager.current = pagination.current;
+    this.setState(
+      {
+        filters,
+        sorter,
+        pagination: pager,
+        loading: true
+      },
+      () => {
+        this._fetchUsers();
+      }
+    );
+  };
+
   componentDidMount = () => {
     this._fetchUsers();
-    this._snack();
   };
 
   render = () => {
@@ -549,6 +549,21 @@ class AllStudents extends React.Component {
                   </div>
                 </GridItem>
               </GridContainer>
+              <Table
+                scroll={{ x: '100%' }}
+                size='middle'
+                columns={this.columns}
+                rowKey={record => record._id}
+                dataSource={state.users}
+                pagination={this.state.pagination}
+                loading={this.state.loading}
+                onChange={this.handleTableChange}
+              />
+              <div className='text-center' style={{ marginTop: '-43px' }}>
+                <p style={{ color: 'grey' }}>
+                  (Showing {state.users.length} of {state.totalDocs} records){' '}
+                </p>
+              </div>
             </Card>
           </GridItem>
         </GridContainer>
@@ -560,12 +575,11 @@ let instructor = {};
 
 export default withGlobalContext(withStyles(styles)(AllStudents));
 
-
 const center = {
   position: 'absolute',
   left: '50%',
   top: '50%',
-  '-webkit-transform': 'translate(-50%, -50%)',
+  WebkitTransform: 'translate(-50%, -50%)',
   transform: 'translate(-50%, -50%)'
 };
 const unKebab = string => {
@@ -584,6 +598,8 @@ const unKebab = string => {
 const capitalize = str => {
   if (str) {
     str = str.charAt(0).toUpperCase() + str.slice(1);
+  } else {
+    str = 'NA';
   }
   return str;
 };

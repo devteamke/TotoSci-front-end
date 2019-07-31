@@ -1,18 +1,14 @@
-import React from 'react';
+import React from "react";
 // @material-ui/core components
-import withStyles from '@material-ui/core/styles/withStyles';
+import withStyles from "@material-ui/core/styles/withStyles";
 
 // core components
-import Snackbar from '../../../components/dcomponents/Snackbar/Snackbar.jsx';
 
-import { MDBBtn, MDBInput } from 'mdbreact';
-import avatar from '../../../assets/img/faces/marc.jpg';
-
-import globals from '../../../constants/Globals';
+import globals from "../../../constants/Globals";
 // @material-ui/icons
-import AddAlert from '@material-ui/icons/AddAlert';
-import { withGlobalContext } from '../../../context/Provider';
-import ReactPlayer from 'react-player';
+
+import { withGlobalContext } from "../../../context/Provider";
+import ReactPlayer from "react-player";
 //antd
 import {
   Form,
@@ -27,39 +23,40 @@ import {
   Modal,
   List,
   Avatar,
-  Collapse
-} from 'antd';
-import moment from 'moment';
+  Collapse,
+  notification
+} from "antd";
+import moment from "moment";
 //Markdown editor
-import CKEditor from '@ckeditor/ckeditor5-react';
-import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
+import CKEditor from "@ckeditor/ckeditor5-react";
+import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 //scroll to
 
-import './Thread.css';
-const ReactMarkdown = require('react-markdown');
-const format = 'HH:mm';
+import "./Thread.css";
+const ReactMarkdown = require("react-markdown");
+const format = "HH:mm";
 
 const { Panel } = Collapse;
 const { Option } = Select;
 const { TextArea } = Input;
-const antIcon = <Icon type='loading' style={{ fontSize: 24 }} spin />;
-const antIconLarge = <Icon type='loading' style={{ fontSize: 40 }} spin />;
+const antIcon = <Icon type="loading" style={{ fontSize: 24 }} spin />;
+const antIconLarge = <Icon type="loading" style={{ fontSize: 40 }} spin />;
 const styles = {
   cardCategoryWhite: {
-    color: 'rgba(255,255,255,.62)',
-    margin: '0',
-    fontSize: '14px',
-    marginTop: '0',
-    marginBottom: '0'
+    color: "rgba(255,255,255,.62)",
+    margin: "0",
+    fontSize: "14px",
+    marginTop: "0",
+    marginBottom: "0"
   },
   cardTitleWhite: {
-    color: '#FFFFFF',
-    marginTop: '0px',
-    minHeight: 'auto',
-    fontWeight: '300',
+    color: "#FFFFFF",
+    marginTop: "0px",
+    minHeight: "auto",
+    fontWeight: "300",
     fontFamily: "'Roboto', 'Helvetica', 'Arial', sans-serif",
-    marginBottom: '3px',
-    textDecoration: 'none'
+    marginBottom: "3px",
+    textDecoration: "none"
   }
 };
 const confirm = Modal.confirm;
@@ -78,43 +75,17 @@ class Add extends React.Component {
       //other
       adding: false,
       open: false,
-      place: 'bc',
-      resType: 'warning'
+      place: "bc",
+      resType: "warning"
     };
 
     this.item2 = React.createRef();
     this.item = React.createRef();
   }
 
-  _snack = params => {
-    if (this.props.location.snack) {
-      let snack = this.props.location.snack;
-      this.setState({ open: true, resType: snack.type, serverRes: snack.msg });
-      setTimeout(
-        function() {
-          this.setState({ open: false });
-        }.bind(this),
-        9000
-      );
-    }
-    if (params) {
-      this.setState({
-        open: true,
-        resType: params.type,
-        serverRes: params.msg
-      });
-      setTimeout(
-        function() {
-          this.setState({ open: false });
-        }.bind(this),
-        9000
-      );
-    }
-  };
-
   scrollToBottom = () => {
-    console.log('messagesEnd', this.item);
-    console.log('list', this.item2);
+    console.log("messagesEnd", this.item);
+    console.log("list", this.item2);
     // const scrollHeight = this.item2.current.scrollHeight;
     // const height = this.item2.current.clientHeight;
     // const maxScrollTop = scrollHeight - height;
@@ -123,8 +94,8 @@ class Add extends React.Component {
     // console.log(this.item2.current.scrollTop);
     if (this.item) {
       this.item.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start'
+        behavior: "smooth",
+        block: "start"
       });
     }
     //  this.item2.current.scrollTop = this.item2.current.scrollHeight + 100;
@@ -140,25 +111,26 @@ class Add extends React.Component {
     this.setState({ sending: true });
     const FetchAsync = async () =>
       await (await fetch(`${globals.BASE_URL}/api/users/send_message_reply`, {
-        method: 'post',
-        mode: 'cors', // no-cors, cors, *same-origin
-        cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
-        credentials: 'same-origin', // include, *same-origin, omit
+        method: "post",
+        mode: "cors", // no-cors, cors, *same-origin
+        cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
+        credentials: "same-origin", // include, *same-origin, omit
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
           Authorization: this.props.global.token
           // "Content-Type": "application/x-www-form-urlencoded",
         },
-        redirect: 'follow', // manual, *follow, error
-        referrer: 'no-referrer', // no-referrer, *client
+        redirect: "follow", // manual, *follow, error
+        referrer: "no-referrer", // no-referrer, *client
         body: JSON.stringify(data)
       })).json();
 
     FetchAsync()
       .then(data => {
-        this._snack({
-          type: data.success ? 'success' : 'warning',
-          msg: data.message
+        let type = data.success ? "success" : "error";
+
+        notification[type]({
+          message: data.message
         });
         //this.setState({currentPlace:data.results})
         if (data.success) {
@@ -167,7 +139,7 @@ class Add extends React.Component {
             //   messages.push(data.newMessage);
 
             return {
-              data: '',
+              data: "",
               dataError: null
             };
           });
@@ -181,16 +153,9 @@ class Add extends React.Component {
         }
       })
       .catch(error => {
-        console.log(error);
-        if (error == 'TypeError: Failed to fetch') {
-          //   alert('Server is offline')
-        } else if (error.message == 'Network request failed') {
-          // alert('No internet connection')
-          this.setState({
-            serverRes: 'Network request failed'
-          });
-        }
-        this._snack({ type: 'warning', msg: error.toString() });
+        notification["error"]({
+          message: error.toString()
+        });
         this.setState({ sending: false });
         console.log(error);
       });
@@ -205,30 +170,25 @@ class Add extends React.Component {
       await (await fetch(
         `${globals.BASE_URL}/api/users/fetch_conversation_messages`,
         {
-          method: 'post',
-          mode: 'cors', // no-cors, cors, *same-origin
-          cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
-          credentials: 'same-origin', // include, *same-origin, omit
+          method: "post",
+          mode: "cors", // no-cors, cors, *same-origin
+          cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
+          credentials: "same-origin", // include, *same-origin, omit
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
             Authorization: this.props.global.token
             // "Content-Type": "application/x-www-form-urlencoded",
           },
-          redirect: 'follow', // manual, *follow, error
-          referrer: 'no-referrer', // no-referrer, *client
+          redirect: "follow", // manual, *follow, error
+          referrer: "no-referrer", // no-referrer, *client
           body: JSON.stringify(data)
         }
       )).json();
 
     FetchAsync()
       .then(data => {
-        // this._snack({
-        //   type: data.success ? 'success' : 'warning',
-        //   msg: data.message
-        // });
-        //this.setState({currentPlace:data.results})
         if (data.success) {
-          console.log('messages', data.messages);
+          console.log("messages", data.messages);
           this.setState({ messages: data.messages, loading: false }, () =>
             setTimeout(() => this.scrollToBottom(), 300)
           );
@@ -250,33 +210,26 @@ class Add extends React.Component {
         }
       })
       .catch(error => {
-        console.log(error);
-        if (error == 'TypeError: Failed to fetch') {
-          //   alert('Server is offline')
-        } else if (error.message == 'Network request failed') {
-          // alert('No internet connection')
-          this.setState({
-            serverRes: 'Network request failed'
-          });
-        }
-        this._snack({ type: 'warning', msg: error.toString() });
+        notification["error"]({
+          message: error.toString()
+        });
         this.setState({ sending: false });
         console.log(error);
       });
   };
   componentDidMount = () => {
     if (this.props.location.data) {
-      console.log('Props recieved', this.props);
+      console.log("Props recieved", this.props);
       this._fetchMessages();
       //   setTimeout(() => this.scrollToBottom(), 300);
       //Socket on new message
-      this.props.socket.on('newMessage', data => {
+      this.props.socket.on("newMessage", data => {
         if (
           window.location.pathname ==
             `/${this.props.global.user.role}/feedback/single` &&
           data.conversation == this.state.conversation._id
         ) {
-          console.log('newMessage', data);
+          console.log("newMessage", data);
           this.setState(prevState => {
             let messages = [...this.state.messages];
             messages.push(data);
@@ -302,7 +255,7 @@ class Add extends React.Component {
 
     if (state.loading) {
       return (
-        <div style={{ ...center, left: this.props.broken ? '50%' : '58.3%' }}>
+        <div style={{ ...center, left: this.props.broken ? "50%" : "58.3%" }}>
           <Spin indicator={antIconLarge} />
         </div>
       );
@@ -311,15 +264,6 @@ class Add extends React.Component {
     //  console.log("modalStudents", state.modalStudents);
     return (
       <div>
-        <Snackbar
-          place={this.state.place}
-          color={state.resType}
-          icon={AddAlert}
-          message={state.serverRes}
-          open={this.state.open}
-          closeNotification={() => this.setState({ open: false })}
-          close
-        />
         <Row gutter={16}>
           <Col span={24}>
             <Card
@@ -327,32 +271,32 @@ class Add extends React.Component {
                 <span>
                   <Icon
                     style={{
-                      float: 'left',
-                      marginTop: '1px',
-                      fontSize: '28px'
+                      float: "left",
+                      marginTop: "1px",
+                      fontSize: "28px"
                     }}
                     onClick={() => {
                       this.props.history.push({
                         pathname: `/${this.props.global.user.role}/feedback`
                       });
                     }}
-                    type='left-square'
+                    type="left-square"
                   />
 
-                  <span style={{ display: 'inline', marginLeft: '12px' }}>
-                    {capitalize(state.conversation.subject)}{' '}
+                  <span style={{ display: "inline", marginLeft: "12px" }}>
+                    {capitalize(state.conversation.subject)}{" "}
                   </span>
-                  <Icon style={{ float: 'right' }} type='more' />
+                  <Icon style={{ float: "right" }} type="more" />
                 </span>
               }
               bordered={false}
             >
               <div
-                style={{ height: '26rem', overflow: 'auto' }}
+                style={{ height: "26rem", overflow: "auto" }}
                 ref={this.item2}
               >
                 <List
-                  itemLayout='horizontal'
+                  itemLayout="horizontal"
                   dataSource={state.messages}
                   renderItem={(item, i) => {
                     let sender;
@@ -378,7 +322,7 @@ class Add extends React.Component {
 
                     return (
                       <>
-                        <List.Item>
+                        <List.Item style={{ position: "relative" }}>
                           <List.Item.Meta
                             avatar={
                               <Avatar
@@ -393,29 +337,29 @@ class Add extends React.Component {
                               <span>
                                 <span
                                   style={{
-                                    marginRight: '15px',
+                                    marginRight: "15px",
                                     fontWeight: 500,
-                                    width: '175px',
-                                    color: 'black'
+                                    width: "175px",
+                                    color: "black"
                                   }}
                                 >
                                   {capitalize(sender.fname) +
-                                    ' ' +
-                                    capitalize(sender.fname)}
+                                    " " +
+                                    capitalize(sender.lname)}
                                   <span
                                     style={{
                                       fontWeight: 200,
 
-                                      color: 'black'
+                                      color: "black"
                                     }}
                                   >
-                                    {' '}
+                                    {" "}
                                     - {capitalize(sender.role)}
                                   </span>
                                 </span>
                                 <span
                                   style={{
-                                    color: 'black'
+                                    color: "black"
                                   }}
                                 >
                                   <ReactMarkdown
@@ -428,24 +372,24 @@ class Add extends React.Component {
                                     <>
                                       {item.attachments.map(each => {
                                         let rjsx;
-                                        if (each.type !== 'video/x-matroska') {
+                                        if (each.type !== "video/x-matroska") {
                                           rjsx = (
                                             <div
-                                              style={{ marginBottom: '10px' }}
+                                              style={{ marginBottom: "10px" }}
                                             >
-                                              {' '}
+                                              {" "}
                                               <a
                                                 href={`${
                                                   globals.BASE_URL
                                                 }/uploads/${each.file}`}
                                               >
-                                                {' '}
+                                                {" "}
                                                 <Icon
-                                                  style={{ fontSize: '18px' }}
-                                                  type='paper-clip'
-                                                />{' '}
+                                                  style={{ fontSize: "18px" }}
+                                                  type="paper-clip"
+                                                />{" "}
                                                 <p
-                                                  style={{ display: 'inline' }}
+                                                  style={{ display: "inline" }}
                                                 >
                                                   {each.name}
                                                 </p>
@@ -460,20 +404,20 @@ class Add extends React.Component {
                                         accordion
                                         style={{
                                           marginLeft: this.props.broken
-                                            ? '-3rem'
-                                            : '-0.5rem',
+                                            ? "-3rem"
+                                            : "-0.5rem",
                                           width: this.props.broken
-                                            ? '110%'
-                                            : '55%',
-                                          marginBottom: '10px',
+                                            ? "110%"
+                                            : "55%",
+                                          marginBottom: "10px",
                                           display: state.showCollapse
-                                            ? 'block'
-                                            : 'none'
+                                            ? "block"
+                                            : "none"
                                         }}
                                       >
                                         {item.attachments.map((each, i) => {
                                           let rjsx;
-                                          if (each.type == 'video/x-matroska') {
+                                          if (each.type == "video/x-matroska") {
                                             if (!state.showCollapse) {
                                               this.setState({
                                                 showCollapse: true
@@ -483,7 +427,7 @@ class Add extends React.Component {
                                               <Panel
                                                 style={{ padding: 0 }}
                                                 expandIcon={panelProps => (
-                                                  <Icon type='paper-clip' />
+                                                  <Icon type="paper-clip" />
                                                 )}
                                                 header={each.name}
                                                 key={i}
@@ -492,10 +436,10 @@ class Add extends React.Component {
                                                   url={`${
                                                     globals.BASE_URL
                                                   }/uploads/${each.file}`}
-                                                  style={{ marginLeft: '14px' }}
+                                                  style={{ marginLeft: "14px" }}
                                                   controls
-                                                  width='90%'
-                                                  height='50%'
+                                                  width="90%"
+                                                  height="50%"
                                                 />
                                               </Panel>
                                             );
@@ -512,15 +456,15 @@ class Add extends React.Component {
 
                           <div
                             style={{
-                              fontSize: '0.8rem',
-                              position: 'absolute',
+                              fontSize: "0.8rem",
+                              position: "absolute",
                               right: 0,
                               bottom: 0
                             }}
                           >
                             {moment(item.createdAt).format(
-                              'MMMM Do YYYY, hh:mm a'
-                            )}{' '}
+                              "MMMM Do YYYY, hh:mm a"
+                            )}{" "}
                             ({moment(item.createdAt).fromNow()})
                           </div>
                         </List.Item>
@@ -532,33 +476,33 @@ class Add extends React.Component {
                   ref={el => {
                     this.item = el;
                   }}
-                  style={{ width: '100%' }}
+                  style={{ width: "100%" }}
                 >
                   <CKEditor
-                    style={{ width: '100%' }}
+                    style={{ width: "100%" }}
                     editor={ClassicEditor}
                     data={state.data}
                     onInit={editor => {
                       // You can store the "editor" and use when it is needed.
 
-                      console.log('Editor is ready to use!', editor);
+                      console.log("Editor is ready to use!", editor);
                     }}
                     config={{
                       toolbar: [
-                        'bold',
-                        'italic',
-                        'bulletedList',
-                        'numberedList',
-                        'blockQuote',
-                        'Heading',
-                        'Link'
+                        "bold",
+                        "italic",
+                        "bulletedList",
+                        "numberedList",
+                        "blockQuote",
+                        "Heading",
+                        "Link"
                       ]
                     }}
                     onChange={(event, editor) => {
                       const data = editor.getData();
-                      if (data == '' && !state.open) {
+                      if (data == "" && !state.open) {
                         this.setState({
-                          dataError: 'Message is required!'
+                          dataError: "Message is required!"
                         });
                       } else {
                         this.setState({ dataError: null });
@@ -567,19 +511,19 @@ class Add extends React.Component {
                       console.log({ event, editor, data });
                     }}
                     onBlur={editor => {
-                      console.log('Blur.', editor);
+                      console.log("Blur.", editor);
                     }}
                     onFocus={editor => {
-                      console.log('Focus.', editor);
+                      console.log("Focus.", editor);
                     }}
                   />
-                  <p style={{ color: 'red' }}>{state.dataError}</p>
+                  <p style={{ color: "red" }}>{state.dataError}</p>
                   <br />
-                  <div className='text-center'>
+                  <div className="text-center">
                     {state.sending ? (
                       <Spin indicator={antIcon} />
                     ) : (
-                      <Button type='primary' onClick={this.handleSendMessage}>
+                      <Button type="primary" onClick={this.handleSendMessage}>
                         Send
                       </Button>
                     )}
@@ -602,11 +546,11 @@ const capitalize = str => {
 };
 const unKebab = string => {
   if (string) {
-    string = string.replace(/-/g, ' ').toLowerCase();
+    string = string.replace(/-/g, " ").toLowerCase();
 
-    let splitStr = string.toLowerCase().split(' ');
+    let splitStr = string.toLowerCase().split(" ");
     string = splitStr.map(str => {
-      return str.charAt(0).toUpperCase() + str.slice(1) + ' ';
+      return str.charAt(0).toUpperCase() + str.slice(1) + " ";
     });
   }
 
@@ -614,54 +558,54 @@ const unKebab = string => {
 };
 
 const center = {
-  position: 'absolute',
-  left: '58.3%',
-  top: '50%',
-  '-webkit-transform': 'translate(-50%, -50%)',
-  transform: 'translate(-50%, -50%)'
+  position: "absolute",
+  left: "58.3%",
+  top: "50%",
+  WebkitTransform: "translate(-50%, -50%)",
+  transform: "translate(-50%, -50%)"
 };
-export default Form.create({ name: 'register' })(
+export default Form.create({ name: "register" })(
   withGlobalContext(withStyles(styles)(Add))
 );
 
 const columns = [
   {
-    title: 'First Name',
-    dataIndex: 'fname'
+    title: "First Name",
+    dataIndex: "fname"
   },
   {
-    title: 'Last Name',
-    dataIndex: 'lname'
+    title: "Last Name",
+    dataIndex: "lname"
   }
 ];
 const columnsAtt = [
   {
-    title: 'First Name',
-    dataIndex: 'fname'
+    title: "First Name",
+    dataIndex: "fname"
   },
   {
-    title: 'Last Name',
-    dataIndex: 'lname'
+    title: "Last Name",
+    dataIndex: "lname"
   }
 ];
 const columnsModal = [
   {
-    title: 'First Name',
-    dataIndex: 'fname'
+    title: "First Name",
+    dataIndex: "fname"
   },
   {
-    title: 'Last Name',
-    dataIndex: 'lname'
+    title: "Last Name",
+    dataIndex: "lname"
   }
 ];
 const columnsI = [
   {
-    title: 'First Name',
-    dataIndex: 'fname'
+    title: "First Name",
+    dataIndex: "fname"
   },
   {
-    title: 'Last Name',
-    dataIndex: 'lname'
+    title: "Last Name",
+    dataIndex: "lname"
   }
 ];
 //form functions

@@ -372,6 +372,30 @@ class AllStudents extends React.Component {
       message: data.message
     });
   };
+  handleTableChange = (pagination, filters, sorter) => {
+    console.log(
+      '[pagination]',
+      pagination,
+      ' [filters]',
+      filters,
+      '[sorter]',
+      sorter
+    );
+    const pager = { ...this.state.pagination };
+    this.myN.scrollIntoView({ block: 'start' });
+    pager.current = pagination.current;
+    this.setState(
+      {
+        filters,
+        sorter,
+        pagination: pager,
+        loading: true
+      },
+      () => {
+        this._fetchUsers();
+      }
+    );
+  };
   componentDidMount = () => {
     this._fetchUsers();
   };

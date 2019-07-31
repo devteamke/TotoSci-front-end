@@ -100,8 +100,10 @@ class AllStudents extends React.Component {
       dataIndex: 'role',
       render: role => capitalize(role),
       sorter: true,
-      filters: [ { text: 'Instructors', value: 'instructor' },
-      { text: 'Trainers', value: 'trainer' }],
+      filters: [
+        { text: 'Instructors', value: 'instructor' },
+        { text: 'Trainers', value: 'trainer' }
+      ],
       width: '20%'
     },
     {
@@ -524,5 +526,3 @@ const capitalize = str => {
   return str;
 };
 export default withGlobalContext(withStyles(styles)(AllStudents));
-
-const { Option } = Select;

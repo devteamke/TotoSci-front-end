@@ -1,28 +1,24 @@
-import React from 'react';
+import React from "react";
 import {
   Layout,
   Menu,
-  Breadcrumb,
   Icon,
   Modal,
-  Button,
   Avatar,
   Tabs,
   Badge,
-  Divider,
-  Dropdown
-} from 'antd';
-import { Link, withRouter } from 'react-router-dom';
-import { withGlobalContext } from '../context/Provider';
-import { Switch, Route, Redirect } from 'react-router-dom';
-import routes from '../routes/chiefRoutes';
-import globals from '../constants/Globals';
+  Dropdown,
+  notification
+} from "antd";
+import { Link, withRouter } from "react-router-dom";
+import { withGlobalContext } from "../context/Provider";
+import { Switch, Route, Redirect } from "react-router-dom";
+import routes from "../routes/chiefRoutes";
+import globals from "../constants/Globals";
 
-//scrollbar
-import PerfectScrollbar from '@opuscapita/react-perfect-scrollbar';
-import moment from 'moment';
-import './layouts.css';
-import io from 'socket.io-client';
+import moment from "moment";
+import "./layouts.css";
+import io from "socket.io-client";
 const { Header, Content, Footer, Sider } = Layout;
 const { SubMenu } = Menu;
 const confirm = Modal.confirm;
@@ -41,7 +37,7 @@ class Slider extends React.Component {
     mainRoutes = mainRoutes.map(main => {
       let child = [];
       routes
-        .filter(each => each.type == 'nested')
+        .filter(each => each.type == "nested")
         .map(each => {
           if (each.path.includes(main.path)) {
             child.push(each);
@@ -51,12 +47,13 @@ class Slider extends React.Component {
       return main;
     });
 
-    console.log('mapped Routes', mainRoutes);
+    console.log("mapped Routes", mainRoutes);
 
     this.state = {
       collapsed: false,
       messages: [],
-      approval: [],
+      approvals: [],
+      broadcasts:[],
       endpoint: `${globals.BASE_URL}`
     };
   }
@@ -66,23 +63,23 @@ class Slider extends React.Component {
     this.setState({ collapsed });
   };
   ok = () => {
-    console.log('OK');
+    console.log("OK");
     this.props.history.push({
-      pathname: '/login',
-      snack: { type: 'success', msg: 'Logout successful' }
+      pathname: "/login",
+      snack: { type: "success", msg: "Logout successful" }
     });
     this.props.global.onLogout();
   };
   showDeleteConfirm = () => {
     confirm({
-      title: 'Are you sure you want to logout?',
+      title: "Are you sure you want to logout?",
 
-      okText: 'Yes',
-      okType: 'danger',
-      cancelText: 'No',
+      okText: "Yes",
+      okType: "danger",
+      cancelText: "No",
       onOk: this.ok,
       onCancel() {
-        console.log('Cancel');
+        console.log("Cancel");
       }
     });
   };
@@ -106,17 +103,17 @@ class Slider extends React.Component {
     this.setState({ sending: true });
     const FetchAsync = async () =>
       await (await fetch(`${globals.BASE_URL}/api/users/fetch_notifications`, {
-        method: 'post',
-        mode: 'cors', // no-cors, cors, *same-origin
-        cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
-        credentials: 'same-origin', // include, *same-origin, omit
+        method: "post",
+        mode: "cors", // no-cors, cors, *same-origin
+        cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
+        credentials: "same-origin", // include, *same-origin, omit
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
           Authorization: this.props.global.token
           // "Content-Type": "application/x-www-form-urlencoded",
         },
-        redirect: 'follow', // manual, *follow, error
-        referrer: 'no-referrer', // no-referrer, *client
+        redirect: "follow", // manual, *follow, error
+        referrer: "no-referrer", // no-referrer, *client
         body: JSON.stringify({})
       })).json();
 
@@ -124,21 +121,18 @@ class Slider extends React.Component {
       .then(data => {
         //
         if (data.success) {
-          console.log(data.messages);
-          this.setState({ messages: data.messages });
+          console.log("[ all feeds ]", data);
+          this.setState({ messages: data.messages, approvals: data.approvals });
         } else {
+          notification["error"]({
+            message: data.message
+          });
         }
       })
       .catch(error => {
-        console.log(error);
-        if (error == 'TypeError: Failed to fetch') {
-          //   alert('Server is offline')
-        } else if (error.message == 'Network request failed') {
-          // alert('No internet connection')
-          this.setState({
-            serverRes: 'Network request failed'
-          });
-        }
+        notification["error"]({
+          message: error.toString()
+        });
         //this._snack({ type: "warning", msg: error.toString() });
         //this.setState({ sending: false });
         console.log(error);
@@ -159,9 +153,12 @@ class Slider extends React.Component {
         token: this.props.global.token
       }
     });
-    socket.on('updateNotifications', data => {
-      console.log('data from update', data);
+    socket.on("updateNotifications", data => {
+      console.log("data from update", data);
       this.setState({ messages: data });
+    });
+    socket.on("updateApprovals", data => {
+      this.setState({ approvals: data });
     });
     this._fetchNotifications();
   };
@@ -176,21 +173,22 @@ class Slider extends React.Component {
     const role = this.props.global.user.role;
     const { state } = this;
     const broken = this.state.broken;
+    const notificationNo = state.messages.length + state.approvals.length;
     return (
-      <Layout style={{ minHeight: '100vh' }}>
+      <Layout style={{ minHeight: "100vh" }}>
         <Sider
           collapsible
-          theme='dark'
-          breakpoint='lg'
-          collapsedWidth='0'
+          theme="dark"
+          breakpoint="lg"
+          collapsedWidth="0"
           onBreakpoint={broken => {
             this.setState({ broken });
           }}
           collapsed={this.state.collapsed}
           style={{
             boxShadow: this.state.collapsed
-              ? ''
-              : '5px 0 5px -5px rgba(0,0,0,0.5)'
+              ? ""
+              : "5px 0 5px -5px rgba(0,0,0,0.5)"
           }}
           onCollapse={(collapsed, type) => {
             console.log(collapsed, type);
@@ -199,32 +197,32 @@ class Slider extends React.Component {
           trigger={null}
         >
           <div
-            className='logo'
+            className="logo"
             style={{
-              height: '6.3rem',
-              padding: '1.3rem',
-              backgroundColor: '#fff'
+              height: "6.3rem",
+              padding: "1.3rem",
+              backgroundColor: "#fff"
             }}
           >
             <img
-              src={require('../assets/img/totosci.png')}
-              style={{ height: '36px' }}
+              src={globals.PUBLIC_URL + "/images/logo.png"}
+              style={{ height: "42px" }}
             />
 
             <p
               style={{
-                fontSize: '1.2rem',
+                fontSize: "1.2rem",
                 fontWeight: 500,
-                textAlign: 'center',
-                marginTop: '0.4rem'
+                textAlign: "center",
+                marginTop: "0.4rem"
               }}
             >
               {capitalize(role)}
             </p>
           </div>
           <Menu
-            theme='dark'
-            mode='inline'
+            theme="dark"
+            mode="inline"
             selectedKeys={[this.props.location.pathname]}
             style={{ borderRight: 0 }}
           >
@@ -236,8 +234,8 @@ class Slider extends React.Component {
                     key={`${main.layout}${main.path}`}
                   >
                     <Link to={`${main.layout}${main.path}`}>
-                      <Icon type='dashboard' />
-                      <span className='nav-text'>{main.name}</span>
+                      <Icon type="dashboard" />
+                      <span className="nav-text">{main.name}</span>
                     </Link>
                   </Menu.Item>
                 );
@@ -260,12 +258,12 @@ class Slider extends React.Component {
                     key={`${main.layout}${main.path}`}
                   >
                     <Link to={`${main.layout}${main.path}`}>
-                      <span className='nav-text'>{main.sub}</span>
-                      {main.sub == 'All Feedback' ? (
+                      <span className="nav-text">{main.sub}</span>
+                      {main.sub == "All Feedback" ? (
                         <Badge
-                          style={{ marginLeft: '22px' }}
-                          count={state.messages.length}
-                          overflowCount={9}
+                          style={{ marginLeft: "22px",  marginTop: "7px" }}
+                          count={notificationNo}
+                         dot
                         />
                       ) : null}
                     </Link>
@@ -278,10 +276,11 @@ class Slider extends React.Component {
                       <span>
                         <Icon type={main.icon} />
                         <span>{main.name}</span>
-                        {main.name == 'Feedback' ? (
+                        {main.name == "Feedback" ? (
                           <Badge
-                            style={{ marginLeft: '22px', marginTop: '7px' }}
-                            dot={state.messages.length > 0 ? true : false}
+                            style={{ marginLeft: "22px", marginTop: "7px" }}
+                            count={notificationNo}
+                            dot
                           />
                         ) : null}
                       </span>
@@ -302,23 +301,23 @@ class Slider extends React.Component {
         <Layout>
           <Header
             style={{
-              height: '4.3rem',
-              backgroundColor: '#fff',
-              padding: '1rem',
-              boxShadow: '0 5px 5px -5px #afabab'
+              height: "4.3rem",
+              backgroundColor: "#fff",
+              padding: "1rem",
+              boxShadow: "0 5px 5px -5px #afabab"
             }}
           >
             <Menu
               onClick={this.handleClick}
               selectedKeys={[this.state.current]}
-              mode='horizontal'
-              style={{ borderBottom: '0' }}
+              mode="horizontal"
+              style={{ borderBottom: "0" }}
             >
               {this.state.broken ? (
-                <Menu.Item key='sider i' onClick={this.toggle}>
+                <Menu.Item key="sider i" onClick={this.toggle}>
                   <Icon
-                    className='trigger'
-                    type={this.state.collapsed ? 'menu-unfold' : 'menu-fold'}
+                    className="trigger"
+                    type={this.state.collapsed ? "menu-unfold" : "menu-fold"}
                     onClick={this.toggle}
                     style={{ fontSize: 24 }}
                   />
@@ -326,16 +325,16 @@ class Slider extends React.Component {
               ) : null}
 
               <SubMenu
-                style={{ float: 'right' }}
+                style={{ float: "right" }}
                 title={
-                  <span className='submenu-title-wrapper'>
+                  <span className="submenu-title-wrapper">
                     <Avatar
                       size={15}
                       style={{
-                        backgroundColor: '#00a2ae',
-                        verticalAlign: 'middle'
+                        backgroundColor: "#00a2ae",
+                        verticalAlign: "middle"
                       }}
-                      size='large'
+                      size="large"
                     >
                       {this.props.global.user.fname.charAt(0).toUpperCase()}
                     </Avatar>
@@ -343,34 +342,34 @@ class Slider extends React.Component {
                 }
               >
                 <Menu.Item
-                  key='setting:1'
+                  key="setting:1"
                   onClick={() => {
                     this.props.history.push({
                       pathname: `/${role}/profile`
                     });
                   }}
                 >
-                  {' '}
-                  Profile{' '}
+                  {" "}
+                  Profile{" "}
                   <Icon
-                    style={{ float: 'right', marginTop: '12px' }}
-                    type='user'
+                    style={{ float: "right", marginTop: "12px" }}
+                    type="user"
                   />
                 </Menu.Item>
-                <Menu.Item key='setting:2' onClick={this.showDeleteConfirm}>
-                  {' '}
-                  Sign Out{' '}
+                <Menu.Item key="setting:2" onClick={this.showDeleteConfirm}>
+                  {" "}
+                  Sign Out{" "}
                   <Icon
-                    style={{ float: 'right', marginTop: '12px' }}
-                    type='logout'
+                    style={{ float: "right", marginTop: "12px" }}
+                    type="logout"
                   />
                 </Menu.Item>
               </SubMenu>
               <Menu.Item
-                style={{ float: 'right', marginRight: broken ? '40px' : '0px' }}
+                style={{ float: "right", marginRight: broken ? "40px" : "0px" }}
               >
                 <Dropdown
-                  placement={broken ? 'bottomCenter' : 'bottomLeft'}
+                  placement={broken ? "bottomCenter" : "bottomLeft"}
                   visible={state.visible}
                   onVisibleChange={this.handleVisibleChange}
                   onClick={() => {
@@ -379,14 +378,14 @@ class Slider extends React.Component {
                   overlay={
                     <Menu>
                       <Tabs
-                        defaultActiveKey='1'
+                        defaultActiveKey="1"
                         onChange={this.callback}
-                        style={{ width: '20rem' }}
+                        style={{ width: "20rem" }}
                       >
-                        <TabPane tab='Messages' key='1'>
+                        <TabPane tab="Messages" key="1">
                           {state.messages.length > 0 ? (
                             <span>
-                              {' '}
+                              {" "}
                               {state.messages.map(item => {
                                 let sender;
                                 if (
@@ -400,11 +399,11 @@ class Slider extends React.Component {
                                 return (
                                   <span key={item._id}>
                                     <span
-                                      className='notifs'
+                                      className="notifs"
                                       style={{
-                                        width: '100%',
-                                        padding: '1rem',
-                                        display: 'block'
+                                        width: "100%",
+                                        padding: "1rem",
+                                        display: "block"
                                       }}
                                       onClick={() => {
                                         this.setState({
@@ -413,13 +412,13 @@ class Slider extends React.Component {
                                         this.props.history.push({
                                           pathname: `/${
                                             this.props.global.user.role
-                                            }/feedback/`
+                                          }/feedback/`
                                         });
                                         setTimeout(() => {
                                           this.props.history.push({
                                             pathname: `/${
                                               this.props.global.user.role
-                                              }/feedback/single`,
+                                            }/feedback/single`,
                                             data: item
                                           });
                                         }, 10);
@@ -428,32 +427,32 @@ class Slider extends React.Component {
                                       <span style={{}}>
                                         <span
                                           style={{
-                                            marginRight: '15px',
+                                            marginRight: "15px",
                                             fontWeight: 500,
-                                            width: '100px',
-                                            color: 'black'
+                                            width: "100px",
+                                            color: "black"
                                           }}
                                         >
                                           {capitalize(sender.fname) +
-                                            ' ' +
+                                            " " +
                                             capitalize(sender.lname)}
                                         </span>
                                         <span
                                           style={{
                                             fontWeight: 500,
-                                            color: 'black'
+                                            color: "black"
                                           }}
                                         >
                                           {capitalize(item.subject)}
-                                        </span>{' '}
-                                        -{' '}
+                                        </span>{" "}
+                                        -{" "}
                                         {item.lastMessage.content
-                                          .replace(/<[^>]*>?/gm, '')
-                                          .replace(/&nbsp;/gi, '')
-                                          .slice(0, 10) + '...'}{' '}
+                                          .replace(/<[^>]*>?/gm, "")
+                                          .replace(/&nbsp;/gi, "")
+                                          .slice(0, 10) + "..."}{" "}
                                       </span>
-                                      <span style={{ float: 'right' }}>
-                                        {' '}
+                                      <span style={{ float: "right" }}>
+                                        {" "}
                                         {moment(item.createdAt).fromNow()}
                                       </span>
                                     </span>
@@ -462,51 +461,127 @@ class Slider extends React.Component {
                               })}
                             </span>
                           ) : (
-                              <div
-                                className='text-center'
-                                style={{ margin: '50px' }}
-                              >
-                                <img
-                                  src='https://gw.alipayobjects.com/zos/rmsportal/sAuJeJzSKbUmHfBQRzmZ.svg'
-                                  alt='not found'
-                                />
-                                <p>You have no new messages</p>
-                              </div>
-                            )}
+                            <div
+                              className="text-center"
+                              style={{ margin: "50px" }}
+                            >
+                              <img
+                                src="https://gw.alipayobjects.com/zos/rmsportal/sAuJeJzSKbUmHfBQRzmZ.svg"
+                                alt="not found"
+                              />
+                              <p>You have no new messages</p>
+                            </div>
+                          )}
                         </TabPane>
-                        <TabPane tab='Approval Requests' key='2'>
-                          <div className='text-center'>
-                            <img
-                              src='https://gw.alipayobjects.com/zos/rmsportal/sAuJeJzSKbUmHfBQRzmZ.svg'
-                              alt='not found'
-                            />
-                            <p>You have no new requests</p>
-                          </div>
+                        <TabPane tab="Approval Requests" key="2">
+                          {state.approvals.length > 0 ? (
+                            <span>
+                              {" "}
+                              {state.approvals.map(item => {
+                                // let sender;
+                                // if (
+                                //   item.lastMessage.sender ==
+                                //   item.participants[0]._id
+                                // ) {
+                                //   sender = item.participants[0];
+                                // } else {
+                                //   sender = item.participants[1];
+                                // }
+                                return (
+                                  <span key={item._id}>
+                                    <span
+                                      className="notifs"
+                                      style={{
+                                        width: "100%",
+                                        padding: "1rem",
+                                        display: "block"
+                                      }}
+                                      onClick={() => {
+                                        this.setState({
+                                          visible: !state.visible
+                                        });
+                                        this.props.history.push({
+                                          pathname: `/${
+                                            this.props.global.user.role
+                                          }/`
+                                        });
+                                        setTimeout(() => {
+                                          this.props.history.push({
+                                            pathname: `/${
+                                              this.props.global.user.role
+                                            }/feedback/`,
+                                            activeTab: "2"
+                                          });
+                                        }, 10);
+                                      }}
+                                    >
+                                      <span style={{}}>
+                                        <span
+                                          style={{
+                                            marginRight: "15px",
+                                            fontWeight: 500,
+                                            width: "100px",
+                                            color: "black"
+                                          }}
+                                        >
+                                          {capitalize(item.subject)}
+                                        </span>
+                                        <span
+                                          style={{
+                                            fontWeight: 500,
+                                            color: "black"
+                                          }}
+                                        />{" "}
+                                      </span>
+                                      <span style={{ float: "right" }}>
+                                        {" "}
+                                        {moment(item.createdAt).fromNow()}
+                                      </span>
+                                    </span>
+                                  </span>
+                                );
+                              })}
+                            </span>
+                          ) : (
+                            <div className="text-center">
+                              <img
+                                src="https://gw.alipayobjects.com/zos/rmsportal/sAuJeJzSKbUmHfBQRzmZ.svg"
+                                alt="not found"
+                              />
+                              <p>You have no new requests</p>
+                            </div>
+                          )}
                         </TabPane>
                       </Tabs>
                       <Menu.Divider />
                       {/* <Divider style={{ margin: 0 }} />
                 </Menu.Item> */}
                       <Menu.Item
-                        key='i2'
+                        key="i2"
                         onClick={() => {
                           this.setState({
                             visible: !state.visible
                           });
                           this.props.history.push({
-                            pathname: `/${role}/feedback`
+                            pathname: `/${this.props.global.user.role}/`
                           });
+
+                          setTimeout(() => {
+                            this.props.history.push({
+                              pathname: `/${role}/feedback`
+                            });
+                          }, 10);
                         }}
                       >
-                        <p style={{ textAlign: 'center' }}>View all</p>
+                        <p style={{ textAlign: "center" }}>View all</p>
                       </Menu.Item>
                     </Menu>
                   }
                 >
-                  <span className='submenu-title-wrapper'>
-                    <Badge count={state.messages.length} overflowCount={9}>
+                  <span className="submenu-title-wrapper">
+                    <Badge count={notificationNo} overflowCount={9}>
                       <Icon
-                        type='bell'
+                        type="bell"
                         style={{
                           fontSize: 24
                         }}
@@ -640,10 +715,10 @@ class Slider extends React.Component {
               </SubMenu> */}
             </Menu>
           </Header>
-          <Content style={{ margin: '24px 16px 0' }}>
+          <Content style={{ margin: "24px 16px 0" }}>
             <Switch>
               {routes.map((prop, key) => {
-                if (prop.layout === '/chief-trainer') {
+                if (prop.layout === "/chief-trainer") {
                   return (
                     <Route
                       exact
@@ -652,6 +727,9 @@ class Slider extends React.Component {
                         <prop.component
                           {...props}
                           broken={this.state.broken}
+                          unreadMessages={state.messages.length}
+                          pendingApprovals={this.state.approvals.length}
+                          broadcasts={state.broadcasts.length}
                           socket={socket}
                         />
                       )}
@@ -662,8 +740,8 @@ class Slider extends React.Component {
               })}
               <Route
                 exact
-                path='/**/'
-                render={(props) => {
+                path="/**/"
+                render={props => {
                   let prop = routes[0];
                   return (
                     <prop.component
@@ -671,14 +749,13 @@ class Slider extends React.Component {
                       broken={this.state.broken}
                       socket={socket}
                     />
-                  )
+                  );
                 }}
-
                 key={111}
               />
             </Switch>
           </Content>
-          <Footer style={{ textAlign: 'center' }}>©2019 TotoSci Devs</Footer>
+          <Footer style={{ textAlign: "center" }}>©2019 TotoSci Devs</Footer>
         </Layout>
       </Layout>
     );

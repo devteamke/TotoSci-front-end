@@ -12,6 +12,7 @@ import {
 import Home from './views/LandingPage/LandingPage';
 import About from './views/about/About';
 import Login from './views/login/Login';
+import Register from './views/Register/Register';
 import Reset from './views/reset/Reset';
 import ResetPassword from './views/reset/ResetPassword';
 import Nav from './components/navbar/Navbar';
@@ -140,7 +141,7 @@ class App extends React.Component {
               <Route path='/login/' component={Login} />
               {/* <Route path='/(|home|)/' component={Home} /> */}
               <Route path='/(|home|)/' component={Tromas} />
-
+              <Route path='/register/' component={Register} />
               <Route path='/original' component={Original} />
               <Route exact path='/reset' component={Reset} />
               <Route

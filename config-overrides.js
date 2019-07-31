@@ -9,6 +9,11 @@ module.exports = override(
   // 添加加载 less 的 javascriptEnabled 和 antd 的主题配置。
   addLessLoader({
     javascriptEnabled: true,
-    modifyVars: { '@primary-color': '#1DA57A' }
-  })
+    modifyVars: {
+      '@primary-color': '#1DA57A',
+      '@font-family': 'lato',
+      '@font-weight': '400',
+    }
+  }),
+
 );

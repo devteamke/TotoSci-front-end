@@ -1,6 +1,6 @@
 import React from 'react';
 import {Helmet} from "react-helmet";
-
+import ReactPlayer from "react-player";
 // import "./style.css"
 // // import "./css/bootstrap.min.css"
 // // import "./css/theme-plugins.css"
@@ -181,10 +181,10 @@ class Index extends React.Component {
                 <meta name='copyright' content='codeglim'/>	
                 
                 {/* {/*{/*<!-- Title Tag -->*/} 
-                <title>TotoSci</title>
+                <title>TotoSci Academy</title>
                 
                 {/*{/*<!-- Favicon -->*/}
-                <link rel="icon" type="image/png" href="images/favicon.png"/>	
+           
                 
                 {/*{/*<!-- Web Font -->*/}
                 <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,900" rel="stylesheet"/>
@@ -383,6 +383,26 @@ class Index extends React.Component {
         
             {/* <!--/ End Features -->*/}
                 
+
+
+
+                       {/*  <!-- Start Call-To-Action --> */}
+            <section className="call-to-action" style={{backgroundColor: '#00aeef'}}>
+                <div className="container">
+                    <div className="row">
+                        <div className="col-md-12 col-sm-12 col-xs-12">
+                            <div className="call-to-main">
+                                <h2> <span>Give us your Child we sprout the Cognitive Thinking in them.</span></h2>
+                                      
+                                        <a href="http://35.246.149.29:3000/register" className="btn"  style={{color: '#00aeef'}}><i className="fa fa-send"></i>Apply now</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+                    {/* <!--/ End Call-To-Action --> */}
+
+
         {/*<!-- Why Choose Us --> */}
             <section id="about-us" className="why-choose section">
                 <div className="container-fluid fix">
@@ -980,24 +1000,11 @@ class Index extends React.Component {
                 </Map>
             </div>
             </section>
-            {/* <!--/ End Map Section -->
+                    {/* <!--/ End Map Section --> */}
             
-            <!-- Start Call-To-Action --> */}
-            <section className="call-to-action">
-                <div className="container">
-                    <div className="row">
-                        <div className="col-md-12 col-sm-12 col-xs-12">
-                            <div className="call-to-main">
-                                <h2> <span>Give us your Child we sprout the Cognitive Thinking in them.</span></h2>
-                                <a href="#" className="btn"><i className="fa fa-send"></i>Register Here</a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-            {/* <!--/ End Call-To-Action -->
         
-            <!-- Start Footer --> */}
+        
+      {/*       <!-- Start Footer --> */}
             <footer id="footer" className="footer dark">
                 
                     

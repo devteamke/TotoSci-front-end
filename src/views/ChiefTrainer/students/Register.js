@@ -16,14 +16,10 @@ import CardAvatar from '../../../components/dcomponents/Card/CardAvatar.jsx';
 import CardBody from '../../../components/dcomponents/Card/CardBody.jsx';
 import CardFooter from '../../../components/dcomponents/Card/CardFooter.jsx';
 import {
-  MDBBtn,
-  MDBInput,
-  MDBListGroup,
-  MDBListGroupItem,
-  MDBContainer,
+ 
   MDBTable,
   MDBTableBody,
-  MDBIcon
+
 } from 'mdbreact';
 import validate from './validation';
 import avatar from '../../../assets/img/faces/marc.jpg';
@@ -75,7 +71,7 @@ const styles = {
     marginTop: '0px',
     minHeight: 'auto',
     fontWeight: '300',
-    fontFamily: "'Roboto', 'Helvetica', 'Arial', sans-serif",
+    fontFamily: " 'Lato', sans-serif;",
     marginBottom: '3px',
     textDecoration: 'none'
   }

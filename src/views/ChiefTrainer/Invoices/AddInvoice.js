@@ -31,6 +31,7 @@ import avatar from '../../../assets/img/faces/marc.jpg';
 import globals from '../../../constants/Globals';
 // @material-ui/icons
 import AddAlert from '@material-ui/icons/AddAlert';
+import InvoiceData from './genInvoiceData';
 import { withGlobalContext } from '../../../context/Provider';
 //Form components
 
@@ -52,6 +53,7 @@ import {
   Card,
   Radio,
   Spin,
+  notification,
   DatePicker
 } from 'antd';
 import moment from 'moment';
@@ -79,6 +81,7 @@ const styles = {
     textDecoration: 'none'
   }
 };
+const { Search } = Input;
 
 class AddUser extends React.Component {
   constructor(props) {
@@ -89,7 +92,8 @@ class AddUser extends React.Component {
       selectedRowKeys: [],
       school: '',
       students: [],
-
+      isSelected: false,
+      onNextPage: false,
       //Existing parent
       isExisting: true,
       searchStr: '',
@@ -142,113 +146,16 @@ class AddUser extends React.Component {
     });
   };
 
-  handleSubmit = e => {
-    const state = this.state;
-    e.preventDefault();
 
-    this.props.form.validateFieldsAndScroll((err, values) => {
-      if (!err) {
-        console.log('Received values of form: ', values);
 
-        this.setState({ registering: true });
-        let data = {
-          studentFname: values.fname,
-          studentLname: values.lname,
-          school: values.school[0],
-          isSponsored: state.isSponsored,
-          gender: values.gender,
-          DOB: values.dob
-        };
-        if (!state.isSponsored) {
-          if (!state.isExisting) {
-            data = {
-              ...data,
-              parentFname: values.pfname,
-              parentLname: values.plname,
-              email: values.email,
-              phone_number: { main: values.phone },
-              existingParent: false
-            };
-          } else {
-            data = { ...data, existingParent: state.selected._id };
-          }
-        }
-        console.log(data);
-        this.setState({ registering: true });
-        const AddAsync = async () =>
-          await (await fetch(
-            `${globals.BASE_URL}/api/${
-            this.props.global.user.role
-            }/new_student`,
-            {
-              method: 'post',
-              mode: 'cors', // no-cors, cors, *same-origin
-              cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
-              credentials: 'same-origin', // include, *same-origin, omit
-              headers: {
-                'Content-Type': 'application/json',
-                Authorization: this.props.global.token
-                // "Content-Type": "application/x-www-form-urlencoded",
-              },
-              redirect: 'follow', // manual, *follow, error
-              referrer: 'no-referrer', // no-referrer, *client
-              body: JSON.stringify(data)
-            }
-          )).json();
-
-        AddAsync()
-          .then(data => {
-            this._snack({
-              type: data.success ? 'success' : 'warning',
-              msg: data.message
-            });
-
-            //this.setState({currentPlace:data.results})
-            if (data.success) {
-              this.props.form.resetFields();
-              this.setState({
-                registering: false,
-
-                selected: null,
-                existingSelected: false,
-                searchStr: '',
-                //Sponsored
-                isSponsored: true,
-
-                school: '',
-                registering: false
-              });
-            } else {
-              this.setState({
-                registering: false,
-
-                serverRes: data.message
-              });
-            }
-          })
-          .catch(error => {
-            console.log(error);
-            if (error == 'TypeError: Failed to fetch') {
-              //   alert('Server is offline')
-            } else if (error.message == 'Network request failed') {
-              // alert('No internet connection')
-              this.setState({
-                serverRes: 'Network request failed'
-              });
-            }
-            this._snack({ type: 'warning', msg: error.toString() });
-            this.setState({ registering: false });
-            console.log(error);
-          });
-      }
+  _handleSearch = (event) => {
+    //  this.setState({  });
+    this.setState({
+      [event.target.name]: event.target.value, searching: true
     });
-  };
-
-  _handleSearch = () => {
-    this.setState({ searching: true });
     const SearchAsync = async () =>
       await (await fetch(
-        `${globals.BASE_URL}/api/${this.props.global.user.role}/search_parent`,
+        `${globals.BASE_URL}/api/${this.props.global.user.role}/fetch_invoiced_students`,
         {
           method: 'post',
           mode: 'cors', // no-cors, cors, *same-origin
@@ -267,13 +174,20 @@ class AddUser extends React.Component {
 
     SearchAsync()
       .then(data => {
-        //this.setState({currentPlace:data.results})
         if (data.success) {
+          //data.students.docs.map((each, i) => { return { ...each, key: i } })
           this.setState({
-            parentList: data.parents,
+            students: data.students.docs,
             searching: false
           });
         } else {
+          this.setState({
+
+            searching: false
+          });
+          notification['error']({
+            message: data.message
+          });
         }
       })
       .catch(error => {
@@ -286,8 +200,10 @@ class AddUser extends React.Component {
             serverRes: 'Network request failed'
           });
         }
-        this._snack({ type: 'warning', msg: error.toString() });
-        this.setState({ searching: false });
+        notification['error']({
+          message: error.toString()
+        });
+
         console.log(error);
       });
   };
@@ -316,11 +232,19 @@ class AddUser extends React.Component {
         //this.setState({currentPlace:data.results})
         console.log('Result', data.students)
         if (data.success) {
+          data.students.docs.map((each, i) => { return { ...each, key: i } })
           this.setState({
             students: data.students.docs,
             loading: false
           });
         } else {
+          this.setState({
+
+            loading: false
+          });
+          notification['error']({
+            message: data.message
+          });
         }
       })
       .catch(error => {
@@ -333,33 +257,15 @@ class AddUser extends React.Component {
             serverRes: 'Network request failed'
           });
         }
-        this._snack({ type: 'warning', msg: error.toString() });
+        notification['error']({
+          message: error.toString()
+        });
 
         console.log(error);
       });
   };
 
-  onChange = e => {
-    console.log('radio checked', e.target.value);
-    this.setState({
-      value: e.target.value,
-      isSponsored: !this.state.isSponsored
-    });
-  };
-  onChange2 = e => {
-    console.log('radio checked', e.target.value);
-    this.setState({
-      value: e.target.value,
-      isExisting: !this.state.isExisting
-    });
-  };
-  onChangeG = e => {
-    console.log('radio checked', e.target.value);
-    this.setState({
-      value: e.target.value,
-      gender: e.target.value
-    });
-  };
+
   _handleSelect = obj => {
     this.setState({ selected: obj, existingSelected: true });
   };
@@ -368,74 +274,12 @@ class AddUser extends React.Component {
     this._fetchStudents();
   };
   //ant design
-  handleStudentChange = value => {
-    if (value.length == '5d0231026accc00c57f14281'.length) {
-      return;
-    }
-    let autoCompleteResult;
-    if (!value) {
-      autoCompleteResult = [];
-    } else {
-      this.setState({
-        searching: true,
-        searchStr: value,
-        existingSelected: false,
-        selected: null
-      });
-      const SearchAsync = async () =>
-        await (await fetch(
-          `${globals.BASE_URL}/api/${
-          this.props.global.user.role
-          }/search_student`,
-          {
-            method: 'post',
-            mode: 'cors', // no-cors, cors, *same-origin
-            cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
-            credentials: 'same-origin', // include, *same-origin, omit
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: this.props.global.token
-              // "Content-Type": "application/x-www-form-urlencoded",
-            },
-            redirect: 'follow', // manual, *follow, error
-            referrer: 'no-referrer', // no-referrer, *client
-            body: JSON.stringify({ query: value })
-          }
-        )).json();
 
-      SearchAsync()
-        .then(data => {
-          //this.setState({currentPlace:data.results})
-          if (data.success) {
-            autoCompleteResult = data.students;
-            console.log(data.students)
-            this.setState({
-              autoCompleteResult,
-              searching: false,
-              plength: data.students.length
-            });
-          } else {
-          }
-        })
-        .catch(error => {
-          console.log(error);
-          if (error == 'TypeError: Failed to fetch') {
-            //   alert('Server is offline')
-          } else if (error.message == 'Network request failed') {
-            // alert('No internet connection')
-            this.setState({
-              serverRes: 'Network request failed'
-            });
-          }
-          this._snack({ type: 'warning', msg: error.toString() });
-          this.setState({ searching: false });
-          console.log(error);
-        });
-    }
-  };
   onSelectChange = selectedRowKeys => {
+
     console.log('selectedRowKeys changed: ', selectedRowKeys);
-    this.setState({ selectedRowKeys });
+    let isSelected = selectedRowKeys.length > 0 ? true : false;
+    this.setState({ selectedRowKeys, isSelected });
   };
 
   disabledDate = current => {
@@ -449,6 +293,7 @@ class AddUser extends React.Component {
     const { getFieldDecorator } = this.props.form;
     const { autoCompleteResult } = this.state;
     const columns = [
+
       {
         title: 'Name',
         dataIndex: 'name',
@@ -484,20 +329,20 @@ class AddUser extends React.Component {
       });
     })
 
-
-
     const { selectedRowKeys } = this.state;
     const rowSelection = {
       selectedRowKeys,
       onChange: this.onSelectChange,
       hideDefaultSelections: true,
+
       selections: [
         {
           key: 'all-data',
           text: 'Select All Data',
           onSelect: () => {
+            let isSelected = selectedRowKeys.length > 0 ? true : false;
             this.setState({
-              selectedRowKeys: [...Array(46).keys()], // 0...45
+              selectedRowKeys: [...Array(students.length).keys()], isSelected
             });
           },
         },
@@ -512,7 +357,8 @@ class AddUser extends React.Component {
               }
               return true;
             });
-            this.setState({ selectedRowKeys: newSelectedRowKeys });
+            let isSelected = selectedRowKeys.length > 0 ? true : false;
+            this.setState({ selectedRowKeys: newSelectedRowKeys, isSelected });
           },
         },
         {
@@ -526,11 +372,13 @@ class AddUser extends React.Component {
               }
               return false;
             });
-            this.setState({ selectedRowKeys: newSelectedRowKeys });
+            let isSelected = selectedRowKeys.length > 0 ? true : false;
+            this.setState({ selectedRowKeys: newSelectedRowKeys, isSelected });
           },
         },
       ],
     };
+    const ButtonGroup = Button.Group;
     const { Search } = Input;
     if (state.loading) {
       return (
@@ -550,10 +398,47 @@ class AddUser extends React.Component {
           closeNotification={() => this.setState({ open: false })}
           close
         />
+
         <GridContainer>
           <GridItem xs={12} sm={12} md={11}>
             <Card title='Generate Invoice' style={{ width: '100%' }}>
-              <GridItem xs={12} sm={12} md={12} />
+              <GridContainer>
+                <GridItem xs={12} sm={12} md={12}>
+                  <div style={{ float: 'left' }}>
+                    <ButtonGroup size={"large"}>
+                      {state.onNextPage ? (
+
+                        <Button type="primary">
+                          <Icon type="left" />
+
+                          Back
+          </Button>
+                      ) : null}
+                      {state.isSelected ? (
+                        <Button
+                          type="primary"
+                          onClick={() => {
+                            let selectedUsers = [];
+
+                            state.selectedRowKeys.map(each => {
+                              data.find(student => { if (student.key == each) selectedUsers.push(student) })
+                            })
+                            console.log('Selected students', selectedUsers)
+                            this.props.history.push(`/${this.props.global.user.role}/invoices/new`, { selectedUsers: selectedUsers })
+                          }}
+                        >
+                          Next
+            <Icon type="right" />
+                        </Button>
+                      ) : (<p> Select students</p>)}
+                    </ButtonGroup>
+                  </div>
+                  <div style={{ width: '15rem', float: 'right' }}>
+                    <Input
+                      placeholder="Basic usage" />,
+                </div>
+                </GridItem>
+              </GridContainer>
               <GridItem xs={12} sm={12} md={12}>
 
 
@@ -562,9 +447,9 @@ class AddUser extends React.Component {
             </Card>
           </GridItem>
 
-          <GridItem xs={12} sm={12} md={4} />
+
         </GridContainer>
-      </div>
+      </div >
     );
   }
 }

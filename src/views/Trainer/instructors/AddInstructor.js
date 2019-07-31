@@ -1,36 +1,25 @@
 import React from "react";
 // @material-ui/core components
 import withStyles from "@material-ui/core/styles/withStyles";
-import InputLabel from "@material-ui/core/InputLabel";
+
 // core components
-import Snackbar from "../../../components/dcomponents/Snackbar/Snackbar.jsx";
+
 import GridItem from "../../../components/dcomponents/Grid/GridItem.jsx";
 import GridContainer from "../../../components/dcomponents/Grid/GridContainer.jsx";
-import CustomInput from "../../../components/dcomponents/CustomInput/CustomInput.jsx";
-
-import { MDBBtn, MDBInput } from "mdbreact";
-import avatar from "../../../assets/img/faces/marc.jpg";
 
 import globals from "../../../constants/Globals";
 // @material-ui/icons
-import AddAlert from "@material-ui/icons/AddAlert";
+
 import { withGlobalContext } from "../../../context/Provider";
-//Form components
-import InstructorForm from "./forms/Instructor";
-import validate from "./validation";
+
 //antd
 import {
   Form,
   Input,
-  Tooltip,
+  notification,
   Icon,
-  Cascader,
   Select,
-  Row,
-  Col,
-  Checkbox,
   Button,
-  AutoComplete,
   Card,
   Radio,
   Spin,
@@ -74,32 +63,6 @@ class AddUser extends React.Component {
     };
   }
 
-  _snack = params => {
-    if (this.props.location.snack) {
-      let snack = this.props.location.snack;
-      this.setState({ open: true, resType: snack.type, serverRes: snack.msg });
-      setTimeout(
-        function() {
-          this.setState({ open: false });
-        }.bind(this),
-        9000
-      );
-    }
-    if (params) {
-      this.setState({
-        open: true,
-        resType: params.type,
-        serverRes: params.msg
-      });
-      setTimeout(
-        function() {
-          this.setState({ open: false });
-        }.bind(this),
-        9000
-      );
-    }
-  };
-
   handleSubmit = e => {
     e.preventDefault();
     const state = this.state;
@@ -141,9 +104,10 @@ class AddUser extends React.Component {
 
         AddAsync()
           .then(data => {
-            this._snack({
-              type: data.success ? "success" : "warning",
-              msg: data.message
+            let type = data.success ? "success" : "error";
+
+            notification[type]({
+              message: data.message
             });
             //this.setState({currentPlace:data.results})
             if (data.success) {
@@ -161,16 +125,9 @@ class AddUser extends React.Component {
             }
           })
           .catch(error => {
-            console.log(error);
-            if (error == "TypeError: Failed to fetch") {
-              //   alert('Server is offline')
-            } else if (error.message == "Network request failed") {
-              // alert('No internet connection')
-              this.setState({
-                serverRes: "Network request failed"
-              });
-            }
-            this.props.snack({ type: "warning", msg: error.toString() });
+            notification["error"]({
+              message: error.toString()
+            });
             this.setState({ registering: false });
             console.log(error);
           });
@@ -247,15 +204,6 @@ class AddUser extends React.Component {
     }
     return (
       <div>
-        <Snackbar
-          place={this.state.place}
-          color={state.resType}
-          icon={AddAlert}
-          message={state.serverRes}
-          open={this.state.open}
-          closeNotification={() => this.setState({ open: false })}
-          close
-        />
         <GridContainer>
           <GridItem xs={12} sm={12} md={9}>
             <Card title="Register a new Instructor" style={{ width: "100%" }}>
@@ -361,7 +309,7 @@ class AddUser extends React.Component {
             </Card>
           </GridItem>
 
-          <GridItem xs={12} sm={12} md={4}></GridItem>
+          <GridItem xs={12} sm={12} md={4} />
         </GridContainer>
       </div>
     );
@@ -391,7 +339,7 @@ const center = {
   position: "absolute",
   left: "50%",
   top: "50%",
-  "-webkit-transform": "translate(-50%, -50%)",
+  WebkitTransform: "translate(-50%, -50%)",
   transform: "translate(-50%, -50%)"
 };
 

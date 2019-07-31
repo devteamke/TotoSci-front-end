@@ -406,32 +406,7 @@ class AllStudents extends React.Component {
     this._fetchUsers();
   };
   onToggleParents = () => {
-    if (!this.state.withoutParents) {
-      this.state.columns.splice(
-        5,
-        0,
-        {
-          title: 'Add',
-          render: (text, user, i) => (
-            <Button
-              type='primary'
-              onClick={() => {
-                this.setState(
-                  { currentStudent: user._id },
-                  () => {
-                    this.showModal();
-                  }
-                );
-              }}
-            >
-              Add Parent
-                                </Button>
-          )
-        }
-      )
-    } else {
-      this.state.columns.splice(5, 1)
-    }
+
     this.setState(
       {
         withoutParents: !this.state.withoutParents,
@@ -439,7 +414,32 @@ class AllStudents extends React.Component {
       },
       () => {
         this._fetchUsers();
-
+        if (this.state.withoutParents) {
+          this.state.columns.splice(
+            5,
+            0,
+            {
+              title: 'Add',
+              render: (text, user, i) => (
+                <Button
+                  type='primary'
+                  onClick={() => {
+                    this.setState(
+                      { currentStudent: user._id },
+                      () => {
+                        this.showModal();
+                      }
+                    );
+                  }}
+                >
+                  Add Parent
+                                </Button>
+              )
+            }
+          )
+        } else {
+          this.state.columns.splice(5, 1)
+        }
       }
     );
   };

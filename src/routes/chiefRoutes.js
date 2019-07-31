@@ -32,7 +32,8 @@ import SingleThread from "../views/ChiefTrainer/Feedback/SingleThread";
 
 
 import AddInvoice from "../views/ChiefTrainer/Invoices/AddInvoice";
-import InvoiceDetails from "../views/ChiefTrainer/Invoices/InvoiceDetails";
+import InvoiceDetails from "../views/ChiefTrainer/Invoices/genInvoiceData";
+
 import Profile from "../views/profile/Profile.jsx";
 
 const dashboardRoutes = [
@@ -163,14 +164,22 @@ const dashboardRoutes = [
   },
   //Invoice generation
   //Notifications
-  {
-    path: "/invoices",
-    name: "Invoices",
+  // {
+  //   path: "/invoices",
+  //   name: "Invoices",
 
-    icon: AccountBalance,
-    component: AddInvoice,
-    layout: "/chief-trainer"
-  }
+  //   icon: AccountBalance,
+  //   component: AddInvoice,
+  //   layout: "/chief-trainer"
+  // },
+  // {
+  //   path: "/invoices/new",
+  //   name: "newInvoice",
+  // type:'hidden',
+  //   // icon: AccountBalance,
+  //   component: InvoiceDetails,
+  //   layout: "/chief-trainer"
+  // }
 ];
 
 export default dashboardRoutes;
