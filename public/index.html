@@ -102,6 +102,10 @@
       -webkit-animation: loadingCircle 1s infinite linear;
       animation: loadingCircle 1s infinite linear;
     }
+    #root
+    {
+  display: none;
+}
   </style>
 </head>
 
@@ -134,12 +138,13 @@
 
   <!-- Jquery -->
 
-  <script src="http://35.246.149.29:3000/js/jquery.min.js" type="text/javascript"></script>
+  <script src="%PUBLIC_URL%/js/jquery.min.js" type="text/javascript"></script>
 
   <script>
     $(window).load(function () {
       // Animate loader off screen
-      $('.all-spinner').fadeOut('slow');
+      $('.all-spinner').fadeOut(1500);
+       $('#root').fadeIn(4000);
     });
   </script>
 </body>
