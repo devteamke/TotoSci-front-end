@@ -22,7 +22,7 @@
     "enquire-js": "^0.2.1",
     "google-maps-react": "^2.0.2",
     "history": "4.7.2",
-    "html-pdf": "^2.2.0",
+    "html-pdf": "^3.0.1",
     "jspdf": "^1.5.3",
     "jwt-decode": "^2.2.0",
     "loaders.css": "^0.1.2",
