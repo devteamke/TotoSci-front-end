@@ -28,7 +28,7 @@
     "loaders.css": "^0.1.2",
     "mdbreact": "^4.17.0",
     "moment": "^2.24.0",
-    "node-sass": "^4.12.0",
+    "node-sass": "^7.0.0",
     "nodeice": "^3.0.9",
     "perfect-scrollbar": "1.4.0",
     "prop-types": "15.7.1",
